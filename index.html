@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!-- Disable zooming: -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<head>
+    <title>FeatherGB</title>
+    <style>
+        html {
+            height: 100%;
+        }
+        body {
+            min-height: 100%;
+        }
+
+        /* Allow canvas to fill entire web page: */
+        html,
+        body {
+            overflow: hidden;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        #root {
+            min-height: 100%;
+        }
+    </style>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <script>
+        // The `--no-modules`-generated JS from `wasm-bindgen` attempts to use
+        // `WebAssembly.instantiateStreaming` to instantiate the wasm module,
+        // but this doesn't work with `file://` urls. This example is frequently
+        // viewed by simply opening `index.html` in a browser (with a `file://`
+        // url), so it would fail if we were to call this function!
+        //
+        // Work around this for now by deleting the function to ensure that the
+        // `no_modules.js` script doesn't have access to it. You won't need this
+        // hack when deploying over HTTP.
+        delete WebAssembly.instantiateStreaming;
+    </script>
+    <div id="root"></div>
+</body>
+</html>

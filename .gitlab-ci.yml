@@ -1,0 +1,27 @@
+image: node:13.12.0-stretch
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+build-test-roms:
+  image: tomasvojtasek/wla-dx:9.10
+  stage: build
+  artifacts:
+    paths:
+      - roms/mooneye-gb/tests/build
+  script:
+    - cd roms/mooneye-gb/tests && make clean all && cd -
+  only:
+    - main
+
+pages:
+  image: cimg/rust:1.50-node
+  stage: deploy
+  script:
+    - yarn install --frozen-lockfile
+    - yarn build
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

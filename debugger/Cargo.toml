@@ -1,0 +1,24 @@
+[package]
+name = "debugger"
+version = "0.1.0"
+edition = "2018"
+
+# [lib]
+# crate-type = ["cdylib", "rlib"]
+
+# [lib]
+# path = "src/lib.rs"
+
+# [[bin]]
+# name = "desktop-debugger"
+# path = "src/main.rs"
+
+[dependencies]
+log = "0.4.14"
+gb = { path = "../gb" }
+env_logger = "0.8.3"
+glob = "0.3.0"
+fuzzy-matcher = "0.3.7"
+eframe = "0.10.0" # Gives us egui, epi and web+native backends
+regex = "1.4.3"
+size_format="1.0.2"

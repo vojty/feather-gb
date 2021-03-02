@@ -1,0 +1,9 @@
+node_modules
+dist
+public
+target
+pkg
+
+yarn-error.log
+browser/romsList.ts
+roms/games

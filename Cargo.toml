@@ -1,0 +1,5 @@
+[workspace]
+members = ["desktop", "debugger", "debugger-web" , "gb", "integration-tests"]
+
+[profile.release]
+opt-level = 2 # fast and small wasm

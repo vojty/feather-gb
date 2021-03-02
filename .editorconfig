@@ -1,0 +1,10 @@
+# EditorConfig is awesome: https://EditorConfig.org
+root = true
+
+[*.rs]
+indent_style = space
+indent_size = 4
+
+[*.{ts,tsx,js,jsx,js}]
+indent_style = space
+indent_size = 2

@@ -1,0 +1,15 @@
+[submodule "roms/mooneye-gb"]
+	path = roms/mooneye-gb
+	url = https://github.com/Gekkio/mooneye-gb.git
+[submodule "roms/MBC3-Tester-gb"]
+	path = roms/MBC3-Tester-gb
+	url = https://github.com/EricKirschenmann/MBC3-Tester-gb.git
+[submodule "roms/gb-test-roms"]
+	path = roms/gb-test-roms
+	url = https://github.com/retrio/gb-test-roms
+[submodule "roms/scribbltests"]
+	path = roms/scribbltests
+	url = https://github.com/Hacktix/scribbltests
+[submodule "roms/TurtleTests"]
+	path = roms/TurtleTests
+	url = https://github.com/Powerlated/TurtleTests.git
