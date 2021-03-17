@@ -24,7 +24,10 @@ function getPlugins(isProduction) {
             path.resolve(__dirname, './gb')
           ]
     }),
-    new FaviconsWebpackPlugin(__dirname + '/browser/assets/images/feather.svg')
+    new FaviconsWebpackPlugin(__dirname + '/browser/assets/images/feather.svg'),
+    new webpack.DefinePlugin({
+      USE_HASH_ROUTER: JSON.stringify(process.env.USE_HASH_ROUTER)
+    })
   ]
 
   if (isProduction) {
@@ -33,8 +36,7 @@ function getPlugins(isProduction) {
       new webpack.DefinePlugin({
         'process.env': {
           NODE_ENV: JSON.stringify('production')
-        },
-        BASENAME: JSON.stringify(process.env.BASENAME)
+        }
       }),
       new CompressionPlugin({
         filename: '[path][base].gz',

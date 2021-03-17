@@ -11,4 +11,4 @@ declare module '*.svg' {
   export = _
 }
 
-declare let BASENAME: string | undefined
+declare let USE_HASH_ROUTER: boolean
