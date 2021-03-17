@@ -19,6 +19,7 @@ pages:
   stage: deploy
   script:
     - yarn install --frozen-lockfile
+    - node generateRomsList.js
     - yarn build
   artifacts:
     paths:
