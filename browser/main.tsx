@@ -9,7 +9,8 @@ import './assets/styles/main.css'
 const root = document.getElementById('root')
 
 ReactDOM.render(
-  <BrowserRouter>
+  // propagated from process.env.BASENAME
+  <BrowserRouter basename={BASENAME}>
     <AppRouter />
   </BrowserRouter>,
   root

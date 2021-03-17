@@ -21,7 +21,7 @@ pages:
     - curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
     - yarn install --frozen-lockfile
     - node generateRomsList.js
-    - yarn build
+    - BASENAME="$CI_PROJECT_NAME" yarn build
   artifacts:
     paths:
       - public

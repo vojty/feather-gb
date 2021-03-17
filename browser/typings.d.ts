@@ -10,3 +10,5 @@ declare module '*.svg' {
   const _: FunctionComponent<SVGProps<HTMLOrSVGElement>>
   export = _
 }
+
+declare let BASENAME: string | undefined

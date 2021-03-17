@@ -33,7 +33,8 @@ function getPlugins(isProduction) {
       new webpack.DefinePlugin({
         'process.env': {
           NODE_ENV: JSON.stringify('production')
-        }
+        },
+        BASENAME: JSON.stringify(process.env.BASENAME)
       }),
       new CompressionPlugin({
         filename: '[path][base].gz',
