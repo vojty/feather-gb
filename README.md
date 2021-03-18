@@ -27,6 +27,7 @@ Based on React & TypeScript in general
 | Suite           | Results                                       |
 | --------------- | --------------------------------------------- |
 | Mooneye's tests | [results](./docs/results/results-mooneyes.md) |
+| Scribbl tests   | [results](./docs/results/results-scribbl.md)  |
 
 ## TODOs
 

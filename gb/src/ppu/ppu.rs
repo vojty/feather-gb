@@ -117,6 +117,21 @@ pub struct Ppu {
 
 impl Ppu {
     pub fn new() -> Ppu {
+        let green_palette: Palette = [
+            RGB::new(224, 248, 208),
+            RGB::new(136, 191, 112),
+            RGB::new(52, 104, 86),
+            RGB::new(9, 25, 33),
+        ];
+
+        // TODO make it configurable
+        let _gray_palette: Palette = [
+            RGB::new(255, 255, 255),
+            RGB::new(192, 192, 192),
+            RGB::new(96, 96, 96),
+            RGB::new(0, 0, 0),
+        ];
+
         Ppu {
             stat_mode: Mode::HBlank,
             lcdc: LcdcBits::empty(),
@@ -144,12 +159,7 @@ impl Ppu {
             line: 0,
             pending_mode: None,
             skip_frames: 0,
-            system_palette: [
-                RGB::new(255, 255, 255),
-                RGB::new(192, 192, 192),
-                RGB::new(96, 96, 96),
-                RGB::new(0, 0, 0),
-            ],
+            system_palette: green_palette,
 
             dropped_pixels: 0,
 

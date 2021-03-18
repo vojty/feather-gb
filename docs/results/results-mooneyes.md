@@ -100,4 +100,4 @@ https://github.com/Gekkio/mooneye-gb
 | roms/mooneye-gb/tests/build/utils/bootrom_dumper.gb                       | ❌     |
 | roms/mooneye-gb/tests/build/utils/dump_boot_hwio.gb                       | ✅     |
 
-Generated at: 2021-03-17 16:28:30.982520 UTC
+Generated at: 2021-03-18 16:24:26.317018 UTC
