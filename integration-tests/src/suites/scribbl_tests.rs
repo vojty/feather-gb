@@ -5,7 +5,7 @@ use tokio::task::JoinError;
 
 use crate::{
     markdown,
-    utils::{create_emulator, get_result_mark, save_diff_image, save_image, OUTPUT_DIR},
+    utils::{create_emulator, get_result_mark, save_diff_image, save_screen, OUTPUT_DIR},
 };
 
 struct TestCase {
@@ -69,13 +69,13 @@ fn execute_test(test_case: TestCase) -> TestResult {
         }
     }
 
-    save_image(&e, &result_image);
+    save_screen(&e, &result_image);
     let diff = save_diff_image(&reference_image, &result_image, &diff_image);
 
     (name, reference_image, result_image, diff_image, diff)
 }
 
-fn write_results(results: Vec<Result<TestResult, JoinError>>) {
+fn generate_test_report(results: Vec<Result<TestResult, JoinError>>) -> String {
     let data = results
         .iter()
         .filter_map(|result| match result {
@@ -93,16 +93,14 @@ fn write_results(results: Vec<Result<TestResult, JoinError>>) {
     let headings = ["Name", "Expected", "Result", "Diff", "Status"];
     let result = markdown::table(&headings, &data);
 
-    let content = markdown::test_report(
+    markdown::test_report(
         "Scribbltests",
         "https://github.com/Hacktix/scribbltests",
         &result,
-    );
-
-    fs::write("docs/results/results-scribbl.md", content).unwrap();
+    )
 }
 
-pub async fn run_tests() {
+pub async fn run_tests() -> String {
     let files = get_tests();
 
     let mut handles = vec![];
@@ -112,5 +110,5 @@ pub async fn run_tests() {
     }
 
     let results = join_all(handles).await;
-    write_results(results);
+    generate_test_report(results)
 }

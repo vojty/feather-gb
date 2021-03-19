@@ -37,7 +37,7 @@ pub fn create_emulator(path: &str) -> Emulator {
     Emulator::new(false, cartridge)
 }
 
-pub fn save_image(e: &Emulator, path: impl Into<String>) {
+pub fn save_screen(e: &Emulator, path: impl Into<String>) {
     let screen = e.get_screen_buffer();
     let image = ImageBuffer::from_fn(DISPLAY_WIDTH as u32, DISPLAY_HEIGHT as u32, |x, y| {
         let pixel = screen.get_pixel(x as usize, y as usize);

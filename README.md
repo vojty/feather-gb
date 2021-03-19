@@ -12,27 +12,30 @@ The emulator can be run in 2 modes - the normal mode (shows just GameBoy's displ
 
 ### Desktop
 
-- Standard - **WIP** SDL2 (should be cross platform, but I've tested only MacOS)
-- Debugger - egui (glium)
+- Standard - **WIP** rendered by SDL2 (should be cross platform, but I've tested only MacOS)
+- Debugger - rendered by egui (using glium as backend)
 
 ### Browser
 
 Based on React & TypeScript in general
 
-- Standard - **WIP** pure WebAssembly with some stylesheets
-- Debugger - WebAssembly with egui
+- Standard - **WIP** WebAssembly with some stylesheets
+- Debugger - WebAssembly with egui (using webgl as banckend)
 
 ## Test results
 
-| Suite           | Results                                       |
-| --------------- | --------------------------------------------- |
-| Mooneye's tests | [results](./docs/results/results-mooneyes.md) |
-| Scribbl tests   | [results](./docs/results/results-scribbl.md)  |
+The emulator is tested against popular test suites such as [blargg's test](https://github.com/retrio/gb-test-roms), [mooneye's tests](https://github.com/Gekkio/mooneye-gb/) etc.
+These test suites are linked as git submodules and can be found in `.gitmodules` file.
+
+Generated test report is [here](./docs/results/results.md)
 
 ## TODOs
 
-- make PPU more accurate and pass some [mealybug-tearoom-tests](https://github.com/mattcurrie/mealybug-tearoom-tests)
+- standard (play) mode
+- allow to open custom ROM file
 - APU (currently with no sound)
+- make PPU more accurate and pass some [mealybug-tearoom-tests](https://github.com/mattcurrie/mealybug-tearoom-tests)
+- GameBoy Color support
 
 ## Project structure
 

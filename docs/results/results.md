@@ -1,3 +1,14 @@
+## Scribbltests
+
+https://github.com/Hacktix/scribbltests
+
+| Name      | Expected                    | Result                    | Diff                    | Status     |
+| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
+| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0 |
+| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0 |
+| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0 |
+| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0 |
+
 ## Mooneye's test
 
 https://github.com/Gekkio/mooneye-gb
@@ -100,4 +111,4 @@ https://github.com/Gekkio/mooneye-gb
 | roms/mooneye-gb/tests/build/utils/bootrom_dumper.gb                       | ❌     |
 | roms/mooneye-gb/tests/build/utils/dump_boot_hwio.gb                       | ✅     |
 
-Generated at: 2021-03-18 16:24:26.317018 UTC
+Generated at: 2021-03-19 08:35:59.375266 UTC

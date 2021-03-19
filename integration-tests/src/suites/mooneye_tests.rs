@@ -1,5 +1,3 @@
-use std::fs;
-
 use futures::future::join_all;
 
 use gb::emulator::Emulator;
@@ -95,7 +93,7 @@ fn execute_test(path: String) -> TestResult {
     (path, is_valid(&e))
 }
 
-fn write_results(results: Vec<Result<TestResult, JoinError>>) {
+fn generate_test_report(results: Vec<Result<TestResult, JoinError>>) -> String {
     let data = results
         .iter()
         .filter_map(|result| match result {
@@ -107,16 +105,14 @@ fn write_results(results: Vec<Result<TestResult, JoinError>>) {
     let headings = ["Test", "Result"];
     let result = markdown::table(&headings, &data);
 
-    let content = markdown::test_report(
+    markdown::test_report(
         "Mooneye's test",
         "https://github.com/Gekkio/mooneye-gb",
         &result,
-    );
-
-    fs::write("docs/results/results-mooneyes.md", content).unwrap();
+    )
 }
 
-pub async fn run_tests() {
+pub async fn run_tests() -> String {
     let files = get_tests();
 
     let mut handles = vec![];
@@ -126,5 +122,5 @@ pub async fn run_tests() {
     }
 
     let results = join_all(handles).await;
-    write_results(results);
+    generate_test_report(results)
 }

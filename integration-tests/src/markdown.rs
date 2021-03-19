@@ -40,11 +40,5 @@ pub fn image(path: &str) -> String {
 }
 
 pub fn test_report(name: &str, info: &str, result: &str) -> String {
-    format!(
-        "## {}\n\n{}\n\n{}\n\nGenerated at: {}",
-        name,
-        info,
-        result,
-        chrono::offset::Utc::now()
-    )
+    format!("## {}\n\n{}\n\n{}\n", name, info, result)
 }
