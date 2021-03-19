@@ -1,17 +1,34 @@
-## Scribbltests
+## Blargg's tests
 
-https://github.com/Hacktix/scribbltests
+https://github.com/retrio/gb-test-roms
 
-| Name      | Expected                    | Result                    | Diff                    | Status     |
-| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
-| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0 |
-| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0 |
-| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0 |
-| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0 |
+Some of those tests are skipped, see `blarggs_tests.rs` why.
 
-## Mooneye's test
+| Test                                                             | Result |
+| ---------------------------------------------------------------- | ------ |
+| roms/gb-test-roms/cpu_instrs/cpu_instrs.gb                       | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/01-special.gb            | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/02-interrupts.gb         | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/03-op sp,hl.gb           | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/04-op r,imm.gb           | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/05-op rp.gb              | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/06-ld r,r.gb             | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/07-jr,jp,call,ret,rst.gb | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/08-misc instrs.gb        | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/09-op r,r.gb             | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/10-bit ops.gb            | ✅     |
+| roms/gb-test-roms/cpu_instrs/individual/11-op a,(hl).gb          | ✅     |
+| roms/gb-test-roms/instr_timing/instr_timing.gb                   | ✅     |
+| roms/gb-test-roms/mem_timing/individual/01-read_timing.gb        | ✅     |
+| roms/gb-test-roms/mem_timing/individual/02-write_timing.gb       | ✅     |
+| roms/gb-test-roms/mem_timing/individual/03-modify_timing.gb      | ✅     |
+| roms/gb-test-roms/mem_timing/mem_timing.gb                       | ✅     |
+
+## Mooneye's tests
 
 https://github.com/Gekkio/mooneye-gb
+
+Only DMG compatible tests used.
 
 | Test                                                                      | Result |
 | ------------------------------------------------------------------------- | ------ |
@@ -35,10 +52,12 @@ https://github.com/Gekkio/mooneye-gb
 | roms/mooneye-gb/tests/build/acceptance/halt_ime1_timing.gb                | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/halt_ime1_timing2-GS.gb            | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/if_ie_registers.gb                 | ✅     |
+| roms/mooneye-gb/tests/build/acceptance/instr/daa.gb                       | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/interrupts/ie_push.gb              | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/intr_timing.gb                     | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/jp_cc_timing.gb                    | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/jp_timing.gb                       | ✅     |
+| roms/mooneye-gb/tests/build/acceptance/ld_hl_sp_e_timing.gb               | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/oam_dma/basic.gb                   | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/oam_dma/reg_read.gb                | ✅     |
 | roms/mooneye-gb/tests/build/acceptance/oam_dma/sources-GS.gb              | ✅     |
@@ -111,4 +130,32 @@ https://github.com/Gekkio/mooneye-gb
 | roms/mooneye-gb/tests/build/utils/bootrom_dumper.gb                       | ❌     |
 | roms/mooneye-gb/tests/build/utils/dump_boot_hwio.gb                       | ✅     |
 
-Generated at: 2021-03-19 08:35:59.375266 UTC
+## Scribbltests
+
+https://github.com/Hacktix/scribbltests
+
+| Name      | Expected                    | Result                    | Diff                    | Status     |
+| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
+| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0 |
+| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0 |
+| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0 |
+| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0 |
+
+## TurtleTests
+
+https://github.com/Powerlated/TurtleTests/
+
+| Name                          | Expected                                        | Result                                        | Diff                                        | Status     |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------- | ------------------------------------------- | ---------- |
+| window_y_trigger              | ![](window_y_trigger/expected.png)              | ![](window_y_trigger/result.png)              | ![](window_y_trigger/diff.png)              | ✅ Diff: 0 |
+| window_y_trigger_wx_offscreen | ![](window_y_trigger_wx_offscreen/expected.png) | ![](window_y_trigger_wx_offscreen/result.png) | ![](window_y_trigger_wx_offscreen/diff.png) | ✅ Diff: 0 |
+
+## MBC3-Tester
+
+https://github.com/EricKirschenmann/MBC3-Tester-gb
+
+| Name        | Expected                      | Result                      | Diff                      | Status     |
+| ----------- | ----------------------------- | --------------------------- | ------------------------- | ---------- |
+| MBC3-Tester | ![](MBC3-Tester/expected.png) | ![](MBC3-Tester/result.png) | ![](MBC3-Tester/diff.png) | ✅ Diff: 0 |
+
+Generated at: 2021-03-19 16:39:03.614621 UTC

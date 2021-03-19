@@ -56,7 +56,7 @@ impl Cpu {
             0x24 => self.inc(hw, H),
             0x25 => self.dec(hw, H),
             0x26 => self.load8(hw, H, ImmediateU8),
-            0x27 => self.dda(),
+            0x27 => self.daa(),
             0x28 => self.jr_cc(hw, JumpConditions::Z),
             0x29 => self.add16(hw, HL),
             0x2A => self.load8(hw, A, Addr::HLI),

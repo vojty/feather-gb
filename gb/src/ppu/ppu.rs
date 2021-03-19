@@ -54,7 +54,30 @@ impl RGB {
     }
 }
 
-type Palette = [RGB; 4];
+pub type Palette = [RGB; 4];
+pub enum Palettes {
+    Gray,
+    Green,
+}
+
+impl Palettes {
+    fn get_palette(&self) -> Palette {
+        match self {
+            Palettes::Gray => [
+                RGB::new(255, 255, 255),
+                RGB::new(192, 192, 192),
+                RGB::new(96, 96, 96),
+                RGB::new(0, 0, 0),
+            ],
+            Palettes::Green => [
+                RGB::new(224, 248, 208),
+                RGB::new(136, 191, 112),
+                RGB::new(52, 104, 86),
+                RGB::new(9, 25, 33),
+            ],
+        }
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum Mode {
@@ -117,21 +140,6 @@ pub struct Ppu {
 
 impl Ppu {
     pub fn new() -> Ppu {
-        let green_palette: Palette = [
-            RGB::new(224, 248, 208),
-            RGB::new(136, 191, 112),
-            RGB::new(52, 104, 86),
-            RGB::new(9, 25, 33),
-        ];
-
-        // TODO make it configurable
-        let _gray_palette: Palette = [
-            RGB::new(255, 255, 255),
-            RGB::new(192, 192, 192),
-            RGB::new(96, 96, 96),
-            RGB::new(0, 0, 0),
-        ];
-
         Ppu {
             stat_mode: Mode::HBlank,
             lcdc: LcdcBits::empty(),
@@ -159,7 +167,7 @@ impl Ppu {
             line: 0,
             pending_mode: None,
             skip_frames: 0,
-            system_palette: green_palette,
+            system_palette: Palettes::Gray.get_palette(),
 
             dropped_pixels: 0,
 
@@ -418,7 +426,7 @@ impl Ppu {
                 && is_window_possible
                 && self.fetcher.mode != MapLayer::Window
             {
-                let x = (self.x - self.wx + 7) & 0xff;
+                let x = self.x.wrapping_sub(self.wx).wrapping_add(7);
                 let y = self.window_line;
                 self.window_line += 1;
                 self.fetcher.start(x, y, MapLayer::Window);
@@ -702,6 +710,10 @@ impl Ppu {
 
 // Debug info
 impl Ppu {
+    pub fn set_system_palette(&mut self, palette: Palettes) {
+        self.system_palette = palette.get_palette();
+    }
+
     pub fn get_tile(&self, index: usize, layer: MapLayer) -> &Tile {
         let base_address = match layer {
             MapLayer::Background => get_background_tile_map_address(&self.lcdc),

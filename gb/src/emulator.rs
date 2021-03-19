@@ -10,7 +10,10 @@ use crate::{
     dma::OamDma,
     interrupts::InterruptController,
     joypad::{Joypad, Key},
-    ppu::{ppu::Ppu, screen_buffer::Buffer},
+    ppu::{
+        ppu::{Palettes, Ppu},
+        screen_buffer::Buffer,
+    },
     timer::Timer,
     traits::{DisplayHex, MemoryAccess},
 };
@@ -338,5 +341,13 @@ impl Emulator {
 
     pub fn get_screen_buffer(&self) -> &Buffer {
         self.hw.ppu.get_screen_buffer()
+    }
+
+    pub fn set_system_palette(&mut self, palette: Palettes) {
+        self.hw.ppu.set_system_palette(palette);
+    }
+
+    pub fn set_capture_serial(&mut self, capture: bool) {
+        self.hw.capture_serial = capture;
     }
 }

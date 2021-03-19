@@ -389,7 +389,7 @@ impl Cpu {
 
     pub fn ld_hl_sp_i8(&mut self, hw: &mut Hardware) -> String {
         let n = self.read_imm_u8_tick(hw) as i8 as i16 as u16;
-        let result = self.sp + n;
+        let result = self.sp.wrapping_add(n);
 
         let op = self.sp ^ n ^ result;
         self.update_flag(Flags::Z, false);
@@ -497,36 +497,37 @@ impl Cpu {
         "CPL".to_string()
     }
 
-    pub fn dda(&mut self) -> String {
-        // rewritten from my TS version of emulator, don't know anymore what it does OLOL
-        let mut tmp = self.read_reg8(Reg8::A) as u16;
+    pub fn daa(&mut self) -> String {
+        // https://ehaskins.com/2018-01-30%20Z80%20DAA/
+        // Thank you master
+        let a = self.read_reg8(Reg8::A);
+        let mut carry = false;
 
-        if !self.f.contains(Flags::N) {
-            if self.f.contains(Flags::H) || tmp & 0x0f > 9 {
-                tmp += 0x06;
-            }
-            if self.f.contains(Flags::C) || tmp > 0x9f {
-                tmp += 0x60;
-            }
+        let flag_h = self.f.contains(Flags::H);
+        let flag_c = self.f.contains(Flags::C);
+        let flag_n = self.f.contains(Flags::N);
+
+        let mut correction = 0;
+
+        if flag_h || (!flag_n && (a & 0xf) > 0x09) {
+            correction |= 0x06;
+        }
+
+        if flag_c || (!flag_n && a > 0x99) {
+            correction |= 0x60;
+            carry = true;
+        }
+
+        let result = if flag_n {
+            a.wrapping_sub(correction)
         } else {
-            if self.f.contains(Flags::H) {
-                tmp = (tmp - 6) & 0xff;
-            }
-            if self.f.contains(Flags::C) {
-                tmp -= 0x60;
-            }
-        }
+            a.wrapping_add(correction)
+        };
 
-        self.clear_flag(Flags::H);
-        self.clear_flag(Flags::Z);
-
-        if tmp & 0x100 == 0x100 {
-            self.set_flag(Flags::C);
-        }
-        if tmp & 0xff == 0 {
-            self.set_flag(Flags::Z);
-        }
-        self.write_reg8(Reg8::A, tmp as u8);
+        self.update_flag(Flags::C, carry);
+        self.update_flag(Flags::H, false);
+        self.update_flag(Flags::Z, result == 0);
+        self.write_reg8(Reg8::A, result);
 
         "DDA".to_string()
     }

@@ -1,14 +1,11 @@
-use std::fs;
-
 use futures::{future::join_all, TryFutureExt};
-use gb::ppu::ppu::Palettes;
 
 use crate::{
     markdown,
     utils::{create_emulator, get_result_mark, save_diff_image, save_screen, OUTPUT_DIR},
 };
 
-struct TestCase {
+pub struct VisualTestCase {
     name: String,
     path: String,
     reference_image: String,
@@ -16,30 +13,26 @@ struct TestCase {
     diff_image: String,
 }
 
-const TEST_CASES: [(&str, &str); 4] = [
-    ("scxly", "scxly/scxly.gb"),
-    ("lycscx", "lycscx/lycscx.gb"),
-    ("lycscy", "lycscy/lycscy.gb"),
-    ("palettely", "palettely/palettely.gb"),
+const TEST_CASES: [(&str, &str); 2] = [
+    ("window_y_trigger", "window_y_trigger/window_y_trigger.gb"),
+    (
+        "window_y_trigger_wx_offscreen",
+        "window_y_trigger_wx_offscreen/window_y_trigger_wx_offscreen.gb",
+    ),
 ];
 
-const TESTS_PATH: &str = "roms/scribbltests";
+const TESTS_PATH: &str = "roms/TurtleTests/src";
 
-fn get_tests() -> Vec<TestCase> {
+fn get_tests() -> Vec<VisualTestCase> {
     TEST_CASES
         .iter()
         .map(|(test_name, file)| {
             let output_dir = format!("{}/{}", OUTPUT_DIR, test_name);
-            let reference_original =
-                format!("{}/{}/screenshots/expected.png", TESTS_PATH, test_name);
-            let reference_image = format!("{}/expected.png", output_dir);
 
-            fs::copy(&reference_original, &reference_image).unwrap();
-
-            TestCase {
+            VisualTestCase {
                 name: test_name.to_string(),
                 path: format!("{}/{}", TESTS_PATH, file),
-                reference_image,
+                reference_image: format!("{}/expected.png", output_dir),
                 result_image: format!("{}/result.png", output_dir),
                 diff_image: format!("{}/diff.png", output_dir),
             }
@@ -49,8 +42,8 @@ fn get_tests() -> Vec<TestCase> {
 
 type TestResult = (String, String, String, String, usize); // (name, reference path, result path, diff path, diff)
 
-fn execute_test(test_case: TestCase) -> TestResult {
-    let TestCase {
+fn execute_test(test_case: VisualTestCase) -> TestResult {
+    let VisualTestCase {
         path,
         diff_image,
         name,
@@ -58,16 +51,10 @@ fn execute_test(test_case: TestCase) -> TestResult {
         result_image,
     } = test_case;
     let mut e = create_emulator(&path);
-    e.set_system_palette(Palettes::Green);
-    let max_frames_to_run = 60;
+    let frames_to_run = 10;
 
-    for _ in 0..max_frames_to_run {
+    for _ in 0..frames_to_run {
         e.run_frame();
-
-        // Dummy check for LD B,B breakpoint
-        if !e.hw.events.is_empty() {
-            break;
-        }
     }
 
     save_screen(&e, &result_image);
@@ -95,8 +82,8 @@ fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
     let result = markdown::table(&headings, &data);
 
     markdown::test_report(
-        "Scribbltests",
-        "https://github.com/Hacktix/scribbltests",
+        "TurtleTests",
+        "https://github.com/Powerlated/TurtleTests/",
         &result,
     )
 }

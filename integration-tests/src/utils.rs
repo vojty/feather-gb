@@ -23,6 +23,13 @@ fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
     data
 }
 
+pub fn path_to_basename(path: &str) -> String {
+    match path.split('/').into_iter().last() {
+        Some(last) => last.to_string(),
+        None => panic!("Can't get basename from path {}", path),
+    }
+}
+
 pub fn get_result_mark(valid: bool) -> String {
     if valid {
         String::from('✅')

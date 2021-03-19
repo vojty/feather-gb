@@ -32,8 +32,9 @@ pub fn table(heading: &[&str], rows: &[Vec<String>]) -> String {
     format!("{}\n{}\n{}\n", head, line, body)
 }
 
-pub fn image(path: &str) -> String {
-    let p = Path::new(path);
+pub fn image(path: impl Into<String>) -> String {
+    let into = path.into();
+    let p = Path::new(&into);
     let image_path = p.strip_prefix(OUTPUT_DIR).unwrap().to_str().unwrap();
 
     format!("![]({})", image_path)
