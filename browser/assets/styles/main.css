@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @font-face {
   font-family: 'GillSans';
   src: url('../fonts/GillSansMediumItalic.otf');
@@ -20,6 +24,18 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
+}
+
+@font-face {
+  font-family: 'NESController';
+  src: url('../fonts/NES_Controller.ttf');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.font-nes {
+  font-family: 'NESController';
 }
 
 .font-pretendo {

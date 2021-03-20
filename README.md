@@ -1,10 +1,10 @@
-<center>
-<h1>FeatherGB</h1>
-Just another GameBoy emulator written in Rust 🦀.
+<div align="center">
+    <h1>FeatherGB</h1>
+    Just another GameBoy emulator written in Rust 🦀.
 
-![Debugger](./browser/assets/images/screen.png)
+    ![Debugger](./browser/assets/images/screen.png)
 
-</center>
+</div>
 
 ## Modes
 
@@ -20,7 +20,7 @@ The emulator can be run in 2 modes - the normal mode (shows just GameBoy's displ
 Based on React & TypeScript in general
 
 - Standard - **WIP** WebAssembly with some stylesheets
-- Debugger - WebAssembly with egui (using webgl as banckend)
+- Debugger - WebAssembly with egui (using webgl as backend)
 
 ## Test results
 
@@ -45,3 +45,16 @@ Generated test report is [here](./docs/results/results.md)
 - `/debugger-web` - browser version of debugger using wasm (Rust)
 - `/browser` - frontend SPA
 - `/integration-tests` - ROM tests
+
+## Resources
+
+### Fonts
+
+- Nintendo - Pretendo - https://fontmeme.com/fonts/pretendo-font/
+- GameBoy - Gill Sans - https://www.myfonts.com/fonts/mti/gill-sans/
+- DMG Buttons - NES Controller - https://www.deviantart.com/mrshrike/art/NES-Console-Controller-Font-141383845
+
+### Images
+
+- Feather icon - https://iconape.com/cape-feather-super-mario-world-logo-logo-icon-svg-png.html
+- Gameboy icon - https://graphicburger.com/80s-gadgets-40-free-icons/

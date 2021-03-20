@@ -5,6 +5,8 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const webpack = require('webpack')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const FontPreloadPlugin = require('./browser/FontPreloadPlugin')
 
 function getPlugins(isProduction) {
   const basePlugins = [
@@ -12,6 +14,10 @@ function getPlugins(isProduction) {
       filename: __dirname + '/public/index.html',
       template: __dirname + '/index.html'
     }),
+    new FontPreloadPlugin({
+      extensions: ['ttf', 'otf']
+    }),
+    new MiniCssExtractPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, './debugger-web'),
@@ -98,7 +104,11 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.css$/i,
-          use: ['style-loader', 'css-loader']
+          use: [
+            isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+            'css-loader',
+            'postcss-loader'
+          ]
         },
         {
           test: /\.(otf|ttf)$/,

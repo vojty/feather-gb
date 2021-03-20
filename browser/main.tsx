@@ -2,9 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 
-import { AppRouter } from './components/AppRouter'
+import { Root } from './components/Root'
 
-import 'modern-normalize/modern-normalize.css'
 import './assets/styles/main.css'
 
 const root = document.getElementById('root')
@@ -19,7 +18,7 @@ const Router = ({ children }: { children: React.ReactNode }) => {
 
 ReactDOM.render(
   <Router>
-    <AppRouter />
+    <Root />
   </Router>,
   root
 )
