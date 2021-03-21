@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import GameboyLogo from '../assets/images/gameboy.svg'
-import Feather from '../assets/images/feather.svg'
+import GameboyLogo from '../../assets/images/gameboy.svg'
+import Feather from '../../assets/images/feather.svg'
 
 const Nintendo = styled.span`
   font-size: 30px;

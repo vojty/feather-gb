@@ -6,6 +6,18 @@
 
 </div>
 
+## Info
+
+This is my first project in Rust, so many patterns might not be ideal. I also wanted to try WebAssembly a little bit.
+The browser part is kinda hackish because I didn't intent to spent a lot of time styling/configuring webpack/improving UI. This might change in the future if the emulator is accurate "enough".
+
+## Test results
+
+The emulator is tested against popular test suites such as [blargg's test](https://github.com/retrio/gb-test-roms), [mooneye's tests](https://github.com/Gekkio/mooneye-gb/) etc.
+These test suites are linked as git submodules (see `.gitmodules` file for details).
+
+Generated test report is [here](./docs/results/results.md)
+
 ## Modes
 
 The emulator can be run in 2 modes - the normal mode (shows just GameBoy's display) and the debugger mode (using amazing [egui](https://github.com/emilk/egui)). Both are available for the desktop and the browser.
@@ -22,18 +34,16 @@ Based on React & TypeScript in general
 - Standard - **WIP** WebAssembly with some stylesheets
 - Debugger - WebAssembly with egui (using webgl as backend)
 
-## Test results
-
-The emulator is tested against popular test suites such as [blargg's test](https://github.com/retrio/gb-test-roms), [mooneye's tests](https://github.com/Gekkio/mooneye-gb/) etc.
-These test suites are linked as git submodules and can be found in `.gitmodules` file.
-
-Generated test report is [here](./docs/results/results.md)
-
 ## TODOs
 
+No specific priority here
+
 - standard (play) mode
-- allow to open custom ROM file
-- APU (currently with no sound)
+  - controls
+  - gamepad
+  - custom controls
+- APU (currently with no sound - WIP in the previous TypeScript only version of the emulator)
+- FIFO for sprites
 - make PPU more accurate and pass some [mealybug-tearoom-tests](https://github.com/mattcurrie/mealybug-tearoom-tests)
 - GameBoy Color support
 

@@ -54,7 +54,7 @@ fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
 
-    let bytes = get_file_as_byte_vec("roms/demos/gejmboj.gb");
+    let bytes = get_file_as_byte_vec("roms/demos/dmg-acid2.gb");
 
     let mut emulator = Emulator::new(false, Cartridge::from_bytes(bytes));
 

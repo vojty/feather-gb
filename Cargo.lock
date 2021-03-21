@@ -835,6 +835,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "gb-web"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "gb",
+ "log",
+ "wasm-bindgen",
+ "wasm-logger",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

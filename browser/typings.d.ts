@@ -4,6 +4,13 @@ declare module '*.gb' {
   export = _
 }
 
+// remark
+declare module '*.md' {
+  const _: string
+  export = _
+}
+
+// SVGR loader
 declare module '*.svg' {
   import { FunctionComponent, SVGProps } from 'react'
 

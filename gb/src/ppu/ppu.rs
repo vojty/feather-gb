@@ -31,6 +31,12 @@ enum Access {
     Write,
 }
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum MapLayer {
+    Background,
+    Window,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct RGB {
     pub r: u8,
@@ -38,13 +44,11 @@ pub struct RGB {
     pub b: u8,
 }
 
-#[derive(PartialEq, Clone, Copy)]
-pub enum MapLayer {
-    Background,
-    Window,
-}
-
 impl RGB {
+    pub fn to_array(&self) -> [u8; 3] {
+        [self.r, self.g, self.b]
+    }
+
     pub fn empty() -> RGB {
         RGB { r: 0, g: 0, b: 0 }
     }
@@ -58,6 +62,7 @@ pub type Palette = [RGB; 4];
 pub enum Palettes {
     Gray,
     Green,
+    GreenDmg,
 }
 
 impl Palettes {
@@ -69,11 +74,19 @@ impl Palettes {
                 RGB::new(96, 96, 96),
                 RGB::new(0, 0, 0),
             ],
+            // Used in scribbltests
             Palettes::Green => [
                 RGB::new(224, 248, 208),
                 RGB::new(136, 191, 112),
                 RGB::new(52, 104, 86),
                 RGB::new(9, 25, 33),
+            ],
+            // https://www.designpieces.com/palette/game-boy-original-color-palette-hex-and-rgb/
+            Palettes::GreenDmg => [
+                RGB::new(155, 188, 15),
+                RGB::new(139, 172, 15),
+                RGB::new(48, 98, 48),
+                RGB::new(15, 56, 15),
             ],
         }
     }
@@ -505,7 +518,7 @@ impl Ppu {
                 let bg_pal = self.get_palette(self.bgp);
                 let current_pixel = self.screen_buffer.get_write_buffer_mut().get_pixel(x, y);
 
-                if *current_pixel != bg_pal[0] {
+                if current_pixel != bg_pal[0] {
                     continue;
                 }
             }

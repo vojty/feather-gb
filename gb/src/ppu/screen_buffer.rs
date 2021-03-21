@@ -1,4 +1,4 @@
-use crate::constants::{DISPLAY_WIDTH, PIXELS};
+use crate::constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH, PIXELS};
 
 use super::ppu::RGB;
 #[derive(PartialEq)]
@@ -7,34 +7,55 @@ enum ActiveBuffer {
     Back,
 }
 
+const PIXEL_DATA_SIZE: usize = PIXELS * 3;
+
+// Stored as array so we can use pointer from JS world to WebAssembly
 pub struct Buffer {
-    data: Box<[RGB; PIXELS]>,
+    data: Box<[u8; PIXEL_DATA_SIZE]>,
 }
 
 fn get_offset(x: usize, y: usize) -> usize {
-    y * DISPLAY_WIDTH + x
+    (y * DISPLAY_WIDTH + x) * 3
 }
 
 impl Buffer {
     fn new() -> Self {
         Self {
-            data: Box::new([RGB::empty(); PIXELS]),
+            data: Box::new([0; PIXEL_DATA_SIZE]),
         }
     }
-    pub fn get_pixel(&self, x: usize, y: usize) -> &RGB {
-        &self.data[get_offset(x, y)]
+
+    pub fn get_pixel(&self, x: usize, y: usize) -> RGB {
+        let offset = get_offset(x, y);
+        RGB {
+            r: self.data[offset],
+            g: self.data[offset + 1],
+            b: self.data[offset + 2],
+        }
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, pixel: RGB) {
-        self.data[get_offset(x, y)] = pixel;
+        let offset = get_offset(x, y);
+
+        self.data[offset] = pixel.r;
+        self.data[offset + 1] = pixel.g;
+        self.data[offset + 2] = pixel.b;
     }
 
     pub fn clear(&mut self) {
-        self.data = Box::new([RGB::empty(); PIXELS]);
+        self.data = Box::new([0; PIXEL_DATA_SIZE]);
     }
 
     pub fn clear_with(&mut self, pixel: RGB) {
-        self.data = Box::new([pixel; PIXELS]);
+        for y in 0..DISPLAY_HEIGHT {
+            for x in 0..DISPLAY_WIDTH {
+                self.set_pixel(x, y, pixel)
+            }
+        }
+    }
+
+    pub fn get_raw_data(&self) -> *const u8 {
+        self.data.as_ptr()
     }
 }
 

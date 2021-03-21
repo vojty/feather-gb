@@ -20,5 +20,5 @@
       "moduleResolution": "node",
       "module": "esnext"
     },
-    "include": ["browser/**/*", "debugger-web/pkg/**/*"]
+    "include": ["browser/**/*", "debugger-web/pkg/**/*", "gb-web/pkg/**/*"]
   }

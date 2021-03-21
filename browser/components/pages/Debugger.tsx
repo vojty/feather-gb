@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 
-import { roms } from '../romsList'
+import { roms } from '../../romsList'
 
 const CANVAS_ID = 'debugger'
 
@@ -26,11 +26,18 @@ const GlobalStyle = createGlobalStyle`
     /* Remove touch delay: */
     touch-action: manipulation;
   }
+  /* Allow canvas to fill entire web page: */
+  html,
+  body {
+      overflow: hidden;
+      margin: 0 !important;
+      padding: 0 !important;
+  }
 `
 
 export function Debugger() {
   useEffect(() => {
-    import('../../debugger-web/pkg/index')
+    import('../../../debugger-web/pkg/index')
       .then((app) => {
         app.start(CANVAS_ID, roms)
       })

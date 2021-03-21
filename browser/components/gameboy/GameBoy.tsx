@@ -1,38 +1,24 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, ForwardedRef } from 'react'
 import { useTheme } from '../../hooks/useTheme'
 import { Display } from './Display'
 import { Styled } from './GameBoy.styled'
 
-const DISPLAY_WIDTH = 160
-const DISPLAY_HEIGHT = 144
+export const DISPLAY_WIDTH = 160
+export const DISPLAY_HEIGHT = 144
 
-const INITIAL_DISPLAY_COLOR = '#6D7C00'
-
-export function GameBoy() {
+function GameBoyComponent(
+  { running }: { running: boolean },
+  ref: ForwardedRef<HTMLCanvasElement | null>
+) {
   const { zoom } = useTheme()
-
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-
-  useEffect(() => {
-    const el = canvasRef.current
-    if (!el) {
-      return
-    }
-    const ctx = el.getContext('2d')
-    if (!ctx) {
-      return
-    }
-    ctx.fillStyle = INITIAL_DISPLAY_COLOR
-    ctx.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
-  }, [])
 
   // The whole styling is kinda ugly and pixel-perfect but I don't care, I love it https://www.youtube.com/watch?v=UxxajLWwzqY
   return (
     <Styled.Wrapper>
       <Styled.Device>
-        <Display enabled={false}>
+        <Display enabled={running}>
           <canvas
-            ref={canvasRef}
+            ref={ref}
             style={{
               display: 'block', // prevents wierd margin
               imageRendering: 'pixelated',
@@ -104,3 +90,5 @@ export function GameBoy() {
     </Styled.Wrapper>
   )
 }
+
+export const GameBoy = forwardRef(GameBoyComponent)

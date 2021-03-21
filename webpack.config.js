@@ -7,6 +7,8 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const FontPreloadPlugin = require('./browser/FontPreloadPlugin')
+const RemarkHTML = require('remark-html')
+const RemarkGFM = require('remark-gfm')
 
 function getPlugins(isProduction) {
   const basePlugins = [
@@ -21,14 +23,11 @@ function getPlugins(isProduction) {
     new ForkTsCheckerWebpackPlugin(),
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, './debugger-web'),
-      forceMode: 'production', // greatly reduces CPU usage and memcpy calls
-      forceWatch: !isProduction,
-      watchDirectories: isProduction
-        ? []
-        : [
-            path.resolve(__dirname, './debugger'),
-            path.resolve(__dirname, './gb')
-          ]
+      forceMode: 'production' // greatly reduces CPU usage and memcpy calls
+    }),
+    new WasmPackPlugin({
+      crateDirectory: path.resolve(__dirname, './gb-web'),
+      forceMode: 'production' // greatly reduces CPU usage and memcpy calls
     }),
     new FaviconsWebpackPlugin(__dirname + '/browser/assets/images/feather.svg'),
     new webpack.DefinePlugin({
@@ -76,6 +75,22 @@ module.exports = (env, argv) => {
     },
     module: {
       rules: [
+        {
+          test: /\.md$/,
+          use: [
+            {
+              loader: 'html-loader'
+            },
+            {
+              loader: 'remark-loader',
+              options: {
+                remarkOptions: {
+                  plugins: [RemarkHTML, RemarkGFM]
+                }
+              }
+            }
+          ]
+        },
         {
           test: /\.tsx?$/,
           use: [
