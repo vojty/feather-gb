@@ -37,7 +37,6 @@ const Device = styled.div`
 `
 
 const Display = styled.div`
-  margin: 10px;
   background-color: #777;
   border-radius: ${zoom(7)} ${zoom(7)} ${zoom(40)} ${zoom(7)};
   box-shadow: inset 0px 0px 20px 0px rgba(0, 0, 0, 0.66);
@@ -253,7 +252,7 @@ const Speakers = styled.div`
   transform: rotate(-28deg);
   position: absolute;
   bottom: ${zoom(19)};
-  right: ${zoom(19)};
+  right: ${zoom(15)};
 
   ${Speaker} + ${Speaker} {
     margin-left: ${zoom(8)};
