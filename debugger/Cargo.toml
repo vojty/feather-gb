@@ -3,15 +3,6 @@ name = "debugger"
 version = "0.1.0"
 edition = "2018"
 
-# [lib]
-# crate-type = ["cdylib", "rlib"]
-
-# [lib]
-# path = "src/lib.rs"
-
-# [[bin]]
-# name = "desktop-debugger"
-# path = "src/main.rs"
 
 [dependencies]
 log = "0.4.14"

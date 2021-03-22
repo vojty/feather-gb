@@ -9,7 +9,7 @@ enum ActiveBuffer {
 
 const PIXEL_DATA_SIZE: usize = PIXELS * 3;
 
-// Stored as array so we can use pointer from JS world to WebAssembly
+// Stored as an array so we can use pointer to the JS world
 pub struct Buffer {
     data: Box<[u8; PIXEL_DATA_SIZE]>,
 }
@@ -95,9 +95,4 @@ impl ScreenBuffer {
             ActiveBuffer::Front
         }
     }
-
-    // Direct pointer so we won't copy the whole buffer when recieving data in wasm world
-    // pub fn get_data_ptr(&self) -> *const RGB {
-    //     self.get_buffer().as_ptr()
-    // }
 }

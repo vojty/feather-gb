@@ -67,12 +67,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "000444226fcff248f2bc4c7625be32c63caccfecc2723a2b9f78a7487a49c407"
 
 [[package]]
-name = "arrayvec"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
-
-[[package]]
 name = "atomic_refcell"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -287,16 +281,6 @@ checksum = "b8d976903543e0c48546a91908f21588a680a8c8f984df9a5d69feccb2b2a211"
 dependencies = [
  "cfg-if 0.1.10",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "console_log"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "501a375961cef1a0d44767200e66e4a559283097e91d0730b1d75dfb2f8a1494"
-dependencies = [
- "log",
- "web-sys",
 ]
 
 [[package]]
@@ -824,14 +808,9 @@ dependencies = [
 name = "gb"
 version = "0.1.0"
 dependencies = [
- "arrayvec",
  "bitflags",
- "console_error_panic_hook",
- "console_log",
  "log",
  "parse-display",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
