@@ -21,7 +21,7 @@ impl MemoryArea {
         match self {
             MemoryArea::CartridgeRom => 0x0000..=0x7fff,
             MemoryArea::CartridgeRam => 0xa000..=0xbfff,
-            MemoryArea::Vram => 0xc000..=0xdfff,
+            MemoryArea::Vram => 0x8000..=0x9fff,
             MemoryArea::Wram => 0xc000..=0xdfff,
             MemoryArea::WramShadow => 0xe000..=0xfdff,
             MemoryArea::Oam => 0xfe00..=0xfe9f,
