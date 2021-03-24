@@ -3,7 +3,8 @@ use std::{
     process::{Command, Stdio},
 };
 
-use suites::{blarggs_tests, mbc3_tester, scribbl_tests};
+use futures::future::join_all;
+use suites::{blarggs_tests, mbc3_tester, mealybug_tearoom_tests, scribbl_tests};
 use suites::{mooneye_tests, turtle_tests};
 use tokio::time::Instant;
 use utils::OUTPUT_DIR;
@@ -16,29 +17,27 @@ mod utils;
 pub async fn main() {
     let now = Instant::now();
 
-    let blarggs_test = blarggs_tests::run_tests().await;
-    let scribbl_tests = scribbl_tests::run_tests().await;
-    let turtle_tests = turtle_tests::run_tests().await;
-    let mooneye_tests = mooneye_tests::run_tests().await;
-    let mbc3_tester = mbc3_tester::run_tests().await;
+    let mut suites = vec![];
+
+    suites.push(tokio::spawn(blarggs_tests::run_tests()));
+    suites.push(tokio::spawn(mooneye_tests::run_tests()));
+    suites.push(tokio::spawn(scribbl_tests::run_tests()));
+    suites.push(tokio::spawn(turtle_tests::run_tests()));
+    suites.push(tokio::spawn(mbc3_tester::run_tests()));
+    suites.push(tokio::spawn(mealybug_tearoom_tests::run_tests()));
+
+    let results = join_all(suites).await;
+    let mut content = results
+        .into_iter()
+        .filter_map(|result| result.ok())
+        .collect::<Vec<String>>();
 
     let output_file = format!("{}/results.md", OUTPUT_DIR);
-
     let generated_at = format!("Generated at: {}", chrono::offset::Utc::now());
 
-    fs::write(
-        &output_file,
-        [
-            blarggs_test,
-            mooneye_tests,
-            scribbl_tests,
-            turtle_tests,
-            mbc3_tester,
-            generated_at,
-        ]
-        .join("\n\n"),
-    )
-    .unwrap();
+    content.push(generated_at);
+
+    fs::write(&output_file, content.join("\n\n")).unwrap();
 
     // Format markdown with prettier
     let mut child = Command::new("./node_modules/.bin/prettier")

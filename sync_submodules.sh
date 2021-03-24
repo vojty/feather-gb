@@ -18,13 +18,13 @@ git submodule update --recursive
     make all
 )
 
-# # Update mealybug-tearoom-tests
-# (
-#     echo "[ Make mealybug-tearoom-tests ]"
-#     cd roms/mealybug-tearoom-tests
-#     make clean
-#     make all
-# )
+# Update mealybug-tearoom-tests
+(
+    echo "[ Make mealybug-tearoom-tests ]"
+    cd roms/mealybug-tearoom-tests
+    make clean
+    make all
+)
 
 # Update BullyGB
 # (

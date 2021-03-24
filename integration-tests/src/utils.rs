@@ -1,5 +1,5 @@
 use std::{
-    fs::{create_dir_all, File},
+    fs::{self, create_dir_all, File},
     io::Read,
     path::Path,
 };
@@ -57,6 +57,19 @@ pub fn save_screen(e: &Emulator, path: impl Into<String>) {
     create_dir_all(directory).unwrap();
 
     image.save(&path).unwrap();
+}
+
+pub fn copy_file(from: &str, to: &str) {
+    let to_directory = Path::new(&to).parent().unwrap();
+
+    create_dir_all(to_directory).unwrap_or_else(|_| {
+        panic!(
+            "Can't create target directory {}",
+            to_directory.to_str().unwrap()
+        )
+    });
+    fs::copy(&from, &to)
+        .unwrap_or_else(|error| panic!("Can't copy [{}] -> [{}]. Error {}", from, to, error));
 }
 
 pub fn save_diff_image(reference_image: &str, result_image: &str, diff_image: &str) -> usize {

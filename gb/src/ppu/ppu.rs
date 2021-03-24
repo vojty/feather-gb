@@ -697,7 +697,10 @@ impl Ppu {
                 }
             }
             R_SCX => self.scx = value,
-            R_SCY => self.scy = value,
+            R_SCY => {
+                // this should be immediately propagated to fetcher
+                self.scy = value
+            }
             R_BGP => self.bgp = value,
             R_WX => self.wx = value,
             R_WY => self.wy = value,
