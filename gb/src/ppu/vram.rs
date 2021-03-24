@@ -73,7 +73,7 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
 impl Vram {
     pub fn new() -> Vram {
         Vram {
-            memory: Box::new([0xff; VRAM_SIZE]),
+            memory: Box::new([0x00; VRAM_SIZE]),
             tiles: Box::new([Tile::new(); TILES_COUNT]),
         }
     }
