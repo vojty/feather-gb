@@ -8,6 +8,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/preset-react": "^7.12.13",
+    "@principalstudio/html-webpack-inject-preload": "^1.2.7",
     "@svgr/webpack": "^5.5.0",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.2",

@@ -6,9 +6,9 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const FontPreloadPlugin = require('./browser/FontPreloadPlugin')
 const RemarkHTML = require('remark-html')
 const RemarkGFM = require('remark-gfm')
+const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-preload')
 
 function getPlugins(isProduction) {
   const basePlugins = [
@@ -16,8 +16,13 @@ function getPlugins(isProduction) {
       filename: __dirname + '/public/index.html',
       template: __dirname + '/index.html'
     }),
-    new FontPreloadPlugin({
-      extensions: ['ttf', 'otf']
+    new HtmlWebpackInjectPreload({
+      files: [
+        {
+          match: /\.(ttf|otf)$/,
+          attributes: { as: 'font', crossorigin: true }
+        }
+      ]
     }),
     new MiniCssExtractPlugin(),
     new ForkTsCheckerWebpackPlugin(),
