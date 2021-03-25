@@ -58,6 +58,15 @@ No specific priority here
 
 ## Resources
 
+### Test Roms
+
+- The famous Mooneye tests https://github.com/Gekkio/mooneye-gb/
+- Wilbertpol's tests https://github.com/Amjad50/mooneye-gb
+- Mealybug Tearoom Tests (aka PPU torture tests) https://github.com/mattcurrie/mealybug-tearoom-tests
+- DMG ACID2 test https://github.com/mattcurrie/dmg-acid2
+- various tests from Optix https://github.com/Hacktix/scribbltests
+- various window tests from Expo https://github.com/Powerlated/TurtleTests/
+
 ### Fonts
 
 - Nintendo - Pretendo - https://fontmeme.com/fonts/pretendo-font/

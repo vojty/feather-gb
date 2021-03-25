@@ -130,6 +130,60 @@ Only DMG compatible tests used.
 | roms/mooneye-gb/tests/build/utils/bootrom_dumper.gb                       | ❌     |
 | roms/mooneye-gb/tests/build/utils/dump_boot_hwio.gb                       | ✅     |
 
+## Wilbertpol's tests
+
+From https://github.com/Amjad50/mooneye-gb
+
+| Test                                                               | Result |
+| ------------------------------------------------------------------ | ------ |
+| roms/wilbertpol-tests/gpu/hblank_ly_scx_timing-GS.gb               | ✅     |
+| roms/wilbertpol-tests/gpu/hblank_ly_scx_timing_nops.gb             | ❌     |
+| roms/wilbertpol-tests/gpu/hblank_ly_scx_timing_variant_nops.gb     | ❌     |
+| roms/wilbertpol-tests/gpu/intr_0_timing.gb                         | ❌     |
+| roms/wilbertpol-tests/gpu/intr_1_2_timing-GS.gb                    | ✅     |
+| roms/wilbertpol-tests/gpu/intr_1_timing.gb                         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_0_timing.gb                       | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx1_timing_nops.gb         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx2_timing_nops.gb         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx3_timing_nops.gb         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx4_timing_nops.gb         | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx5_timing_nops.gb         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx6_timing_nops.gb         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx7_timing_nops.gb         | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_scx8_timing_nops.gb         | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing.gb                   | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing_sprites.gb           | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing_sprites_nops.gb      | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing_sprites_scx1_nops.gb | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing_sprites_scx2_nops.gb | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing_sprites_scx3_nops.gb | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode0_timing_sprites_scx4_nops.gb | ❌     |
+| roms/wilbertpol-tests/gpu/intr_2_mode3_timing.gb                   | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_oam_ok_timing.gb                  | ✅     |
+| roms/wilbertpol-tests/gpu/intr_2_timing.gb                         | ❌     |
+| roms/wilbertpol-tests/gpu/lcdon_mode_timing.gb                     | ✅     |
+| roms/wilbertpol-tests/gpu/ly00_01_mode0_2.gb                       | ✅     |
+| roms/wilbertpol-tests/gpu/ly00_mode0_2-GS.gb                       | ❌     |
+| roms/wilbertpol-tests/gpu/ly00_mode1_0-GS.gb                       | ❌     |
+| roms/wilbertpol-tests/gpu/ly00_mode2_3.gb                          | ✅     |
+| roms/wilbertpol-tests/gpu/ly00_mode3_0.gb                          | ✅     |
+| roms/wilbertpol-tests/gpu/ly143_144_145.gb                         | ✅     |
+| roms/wilbertpol-tests/gpu/ly143_144_152_153.gb                     | ✅     |
+| roms/wilbertpol-tests/gpu/ly143_144_mode0_1.gb                     | ✅     |
+| roms/wilbertpol-tests/gpu/ly143_144_mode3_0.gb                     | ✅     |
+| roms/wilbertpol-tests/gpu/ly_lyc-GS.gb                             | ✅     |
+| roms/wilbertpol-tests/gpu/ly_lyc_0-GS.gb                           | ❌     |
+| roms/wilbertpol-tests/gpu/ly_lyc_0_write-GS.gb                     | ✅     |
+| roms/wilbertpol-tests/gpu/ly_lyc_144-GS.gb                         | ✅     |
+| roms/wilbertpol-tests/gpu/ly_lyc_153-GS.gb                         | ❌     |
+| roms/wilbertpol-tests/gpu/ly_lyc_153_write-GS.gb                   | ✅     |
+| roms/wilbertpol-tests/gpu/ly_lyc_write-GS.gb                       | ✅     |
+| roms/wilbertpol-tests/gpu/ly_new_frame-GS.gb                       | ✅     |
+| roms/wilbertpol-tests/gpu/stat_irq_blocking.gb                     | ✅     |
+| roms/wilbertpol-tests/gpu/stat_write_if-GS.gb                      | ❌     |
+| roms/wilbertpol-tests/gpu/vblank_if_timing.gb                      | ✅     |
+| roms/wilbertpol-tests/gpu/vblank_stat_intr-GS.gb                   | ✅     |
+
 ## Scribbltests
 
 https://github.com/Hacktix/scribbltests
@@ -189,4 +243,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-03-24 16:42:16.566993 UTC
+Generated at: 2021-03-25 16:04:33.732957 UTC

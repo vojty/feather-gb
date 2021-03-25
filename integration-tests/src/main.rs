@@ -4,7 +4,7 @@ use std::{
 };
 
 use futures::future::join_all;
-use suites::{blarggs_tests, mbc3_tester, mealybug_tearoom_tests, scribbl_tests};
+use suites::{blarggs_tests, mbc3_tester, mealybug_tearoom_tests, scribbl_tests, wilbertpol_tests};
 use suites::{mooneye_tests, turtle_tests};
 use tokio::time::Instant;
 use utils::OUTPUT_DIR;
@@ -21,6 +21,7 @@ pub async fn main() {
 
     suites.push(tokio::spawn(blarggs_tests::run_tests()));
     suites.push(tokio::spawn(mooneye_tests::run_tests()));
+    suites.push(tokio::spawn(wilbertpol_tests::run_tests()));
     suites.push(tokio::spawn(scribbl_tests::run_tests()));
     suites.push(tokio::spawn(turtle_tests::run_tests()));
     suites.push(tokio::spawn(mbc3_tester::run_tests()));
