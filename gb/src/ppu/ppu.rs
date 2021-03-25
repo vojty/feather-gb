@@ -1,4 +1,5 @@
 use constants::DISPLAY_WIDTH;
+use parse_display::Display;
 
 use crate::{
     constants::{self, TILE_SIZE},
@@ -31,7 +32,7 @@ enum Access {
     Write,
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum MapLayer {
     Background,
     Window,
@@ -92,8 +93,8 @@ impl Palettes {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-enum Mode {
+#[derive(Clone, Copy, PartialEq, Debug, Display)]
+pub enum Mode {
     HBlank,
     VBlank,
     OamSearch,
@@ -134,9 +135,9 @@ pub struct Ppu {
     x: u8,
     sampled_scx: u8,
     prev_stat_flag: bool,
-    line_clocks: u32,
-    mode: Mode,
-    line: u8,
+    pub line_clocks: u32,
+    pub mode: Mode,
+    pub line: u8,
     dropped_pixels: u8,
     pending_mode: Option<Mode>,
     skip_frames: u32,
@@ -410,7 +411,8 @@ impl Ppu {
     }
 
     fn process_pixel_transfer(&mut self) {
-        self.fetcher.tick(&self.vram, &self.lcdc);
+        self.fetcher
+            .tick(&self.vram, &self.lcdc, self.ly.wrapping_add(self.scy));
 
         if self.fetcher.len() <= 8 {
             return;
@@ -736,8 +738,7 @@ impl Ppu {
             MapLayer::Window => get_window_tile_map_address(&self.lcdc),
         } as usize;
 
-        let offset = index;
-        let n = self.vram.memory[base_address + offset] as usize;
+        let n = self.vram.memory[base_address + index] as usize;
         let tile_number = transform_tile_number(&self.lcdc, n);
 
         &self.vram.tiles[tile_number]

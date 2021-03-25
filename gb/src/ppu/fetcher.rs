@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+use crate::traits::MemoryAccess;
+
 use super::{
     ppu::MapLayer,
     utils::{
@@ -9,7 +11,7 @@ use super::{
     vram::Vram,
 };
 
-enum FetchState {
+enum FetcherState {
     ReadTileNumber,
     ReadTileData0,
     ReadTileData1,
@@ -18,13 +20,22 @@ enum FetchState {
 
 pub struct Fetcher {
     pub mode: MapLayer,
-    x: u32,
-    y: u32,
+    x: u8,
+    y: u8,
     tile_number: usize,
     tile_offset: u32,
-    state: FetchState,
+    tile_data_lower: u8,
+    tile_data_upper: u8,
+    state: FetcherState,
     fifo: VecDeque<u8>,
     cycles: u8,
+}
+
+fn get_bit(byte: u8, index: usize) -> u8 {
+    if byte & (1 << index) > 0 {
+        return 1;
+    }
+    0
 }
 
 impl Fetcher {
@@ -34,21 +45,24 @@ impl Fetcher {
             x: 0,
             y: 0,
             tile_number: 0,
+            tile_data_upper: 0,
+            tile_data_lower: 0,
+
             tile_offset: 0,
-            state: FetchState::ReadTileNumber,
+            state: FetcherState::ReadTileNumber,
             fifo: VecDeque::new(),
             cycles: 0,
         }
     }
 
     pub fn start(&mut self, x: u8, y: u8, mode: MapLayer) {
-        self.x = x.into();
-        self.y = y.into();
+        self.x = x;
+        self.y = y;
         self.tile_number = 0;
         self.tile_offset = 0;
         self.cycles = 0;
         self.fifo.clear();
-        self.state = FetchState::ReadTileNumber;
+        self.state = FetcherState::ReadTileNumber;
         self.mode = mode;
     }
 
@@ -60,45 +74,60 @@ impl Fetcher {
         self.fifo.pop_front()
     }
 
-    pub fn tick(&mut self, vram: &Vram, lcdc: &LcdcBits) {
+    pub fn tick(&mut self, vram: &Vram, lcdc: &LcdcBits, bg_y: u8) {
         self.cycles += 1;
         if self.cycles < 2 {
             return;
         }
         self.cycles = 0;
 
+        // TODO refactor this ugly code
+        // workaround for SCY immediate change
+        let y = if self.mode == MapLayer::Window {
+            (self.y & 0xff) as u8
+        } else {
+            bg_y
+        };
+
         match self.state {
-            FetchState::ReadTileNumber => {
+            FetcherState::ReadTileNumber => {
                 let map_address = match self.mode {
                     MapLayer::Background => get_background_tile_map_address(lcdc),
                     MapLayer::Window => get_window_tile_map_address(lcdc),
                 } as usize;
 
-                let tile_row = ((self.y & 0xff) / 8) as usize; // floor not needed, rust handles that
-                let tile_col = (((self.x + self.tile_offset * 8) & 0xff) / 8) as usize;
+                let tile_row = (y / 8) as usize;
+                let tile_col = (((self.x as u32 + self.tile_offset * 8) & 0xff) / 8) as usize;
                 let tile_address = (map_address + (tile_row * 32 + tile_col)) as usize;
                 let n = vram.memory[tile_address] as usize;
                 self.tile_number = transform_tile_number(lcdc, n);
-                self.state = FetchState::ReadTileData0;
+                self.state = FetcherState::ReadTileData0;
             }
-            FetchState::ReadTileData0 => {
-                self.state = FetchState::ReadTileData1;
+            FetcherState::ReadTileData0 => {
+                let line = ((y % 8) * 2) as usize;
+                let tile_mask = self.tile_number << 4;
+                let address = tile_mask | line;
+                self.tile_data_lower = vram.read_byte(address as u16);
+                self.state = FetcherState::ReadTileData1;
             }
-            FetchState::ReadTileData1 => {
-                self.state = FetchState::PushToFIFO;
+            FetcherState::ReadTileData1 => {
+                let line = ((y % 8) * 2) as usize;
+                let tile_mask = self.tile_number << 4;
+                let address = tile_mask | (line + 1);
+                self.tile_data_upper = vram.read_byte(address as u16);
+                self.state = FetcherState::PushToFIFO;
             }
-            FetchState::PushToFIFO => {
-                // TODO check this if
+            FetcherState::PushToFIFO => {
                 if self.fifo.len() <= 8 {
-                    let tile = &vram.tiles[self.tile_number];
-                    let index = (self.y & 7) as usize;
-                    let line_pixels = &tile.data[index];
-
-                    for pixel in line_pixels.iter() {
-                        self.fifo.push_back(*pixel);
+                    for x in (0..=7).rev() {
+                        let high = get_bit(self.tile_data_upper, x);
+                        let low = get_bit(self.tile_data_lower, x);
+                        let pixel = (high << 1) | low;
+                        self.fifo.push_back(pixel);
                     }
+
                     self.tile_offset += 1;
-                    self.state = FetchState::ReadTileNumber;
+                    self.state = FetcherState::ReadTileNumber;
                 }
             }
         }
