@@ -23,11 +23,16 @@ impl Cpu {
         egui::Window::new("CPU").open(open).show(ctx, |ui| {
             ui.label("Registers");
             ui.horizontal(|ui| {
-                REGISTERS.iter().for_each(|reg| {
+                REGISTERS.iter().enumerate().for_each(|(i, reg)| {
                     ui.style_mut().body_text_style = TextStyle::Body;
                     ui.label(reg.to_string());
                     ui.style_mut().body_text_style = TextStyle::Monospace;
-                    ui.label(e.cpu.read_reg8(*reg).to_hex());
+                    let value = e.cpu.read_reg8(*reg);
+                    ui.label(format!("0x{}", value.to_hex()))
+                        .on_hover_text(value.to_string());
+                    if i < REGISTERS.len() - 1 {
+                        ui.separator();
+                    }
                 });
             });
 
@@ -39,7 +44,9 @@ impl Cpu {
 
             ui.horizontal(|ui| {
                 ui.label(format!("Frames: {}", e.frames));
+                ui.separator();
                 ui.label(format!("Frame cycles: {}", e.cpu.frame_cycles));
+                ui.separator();
                 ui.label(format!("Cycles: {}", e.cpu.total_cycles));
             });
         });

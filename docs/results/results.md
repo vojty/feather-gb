@@ -175,7 +175,7 @@ From https://github.com/Amjad50/mooneye-gb
 | roms/wilbertpol-tests/gpu/ly_lyc_0-GS.gb                           | ❌     |
 | roms/wilbertpol-tests/gpu/ly_lyc_0_write-GS.gb                     | ✅     |
 | roms/wilbertpol-tests/gpu/ly_lyc_144-GS.gb                         | ✅     |
-| roms/wilbertpol-tests/gpu/ly_lyc_153-GS.gb                         | ❌     |
+| roms/wilbertpol-tests/gpu/ly_lyc_153-GS.gb                         | ✅     |
 | roms/wilbertpol-tests/gpu/ly_lyc_153_write-GS.gb                   | ✅     |
 | roms/wilbertpol-tests/gpu/ly_lyc_write-GS.gb                       | ✅     |
 | roms/wilbertpol-tests/gpu/ly_new_frame-GS.gb                       | ✅     |
@@ -243,4 +243,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-03-26 21:13:00.748598 UTC
+Generated at: 2021-03-26 22:01:21.009931 UTC

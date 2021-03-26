@@ -315,6 +315,7 @@ impl Ppu {
                 match self.line_clocks {
                     0 => {
                         self.ly_to_compare = None;
+                        self.check_ly_equals_lyc(ic);
                     }
                     4 => {
                         self.ly_to_compare = Some(self.ly);
@@ -329,14 +330,17 @@ impl Ppu {
                         self.ly += 1;
                         self.line += 1;
                         self.ly_to_compare = None;
-                        self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
+                        self.check_ly_equals_lyc(ic);
                     }
                     _ => {}
                 }
                 self.stat_update(ic, Mode::VBlank);
             }
             153 => match self.line_clocks {
-                0 => self.ly_to_compare = None,
+                0 => {
+                    self.ly_to_compare = None;
+                    self.check_ly_equals_lyc(ic);
+                }
                 4 => {
                     self.ly_to_compare = Some(153);
                     self.check_ly_equals_lyc(ic);
@@ -344,6 +348,7 @@ impl Ppu {
                 }
                 8 => {
                     self.ly_to_compare = None;
+                    self.check_ly_equals_lyc(ic);
                 }
                 12 => {
                     self.ly_to_compare = Some(0);
