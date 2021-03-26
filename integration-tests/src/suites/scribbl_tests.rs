@@ -1,11 +1,11 @@
-use std::fs;
-
 use futures::{future::join_all, TryFutureExt};
 use gb::ppu::ppu::Palettes;
 
 use crate::{
     markdown,
-    utils::{create_emulator, get_result_mark, save_diff_image, save_screen, OUTPUT_DIR},
+    utils::{
+        copy_file, create_emulator, get_result_mark, save_diff_image, save_screen, OUTPUT_DIR,
+    },
 };
 
 struct TestCase {
@@ -16,11 +16,12 @@ struct TestCase {
     diff_image: String,
 }
 
-const TEST_CASES: [(&str, &str); 4] = [
-    ("scxly", "scxly/scxly.gb"),
-    ("lycscx", "lycscx/lycscx.gb"),
-    ("lycscy", "lycscy/lycscy.gb"),
-    ("palettely", "palettely/palettely.gb"),
+const TEST_CASES: [(&str, &str, bool); 5] = [
+    ("scxly", "scxly/scxly.gb", true),
+    ("lycscx", "lycscx/lycscx.gb", true),
+    ("lycscy", "lycscy/lycscy.gb", true),
+    ("palettely", "palettely/palettely.gb", true),
+    ("statcount", "statcount/statcount-auto.gb", false),
 ];
 
 const TESTS_PATH: &str = "roms/scribbltests";
@@ -28,13 +29,15 @@ const TESTS_PATH: &str = "roms/scribbltests";
 fn get_tests() -> Vec<TestCase> {
     TEST_CASES
         .iter()
-        .map(|(test_name, file)| {
+        .map(|(test_name, file, copy_reference_image)| {
             let output_dir = format!("{}/{}", OUTPUT_DIR, test_name);
             let reference_original =
                 format!("{}/{}/screenshots/expected.png", TESTS_PATH, test_name);
             let reference_image = format!("{}/expected.png", output_dir);
 
-            fs::copy(&reference_original, &reference_image).unwrap();
+            if *copy_reference_image {
+                copy_file(&reference_original, &reference_image);
+            }
 
             TestCase {
                 name: test_name.to_string(),
@@ -59,7 +62,7 @@ fn execute_test(test_case: TestCase) -> TestResult {
     } = test_case;
     let mut e = create_emulator(&path);
     e.set_system_palette(Palettes::Green);
-    let max_frames_to_run = 60;
+    let max_frames_to_run = 250; // statcount-auto
 
     for _ in 0..max_frames_to_run {
         e.run_frame();
