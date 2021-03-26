@@ -95,8 +95,8 @@ impl Palettes {
 
 #[derive(Clone, Copy, PartialEq, Debug, Display)]
 pub enum Mode {
-    HBlank,
-    VBlank,
+    HBlank, // 0
+    VBlank, // 1
     OamSearch,
     PixelTransfer,
 }
@@ -352,6 +352,14 @@ impl Ppu {
                 TOTAL_LINE_CLOCKS => {
                     self.mode = Mode::OamSearch;
                     self.pending_mode = Some(Mode::OamSearch);
+                    // Transition from the last line 153 to the line 0 goes like this:
+                    // Cycle 456    line 153 => STAT mode=1
+                    // Cycle 0      line 0 => STAT mode=0
+                    // Cycle 4+     line 0 => STAT mode=2
+                    // tested by ly00_mode0_2.gs
+                    // https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf section 8.9.1
+                    self.change_stat_mode(Mode::HBlank);
+
                     if self.skip_frames > 0 {
                         self.skip_frames -= 1;
                     }

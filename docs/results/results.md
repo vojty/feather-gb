@@ -163,8 +163,8 @@ From https://github.com/Amjad50/mooneye-gb
 | roms/wilbertpol-tests/gpu/intr_2_timing.gb                         | ❌     |
 | roms/wilbertpol-tests/gpu/lcdon_mode_timing.gb                     | ✅     |
 | roms/wilbertpol-tests/gpu/ly00_01_mode0_2.gb                       | ✅     |
-| roms/wilbertpol-tests/gpu/ly00_mode0_2-GS.gb                       | ❌     |
-| roms/wilbertpol-tests/gpu/ly00_mode1_0-GS.gb                       | ❌     |
+| roms/wilbertpol-tests/gpu/ly00_mode0_2-GS.gb                       | ✅     |
+| roms/wilbertpol-tests/gpu/ly00_mode1_0-GS.gb                       | ✅     |
 | roms/wilbertpol-tests/gpu/ly00_mode2_3.gb                          | ✅     |
 | roms/wilbertpol-tests/gpu/ly00_mode3_0.gb                          | ✅     |
 | roms/wilbertpol-tests/gpu/ly143_144_145.gb                         | ✅     |
@@ -243,4 +243,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-03-25 16:04:33.732957 UTC
+Generated at: 2021-03-26 21:13:00.748598 UTC
