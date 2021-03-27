@@ -1,6 +1,7 @@
-use eframe::egui::TextStyle;
 use eframe::egui::{self};
 use gb::{cpu::cpu::Reg8, emulator::Emulator, traits::DisplayHex};
+
+use crate::ui_extensions::ExtendedUi;
 
 pub struct Cpu;
 
@@ -24,11 +25,9 @@ impl Cpu {
             ui.label("Registers");
             ui.horizontal(|ui| {
                 REGISTERS.iter().enumerate().for_each(|(i, reg)| {
-                    ui.style_mut().body_text_style = TextStyle::Body;
                     ui.label(reg.to_string());
-                    ui.style_mut().body_text_style = TextStyle::Monospace;
                     let value = e.cpu.read_reg8(*reg);
-                    ui.label(format!("0x{}", value.to_hex()))
+                    ui.mono_label(format!("0x{}", value.to_hex()))
                         .on_hover_text(value.to_string());
                     if i < REGISTERS.len() - 1 {
                         ui.separator();
@@ -36,18 +35,34 @@ impl Cpu {
                 });
             });
 
-            ui.label("Flags");
             ui.horizontal(|ui| {
-                ui.style_mut().body_text_style = TextStyle::Monospace;
-                ui.label(format!("{}", e.cpu.f));
+                ui.label("PC");
+                ui.mono_label(format!("0x{}", e.cpu.pc.to_hex()));
+
+                ui.separator();
+
+                ui.label("SP");
+                ui.mono_label(format!("0x{}", e.cpu.sp.to_hex()));
             });
 
             ui.horizontal(|ui| {
-                ui.label(format!("Frames: {}", e.frames));
+                ui.label("Flags");
+                ui.mono_label(e.cpu.f);
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("Frames");
+                ui.mono_label(e.frames);
+
                 ui.separator();
-                ui.label(format!("Frame cycles: {}", e.cpu.frame_cycles));
+
+                ui.label("Frame cycles");
+                ui.mono_label(e.cpu.frame_cycles);
+
                 ui.separator();
-                ui.label(format!("Cycles: {}", e.cpu.total_cycles));
+
+                ui.label("Cycles");
+                ui.mono_label(e.cpu.total_cycles);
             });
         });
     }

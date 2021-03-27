@@ -10,4 +10,6 @@
 pub mod app;
 mod canvas;
 mod components;
+mod opcodes;
+pub mod ui_extensions;
 pub mod utils;

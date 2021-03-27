@@ -1,4 +1,5 @@
 pub mod cpu;
+pub mod disassembly;
 pub mod display;
 pub mod frame_history;
 pub mod joypad;

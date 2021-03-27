@@ -114,21 +114,21 @@ impl Mode {
 
 pub struct Ppu {
     // Registers
-    stat: StatBits,
+    pub stat: StatBits,
     stat_mode: Mode,
-    lcdc: LcdcBits,
-    ly: u8,
-    lyc: u8,
-    scx: u8,
-    scy: u8,
-    wx: u8,
-    wy: u8,
-    bgp: u8,
-    obp0: u8,
-    obp1: u8,
+    pub lcdc: LcdcBits,
+    pub ly: u8,
+    pub lyc: u8,
+    pub scx: u8,
+    pub scy: u8,
+    pub wx: u8,
+    pub wy: u8,
+    pub bgp: u8,
+    pub obp0: u8,
+    pub obp1: u8,
 
     // internals
-    ly_to_compare: Option<u8>,
+    pub ly_to_compare: Option<u8>,
     window_line: u8,
     window_line_enabled: bool,
     window_x: i32,

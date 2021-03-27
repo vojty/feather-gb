@@ -9,8 +9,9 @@ use std::sync::mpsc::Receiver;
 
 use crate::{
     components::{
-        cpu::Cpu, display::Display, frame_history::FrameHistory, joypad::handle_inputs, maps::Maps,
-        memory_viewer::MemoryViewer, ppu::Ppu, roms::Roms, tiles::Tiles,
+        cpu::Cpu, disassembly::Disassembly, display::Display, frame_history::FrameHistory,
+        joypad::handle_inputs, maps::Maps, memory_viewer::MemoryViewer, ppu::Ppu, roms::Roms,
+        tiles::Tiles,
     },
     utils::BinarySource,
 };
@@ -24,6 +25,7 @@ struct Components {
     maps: Maps,
     cpu: Cpu,
     ppu: Ppu,
+    disassembly: Disassembly,
 }
 
 type RomData = Vec<u8>;
@@ -47,6 +49,7 @@ impl Debugger {
             emulator: Emulator::new(true, cartridge),
             running: false,
             components: Components {
+                disassembly: Disassembly::new(),
                 display: Display::new(),
                 frame_history: FrameHistory::new(),
                 tiles: Tiles::default(),
@@ -207,6 +210,9 @@ impl epi::App for Debugger {
 
         // ------------------ PPU ----------------------
         components.ppu.show(ctx, &mut true, &emulator);
+
+        // ------------------ DISASSEMBLY ----------------------
+        components.disassembly.show(ctx, &mut true, &emulator);
 
         // Continuous mode
         ctx.request_repaint();
