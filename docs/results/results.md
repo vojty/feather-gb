@@ -139,7 +139,7 @@ From https://github.com/Amjad50/mooneye-gb
 | roms/wilbertpol-tests/gpu/hblank_ly_scx_timing-GS.gb               | ✅     |
 | roms/wilbertpol-tests/gpu/hblank_ly_scx_timing_nops.gb             | ❌     |
 | roms/wilbertpol-tests/gpu/hblank_ly_scx_timing_variant_nops.gb     | ❌     |
-| roms/wilbertpol-tests/gpu/intr_0_timing.gb                         | ❌     |
+| roms/wilbertpol-tests/gpu/intr_0_timing.gb                         | ✅     |
 | roms/wilbertpol-tests/gpu/intr_1_2_timing-GS.gb                    | ✅     |
 | roms/wilbertpol-tests/gpu/intr_1_timing.gb                         | ✅     |
 | roms/wilbertpol-tests/gpu/intr_2_0_timing.gb                       | ✅     |
@@ -244,4 +244,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-03-26 22:34:21.138014 UTC
+Generated at: 2021-03-27 09:57:55.265063 UTC

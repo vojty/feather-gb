@@ -410,6 +410,17 @@ impl Ppu {
         self.stat_update(ic, self.stat_mode)
     }
 
+    fn check_ly_equals_lyc_no_mode(&mut self, ic: &mut InterruptController) {
+        if Some(self.lyc) == self.ly_to_compare {
+            self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, true);
+        } else {
+            self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
+        }
+        // This is ugly hack, because this function is called when LCD is turned oo
+        // and the mode can't be PixelTransfer so mode interrupt wont happend
+        self.stat_update(ic, Mode::PixelTransfer)
+    }
+
     fn init_pixel_transfer(&mut self) {
         self.x = 0;
         self.window_x = (self.wx as i32) - 7;
@@ -675,7 +686,8 @@ impl Ppu {
                     self.pending_mode = None;
 
                     self.line_clocks = 4;
-                    self.check_ly_equals_lyc(ic);
+                    // Only LY=LYC can trigger STAT interrupt now
+                    self.check_ly_equals_lyc_no_mode(ic);
                     self.prev_stat_flag = false;
                     self.skip_frames = 1;
                 }
