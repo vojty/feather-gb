@@ -114,18 +114,18 @@ impl Mode {
 
 pub struct Ppu {
     // Registers
-    pub stat: StatBits,
+    stat: StatBits,
     stat_mode: Mode,
-    pub lcdc: LcdcBits,
-    pub ly: u8,
-    pub lyc: u8,
-    pub scx: u8,
-    pub scy: u8,
-    pub wx: u8,
-    pub wy: u8,
-    pub bgp: u8,
-    pub obp0: u8,
-    pub obp1: u8,
+    lcdc: LcdcBits,
+    ly: u8,
+    lyc: u8,
+    scx: u8,
+    scy: u8,
+    wx: u8,
+    wy: u8,
+    bgp: u8,
+    obp0: u8,
+    obp1: u8,
 
     // internals
     pub ly_to_compare: Option<u8>,
@@ -265,6 +265,11 @@ impl Ppu {
                     self.mode = Mode::PixelTransfer;
                     self.pending_mode = Some(Mode::PixelTransfer);
                     self.init_pixel_transfer();
+                    self.screen_buffer.get_write_buffer_mut().set_stats(
+                        Mode::PixelTransfer,
+                        self.line as usize,
+                        self.line_clocks,
+                    );
                 }
             }
             Mode::PixelTransfer => {
@@ -275,6 +280,12 @@ impl Ppu {
                     self.mode = Mode::HBlank;
 
                     self.render_sprites();
+
+                    self.screen_buffer.get_write_buffer_mut().set_stats(
+                        Mode::HBlank,
+                        self.line as usize,
+                        self.line_clocks,
+                    );
                 }
             }
             Mode::HBlank => {

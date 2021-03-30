@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use eframe::egui::{self, Color32};
+use eframe::egui::{CtxRef, Window};
 use gb::{
     emulator::Emulator,
     traits::{DisplayHex, MemoryAccess},
@@ -12,8 +12,6 @@ use crate::ui_extensions::mono_label;
 pub struct Disassembly;
 
 type Definition = (&'static str, usize);
-
-const HIGHLIGHT_COLOR: Color32 = Color32::from_rgb(255, 0, 0);
 
 const VISIBLE_LENGTH: usize = 10;
 
@@ -60,8 +58,8 @@ impl Disassembly {
         Self {}
     }
 
-    pub fn show(&mut self, ctx: &egui::CtxRef, open: &mut bool, e: &Emulator) {
-        egui::Window::new("Disassembly")
+    pub fn show(&mut self, ctx: &CtxRef, open: &mut bool, e: &Emulator) {
+        Window::new("Disassembly")
             .resizable(true)
             .default_width(200.0)
             .open(open)
@@ -73,9 +71,9 @@ impl Disassembly {
                     let definition = get_definition(offset, e);
                     let (name, length) = definition;
 
-                    let mut label = mono_label(format!("0x{} | {} ", offset.to_hex(), name));
+                    let mut label = mono_label(format!("0x{} | {:<15}", offset.to_hex(), name));
                     if pc == offset {
-                        label = label.text_color(HIGHLIGHT_COLOR);
+                        label = label.strong();
                     }
                     ui.add(label);
 

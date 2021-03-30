@@ -1,6 +1,6 @@
 use crate::constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH, PIXELS};
 
-use super::ppu::RGB;
+use super::ppu::{Mode, RGB};
 #[derive(PartialEq)]
 enum ActiveBuffer {
     Front,
@@ -9,9 +9,36 @@ enum ActiveBuffer {
 
 const PIXEL_DATA_SIZE: usize = PIXELS * 3;
 
+pub type LineStatsData = [LineStats; DISPLAY_HEIGHT];
+
+#[derive(Clone, Copy)]
+pub struct LineStats {
+    pub pixel_transfer: u32,
+    pub h_blank: u32,
+}
+
+impl LineStats {
+    fn empty() -> Self {
+        Self {
+            pixel_transfer: 0,
+            h_blank: 0,
+        }
+    }
+
+    pub fn set_stats(&mut self, mode: Mode, started_at: u32) {
+        match mode {
+            Mode::HBlank => self.h_blank = started_at,
+            Mode::PixelTransfer => self.pixel_transfer = started_at,
+            // VBLANK takes up the whole line, OAM starts always at 0 (besides the special first line after turn on)
+            _ => panic!("Don't need track cycles for mode {}", mode),
+        }
+    }
+}
+
 // Stored as an array so we can use pointer to the JS world
 pub struct Buffer {
     data: Box<[u8; PIXEL_DATA_SIZE]>,
+    stats: Box<LineStatsData>,
 }
 
 fn get_offset(x: usize, y: usize) -> usize {
@@ -22,6 +49,7 @@ impl Buffer {
     fn new() -> Self {
         Self {
             data: Box::new([0; PIXEL_DATA_SIZE]),
+            stats: Box::new([LineStats::empty(); DISPLAY_HEIGHT]),
         }
     }
 
@@ -40,6 +68,14 @@ impl Buffer {
         self.data[offset] = pixel.r;
         self.data[offset + 1] = pixel.g;
         self.data[offset + 2] = pixel.b;
+    }
+
+    pub fn set_stats(&mut self, mode: Mode, line: usize, started_at: u32) {
+        self.stats[line].set_stats(mode, started_at);
+    }
+
+    pub fn get_stats(&self) -> &LineStatsData {
+        &self.stats
     }
 
     pub fn clear(&mut self) {
