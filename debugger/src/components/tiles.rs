@@ -51,26 +51,16 @@ impl Tiles {
         tex_allocator: &mut dyn epi::TextureAllocator,
     ) {
         egui::Window::new("Tiles").open(open).show(ctx, |ui| {
-            let pixels_per_point = ctx.pixels_per_point();
-
-            self.ui(ui, pixels_per_point, e, tex_allocator);
+            self.ui(ui, e, tex_allocator);
         });
     }
 
-    pub fn ui(
-        &mut self,
-        ui: &mut Ui,
-        pixels_per_point: f32,
-        e: &Emulator,
-        tex_allocator: &mut dyn epi::TextureAllocator,
-    ) {
-        let real_scale = pixels_per_point as usize * self.scale;
-
+    pub fn ui(&mut self, ui: &mut Ui, e: &Emulator, tex_allocator: &mut dyn epi::TextureAllocator) {
         let tiles = e.hw.ppu.vram.get_tiles();
         let hash = e.hw.ppu.vram.get_tiles_hash();
         let size = Vec2::new(
-            (self.tiles_width * real_scale) as f32,
-            (self.tiles_height * real_scale) as f32,
+            (self.tiles_width * self.scale) as f32,
+            (self.tiles_height * self.scale) as f32,
         );
 
         if hash != self.texture_hash {
