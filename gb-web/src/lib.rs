@@ -2,7 +2,9 @@ use wasm_bindgen::prelude::*;
 
 use std::panic;
 
-use gb::{cartridges::cartridge::Cartridge, emulator::Emulator, ppu::ppu::Palettes};
+use gb::{
+    cartridges::cartridge::Cartridge, emulator::Emulator, joypad::JoypadKey, ppu::ppu::Palettes,
+};
 
 #[wasm_bindgen]
 pub struct WebCartridge {
@@ -25,6 +27,32 @@ pub struct WebEmulator {
 }
 
 #[wasm_bindgen]
+pub enum JSKeys {
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    A,
+    B,
+    Start,
+    Select,
+}
+
+// TODO find out, how to re-export existing enum to wasm in this web project
+fn translate_key(input: JSKeys) -> JoypadKey {
+    match input {
+        JSKeys::ArrowDown => JoypadKey::ArrowDown,
+        JSKeys::ArrowUp => JoypadKey::ArrowUp,
+        JSKeys::ArrowLeft => JoypadKey::ArrowLeft,
+        JSKeys::ArrowRight => JoypadKey::ArrowRight,
+        JSKeys::A => JoypadKey::A,
+        JSKeys::B => JoypadKey::B,
+        JSKeys::Start => JoypadKey::Start,
+        JSKeys::Select => JoypadKey::Select,
+    }
+}
+
+#[wasm_bindgen]
 impl WebEmulator {
     #[wasm_bindgen(constructor)]
     pub fn new(web_cartridge: WebCartridge) -> WebEmulator {
@@ -39,6 +67,14 @@ impl WebEmulator {
 
     pub fn get_canvas_data_pointer(&self) -> *const u8 {
         self.e.get_screen_buffer().get_raw_data()
+    }
+
+    pub fn on_key_down(&mut self, input_key: JSKeys) {
+        self.e.on_key_down(translate_key(input_key));
+    }
+
+    pub fn on_key_up(&mut self, input_key: JSKeys) {
+        self.e.on_key_up(translate_key(input_key));
     }
 }
 

@@ -12,56 +12,45 @@ pub struct Joypad {
     buttons_bits: u8,
 }
 
-pub enum ArrowKey {
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-}
-
-pub enum ButtonKey {
+pub enum JoypadKey {
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
     A,
     B,
-    SELECT,
-    START,
+    Start,
+    Select,
 }
 
-pub enum KeyType {
-    Button,
+enum KeyType {
     Arrow,
+    Button,
 }
 
-pub trait Key {
-    fn get_bit(&self) -> u8;
-    fn get_type(&self) -> KeyType;
-}
-
-impl Key for ArrowKey {
-    fn get_type(&self) -> KeyType {
-        KeyType::Arrow
-    }
-
+impl JoypadKey {
     fn get_bit(&self) -> u8 {
         match self {
-            ArrowKey::RIGHT => 0b0000_0001,
-            ArrowKey::LEFT => 0b0000_0010,
-            ArrowKey::UP => 0b0000_0100,
-            ArrowKey::DOWN => 0b0000_1000,
+            JoypadKey::ArrowRight => 0b0000_0001,
+            JoypadKey::ArrowLeft => 0b0000_0010,
+            JoypadKey::ArrowUp => 0b0000_0100,
+            JoypadKey::ArrowDown => 0b0000_1000,
+
+            JoypadKey::A => 0b0000_0001,
+            JoypadKey::B => 0b0000_0010,
+            JoypadKey::Select => 0b0000_0100,
+            JoypadKey::Start => 0b0000_1000,
         }
     }
-}
 
-impl Key for ButtonKey {
     fn get_type(&self) -> KeyType {
-        KeyType::Button
-    }
-
-    fn get_bit(&self) -> u8 {
         match self {
-            ButtonKey::A => 0b0000_0001,
-            ButtonKey::B => 0b0000_0010,
-            ButtonKey::SELECT => 0b0000_0100,
-            ButtonKey::START => 0b0000_1000,
+            JoypadKey::ArrowRight
+            | JoypadKey::ArrowLeft
+            | JoypadKey::ArrowUp
+            | JoypadKey::ArrowDown => KeyType::Arrow,
+
+            JoypadKey::A | JoypadKey::B | JoypadKey::Select | JoypadKey::Start => KeyType::Button,
         }
     }
 }
@@ -75,7 +64,7 @@ impl Joypad {
         }
     }
 
-    pub fn on_key_up<K: Key>(&mut self, key: K, ic: &mut InterruptController) {
+    pub fn on_key_up(&mut self, key: JoypadKey, ic: &mut InterruptController) {
         match key.get_type() {
             KeyType::Button => self.buttons_bits |= key.get_bit(),
             KeyType::Arrow => self.arrows_bits |= key.get_bit(),
@@ -83,7 +72,7 @@ impl Joypad {
         ic.request_interrupt(InterruptBits::JOYPAD)
     }
 
-    pub fn on_key_down<K: Key>(&mut self, key: K, ic: &mut InterruptController) {
+    pub fn on_key_down(&mut self, key: JoypadKey, ic: &mut InterruptController) {
         match key.get_type() {
             KeyType::Button => self.buttons_bits &= !key.get_bit(),
             KeyType::Arrow => self.arrows_bits &= !key.get_bit(),

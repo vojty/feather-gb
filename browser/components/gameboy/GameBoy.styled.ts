@@ -1,4 +1,4 @@
-import styled, { ThemedStyledProps } from 'styled-components'
+import styled, { css, ThemedStyledProps } from 'styled-components'
 
 import { Theme } from '../../types'
 
@@ -18,6 +18,12 @@ const AB_COLOR = '#8A205E'
 
 function zoom<P, T extends Theme>(value: number) {
   return (props: ThemedStyledProps<P, T>) => `${props.theme.zoom * value}px`
+}
+
+function activeButtonEffect() {
+  return css`
+    filter: brightness(80%);
+  `
 }
 
 const Wrapper = styled.div`
@@ -123,11 +129,16 @@ const TradeMarkText = styled.div`
   font-size: ${zoom(6)};
 `
 
-const CircleButton = styled.div`
+const CircleButton = styled.div<{ $pressed: boolean }>`
   background-color: ${AB_COLOR};
   height: ${zoom(AB_SIZE)};
   width: ${zoom(AB_SIZE)};
   border-radius: ${zoom(AB_SIZE / 2)};
+
+  ${(props) => props.$pressed && activeButtonEffect()}
+`
+
+const CircleButtonWrapper = styled.div`
   position: relative;
 `
 
@@ -151,7 +162,7 @@ const ButtonsAB = styled.div`
   box-shadow: 0 0 0 5px #dfdfdf;
   border-radius: ${zoom(AB_SIZE)};
 
-  * + * {
+  > * + * {
     margin-left: ${zoom(18)};
   }
 
@@ -172,13 +183,18 @@ const WideButtonContainer = styled.div`
   align-items: center;
 `
 
-const WideButton = styled.div`
+const WideButtonWrapper = styled.div`
+  border-radius: ${zoom((9 + 2 * 5) / 2)};
+  background-color: #dfdfdf;
+  padding: ${zoom(5)};
+`
+
+const WideButton = styled.div<{ $pressed: boolean }>`
   background-color: #868a8d;
   width: ${zoom(38)};
   height: ${zoom(9)};
   border-radius: ${zoom(9 / 2)};
-
-  box-shadow: 0 0 0 5px #dfdfdf;
+  ${(props) => props.$pressed && activeButtonEffect()}
 `
 
 const ButtonsStartSelect = styled.div`
@@ -193,9 +209,22 @@ const ButtonsStartSelect = styled.div`
 
 const Arrows = styled.div``
 
+export enum ArrowOrientation {
+  HORIZONTAL,
+  VERTICAL
+}
+
 const ArrowsLine = styled.div`
   display: flex;
   justify-content: center;
+`
+
+const ArrowStripe = styled.div`
+  width: ${zoom(2)};
+  height: 80%;
+  background-color: #353535;
+  margin: ${zoom(2)};
+  border-radius: ${zoom(5)};
 `
 
 const BaseArrow = styled.div`
@@ -205,16 +234,42 @@ const BaseArrow = styled.div`
   background-color: #1b1d1d;
 `
 
-const ArrowLeft = styled(BaseArrow)`
+const BaseFunctionArrow = styled(BaseArrow)<{
+  $orientation: ArrowOrientation
+  $pressed: boolean
+}>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: ${(props) =>
+    props.$orientation === ArrowOrientation.VERTICAL ? 'row' : 'column'};
+
+  ${ArrowStripe} {
+    ${(props) => props.$pressed && activeButtonEffect()}
+
+    ${(props) =>
+      props.$orientation === ArrowOrientation.VERTICAL
+        ? css`
+            width: ${zoom(3)};
+            height: 60%;
+          `
+        : css`
+            height: ${zoom(3)};
+            width: 60%;
+          `};
+  }
+`
+
+const ArrowLeft = styled(BaseFunctionArrow)`
   border-radius: ${zoom(5)} 0 0 ${zoom(5)};
 `
-const ArrowUp = styled(BaseArrow)`
+const ArrowUp = styled(BaseFunctionArrow)`
   border-radius: ${zoom(5)} ${zoom(5)} 0 0;
 `
-const ArrowRight = styled(BaseArrow)`
+const ArrowRight = styled(BaseFunctionArrow)`
   border-radius: 0 ${zoom(5)} ${zoom(5)} 0;
 `
-const ArrowDown = styled(BaseArrow)`
+const ArrowDown = styled(BaseFunctionArrow)`
   border-radius: 0 0 ${zoom(5)} ${zoom(5)};
 `
 const ArrowCenter = styled(BaseArrow)`
@@ -276,10 +331,12 @@ export const Styled = {
   TradeMarkText,
   Controls,
   ButtonsAB,
+  CircleButtonWrapper,
   CircleButton,
   ButtonText,
   ButtonsStartSelect,
   WideButton,
+  WideButtonWrapper,
   WideButtonContainer,
   Arrows,
   ArrowsLine,
@@ -288,6 +345,7 @@ export const Styled = {
   ArrowLeft,
   ArrowRight,
   ArrowCenter,
+  ArrowStripe,
   Speakers,
   Speaker
 }

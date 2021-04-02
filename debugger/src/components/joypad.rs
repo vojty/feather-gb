@@ -1,22 +1,16 @@
 use eframe::egui::{self, Key};
-use gb::{emulator::Emulator, joypad};
-enum GBKey {
-    Arrow(joypad::ArrowKey),
-    Button(joypad::ButtonKey),
-}
+use gb::{emulator::Emulator, joypad::JoypadKey};
 
-// Sadly I can't use:
-// fn get_joypad_key(key: &Key) -> Option<impl joypad::Key>
-fn get_joypad_key(key: &Key) -> Option<GBKey> {
+fn get_joypad_key(key: &Key) -> Option<JoypadKey> {
     match key {
-        Key::ArrowDown | Key::S => Some(GBKey::Arrow(joypad::ArrowKey::DOWN)),
-        Key::ArrowLeft | Key::A => Some(GBKey::Arrow(joypad::ArrowKey::LEFT)),
-        Key::ArrowUp | Key::W => Some(GBKey::Arrow(joypad::ArrowKey::UP)),
-        Key::ArrowRight | Key::D => Some(GBKey::Arrow(joypad::ArrowKey::RIGHT)),
-        Key::J | Key::X => Some(GBKey::Button(joypad::ButtonKey::A)),
-        Key::K | Key::C => Some(GBKey::Button(joypad::ButtonKey::B)),
-        Key::B => Some(GBKey::Button(joypad::ButtonKey::START)),
-        Key::N => Some(GBKey::Button(joypad::ButtonKey::SELECT)),
+        Key::ArrowDown | Key::S => Some(JoypadKey::ArrowDown),
+        Key::ArrowLeft | Key::A => Some(JoypadKey::ArrowLeft),
+        Key::ArrowUp | Key::W => Some(JoypadKey::ArrowUp),
+        Key::ArrowRight | Key::D => Some(JoypadKey::ArrowRight),
+        Key::J | Key::X => Some(JoypadKey::A),
+        Key::K | Key::C => Some(JoypadKey::B),
+        Key::B => Some(JoypadKey::Start),
+        Key::N => Some(JoypadKey::Select),
         _ => None,
     }
 }
@@ -28,19 +22,13 @@ pub fn handle_inputs(e: &mut Emulator, ctx: &egui::CtxRef) {
             true => get_joypad_key(key),
             false => None,
         })
-        .for_each(|joypad_key| match joypad_key {
-            GBKey::Button(k) => e.on_key_down(k),
-            GBKey::Arrow(k) => e.on_key_down(k),
-        });
+        .for_each(|joypad_key| e.on_key_down(joypad_key));
     KEYS.iter()
         .filter_map(|key| match input.key_released(*key) {
             true => get_joypad_key(key),
             false => None,
         })
-        .for_each(|joypad_key| match joypad_key {
-            GBKey::Button(k) => e.on_key_up(k),
-            GBKey::Arrow(k) => e.on_key_up(k),
-        });
+        .for_each(|joypad_key| e.on_key_up(joypad_key));
 }
 
 pub const KEYS: [Key; 14] = [

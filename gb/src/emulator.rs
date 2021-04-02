@@ -9,7 +9,7 @@ use crate::{
     cpu::cpu::{Cpu, Flags, Reg8},
     dma::OamDma,
     interrupts::InterruptController,
-    joypad::{Joypad, Key},
+    joypad::{Joypad, JoypadKey},
     ppu::{
         ppu::{Palettes, Ppu},
         screen_buffer::Buffer,
@@ -329,12 +329,12 @@ impl Emulator {
         // self.create_peach_log_line();
     }
 
-    pub fn on_key_down<K: Key>(&mut self, key: K) {
+    pub fn on_key_down(&mut self, key: JoypadKey) {
         let ic = &mut self.hw.interrupts;
         self.hw.joypad.on_key_down(key, ic)
     }
 
-    pub fn on_key_up<K: Key>(&mut self, key: K) {
+    pub fn on_key_up(&mut self, key: JoypadKey) {
         let ic = &mut self.hw.interrupts;
         self.hw.joypad.on_key_up(key, ic)
     }

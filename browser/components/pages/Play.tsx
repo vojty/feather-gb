@@ -8,13 +8,15 @@ import { Zoom } from '../gameboy/Zoom'
 
 import { Rom, Theme } from '../../types'
 import { Backbutton } from '../play/BackButton'
+import { Cartridges } from '../play/Cartridges'
+import { OpenButton } from '../play/UploadButton'
 import { useWasmModule, WasmModule } from '../../hooks/useWasmModule'
+import { useInputHandler } from '../../hooks/useInputHandler'
 import { FullscreenLoader } from '../common/FullscreenLoader'
 import { range } from '../../utils/std'
 import { memory } from '../../../gb-web/pkg/index_bg.wasm'
-import { Cartridges } from '../play/Cartridges'
-import type { WebEmulator } from '../../../gb-web/pkg'
-import { OpenButton } from '../play/UploadButton'
+import { WebEmulator } from '../../../gb-web/pkg'
+import { InputContextProvider } from '../../context/InputContext'
 
 const DEFAULT_ZOOM = 1.5
 
@@ -62,6 +64,7 @@ function DeviceHandler(props: Props) {
   const { bytes, wasmModule, running, ctx } = props
   const emulator = useRef<WebEmulator>()
   const loopId = useRef(0)
+  const registerInputs = useInputHandler()
 
   // Init screen color
   useEffect(() => {
@@ -76,7 +79,10 @@ function DeviceHandler(props: Props) {
     const cartridge = new wasmModule.WebCartridge(bytes)
     emulator.current = new wasmModule.WebEmulator(cartridge)
     initScreen(ctx)
-  }, [bytes, wasmModule])
+
+    const cleanup = registerInputs(emulator.current)
+    return cleanup
+  }, [bytes, wasmModule, registerInputs])
 
   // Handle stop/start
   useEffect(() => {
@@ -153,64 +159,65 @@ export function Play() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <Backbutton />
-      <Zoom zoom={zoom} onChange={setZoom} />
-      <GameBoy running={running} ref={setRef} />
-      {ctx && (
-        <DeviceHandler
-          bytes={rom?.bytes}
-          wasmModule={wasmModule}
-          running={running}
-          ctx={ctx}
-        />
-      )}
+    <InputContextProvider>
+      <ThemeProvider theme={theme}>
+        <Backbutton />
+        <Zoom zoom={zoom} onChange={setZoom} />
+        <GameBoy running={running} ref={setRef} />
+        {ctx && (
+          <DeviceHandler
+            bytes={rom?.bytes}
+            wasmModule={wasmModule}
+            running={running}
+            ctx={ctx}
+          />
+        )}
 
-      <div className="mt-2 flex justify-center text-xs">
-        <button
-          className="mx-2 border rounded px-1 py-1"
-          onClick={onRunningToggle}>
-          {running ? 'Stop' : 'Start'}
-        </button>
+        <div className="mt-2 flex justify-center text-xs">
+          <button
+            className="mx-2 border rounded px-1 py-1"
+            onClick={onRunningToggle}>
+            {running ? 'Stop' : 'Run'}
+          </button>
 
-        <OpenButton
-          className="mx-2 border rounded px-1 py-1"
-          onLoad={onCartridgeLoad}>
-          Upload ROM
-        </OpenButton>
-      </div>
-
-      {rom?.custom && (
-        <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
-      )}
-
-      <div className="mt-2 flex justify-center text-xs">
-        <Cartridges
-          selectedName={rom?.name}
-          onCartridgeLoad={onCartridgeLoad}
-        />
-      </div>
-
-      <div className="mt-2 flex text-center justify-center text-xs">
-        <div>
-          <p>
-            Select one of available demos or upload your custom *.gb file and
-            press Start
-          </p>
-          <p>WIP - no controls for now</p>
-          <p>
-            Test ROMs are available in{' '}
-            <Link className="underline" to="/debug">
-              debug mode
-            </Link>{' '}
-            or see{' '}
-            <Link className="underline" to="/test-results">
-              the test results
-            </Link>
-          </p>
+          <OpenButton
+            className="mx-2 border rounded px-1 py-1"
+            onLoad={onCartridgeLoad}>
+            Upload ROM
+          </OpenButton>
         </div>
-      </div>
-    </ThemeProvider>
+
+        {rom?.custom && (
+          <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
+        )}
+
+        <div className="mt-2 flex justify-center text-xs">
+          <Cartridges
+            selectedName={rom?.name}
+            onCartridgeLoad={onCartridgeLoad}
+          />
+        </div>
+
+        <div className="mt-2 flex text-center justify-center text-xs">
+          <div>
+            <p>
+              Select one of available demos or upload your custom *.gb file and
+              press Run
+            </p>
+            <p>
+              Test ROMs are available in{' '}
+              <Link className="underline" to="/debug">
+                debug mode
+              </Link>{' '}
+              or see{' '}
+              <Link className="underline" to="/test-results">
+                the test results
+              </Link>
+            </p>
+          </div>
+        </div>
+      </ThemeProvider>
+    </InputContextProvider>
   )
 }
 

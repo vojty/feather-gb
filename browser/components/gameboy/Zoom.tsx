@@ -16,7 +16,7 @@ const Styled = {
   `,
   Wrapper: styled.div`
     font-size: ${FONT_SIZE};
-    margin: 5px 0;
+    padding: 5px 0;
     display: flex;
     align-items: center;
     justify-content: center;
