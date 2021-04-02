@@ -31,7 +31,7 @@ The emulator can be run in 2 modes - the normal mode (shows just GameBoy's displ
 
 Based on React & TypeScript in general
 
-- Standard - **WIP** WebAssembly with some stylesheets
+- Standard - WebAssembly with some stylesheets
 - Debugger - WebAssembly with egui (using webgl as backend)
 
 ## TODOs
@@ -39,11 +39,10 @@ Based on React & TypeScript in general
 No specific priority here
 
 - standard (play) mode
-  - controls
-  - gamepad
-  - custom controls
+  - support for custom controls + gamepad
 - APU (currently with no sound - WIP in the previous TypeScript only version of the emulator)
 - FIFO for sprites
+- save & load
 - make PPU more accurate and pass some [mealybug-tearoom-tests](https://github.com/mattcurrie/mealybug-tearoom-tests)
 - GameBoy Color support
 
