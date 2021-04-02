@@ -306,10 +306,8 @@ impl Ppu {
                             self.pending_mode = Some(Mode::VBlank);
                             self.window_line_enabled = false;
 
-                            self.screen_buffer.commit_frame();
-
                             if self.skip_frames == 0 {
-                                // TODO enable drawing here
+                                self.screen_buffer.commit_frame();
                             }
                         }
                         line => panic!("Invalid screen line {}", line),
@@ -370,8 +368,8 @@ impl Ppu {
                     self.pending_mode = Some(Mode::OamSearch);
                     // Transition from the last line 153 to the line 0 goes like this:
                     // Cycle 456    line 153 => STAT mode=1
-                    // Cycle 0      line 0 => STAT mode=0
-                    // Cycle 4+     line 0 => STAT mode=2
+                    // Cycle 0      line   0 => STAT mode=0
+                    // Cycle 4+     line   0 => STAT mode=2
                     // tested by ly00_mode0_2.gs
                     // https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf section 8.9.1
                     self.change_stat_mode(Mode::HBlank);
@@ -700,6 +698,8 @@ impl Ppu {
                     // Only LY=LYC can trigger STAT interrupt now
                     self.check_ly_equals_lyc_no_mode(ic);
                     self.prev_stat_flag = false;
+
+                    // The first frame (after LCD is turned on) is skipped
                     self.skip_frames = 1;
                 }
 
