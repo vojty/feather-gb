@@ -5,7 +5,7 @@ type Props = {
   onChange: (zoom: number) => void
 }
 
-const FONT_SIZE = '14px'
+const FONT_SIZE = '12px'
 
 const Styled = {
   Icon: styled.div`
@@ -16,7 +16,6 @@ const Styled = {
   `,
   Wrapper: styled.div`
     font-size: ${FONT_SIZE};
-    padding: 5px 0;
     display: flex;
     align-items: center;
     justify-content: center;

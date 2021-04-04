@@ -2,9 +2,6 @@ import { useHistory } from 'react-router'
 import styled from 'styled-components'
 
 const Back = styled.div`
-  position: absolute;
-  top: 10px;
-  left: 10px;
   cursor: pointer;
 `
 

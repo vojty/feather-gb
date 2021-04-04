@@ -17,6 +17,7 @@ import { range } from '../../utils/std'
 import { memory } from '../../../gb-web/pkg/index_bg.wasm'
 import { WebEmulator } from '../../../gb-web/pkg'
 import { InputContextProvider } from '../../context/InputContext'
+import { FpsCounter } from '../play/FpsCounter'
 
 const DEFAULT_ZOOM = 1.5
 
@@ -161,8 +162,13 @@ export function Play() {
   return (
     <InputContextProvider>
       <ThemeProvider theme={theme}>
-        <Backbutton />
-        <Zoom zoom={zoom} onChange={setZoom} />
+        <div className="grid grid-cols-3 justify-between items-center mx-2 pt-2">
+          <Backbutton />
+          <Zoom zoom={zoom} onChange={setZoom} />
+          <div className="justify-end">
+            <FpsCounter />
+          </div>
+        </div>
         <GameBoy running={running} ref={setRef} />
         {ctx && (
           <DeviceHandler
