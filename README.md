@@ -1,9 +1,9 @@
 <div align="center">
-    <h1>FeatherGB</h1>
-    Just another GameBoy emulator written in Rust 🦀.
-
-    ![Debugger](./browser/assets/images/screen.png)
-
+  <h1><img src="./browser/assets/images/feather.svg" height="20" /> FeatherGB</h1>
+  Just another GameBoy emulator written in Rust 🦀.
+  <p align="center">
+    <img alt="Debugger" src="./browser/assets/images/screen.png" />
+  </p>
 </div>
 
 ## Info
