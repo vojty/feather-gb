@@ -48,6 +48,7 @@ pub enum Reg8 {
 }
 
 #[derive(Clone, Copy, Display, FromStr)]
+#[allow(clippy::clippy::upper_case_acronyms)]
 pub enum Reg16 {
     AF,
     BC,

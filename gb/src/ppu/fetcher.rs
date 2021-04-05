@@ -15,7 +15,7 @@ enum FetcherState {
     ReadTileNumber,
     ReadTileData0,
     ReadTileData1,
-    PushToFIFO,
+    PushToFifo,
 }
 
 pub struct Fetcher {
@@ -84,7 +84,7 @@ impl Fetcher {
         // TODO refactor this ugly code
         // workaround for SCY immediate change
         let y = if self.mode == MapLayer::Window {
-            (self.y & 0xff) as u8
+            self.y
         } else {
             bg_y
         };
@@ -115,9 +115,9 @@ impl Fetcher {
                 let tile_mask = self.tile_number << 4;
                 let address = tile_mask | (line + 1);
                 self.tile_data_upper = vram.read_byte(address as u16);
-                self.state = FetcherState::PushToFIFO;
+                self.state = FetcherState::PushToFifo;
             }
-            FetcherState::PushToFIFO => {
+            FetcherState::PushToFifo => {
                 if self.fifo.len() <= 8 {
                     for x in (0..=7).rev() {
                         let high = get_bit(self.tile_data_upper, x);

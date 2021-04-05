@@ -27,7 +27,7 @@ pub struct WebEmulator {
 }
 
 #[wasm_bindgen]
-pub enum JSKeys {
+pub enum JsKeys {
     ArrowDown,
     ArrowLeft,
     ArrowRight,
@@ -39,16 +39,16 @@ pub enum JSKeys {
 }
 
 // TODO find out, how to re-export existing enum to wasm in this web project
-fn translate_key(input: JSKeys) -> JoypadKey {
+fn translate_key(input: JsKeys) -> JoypadKey {
     match input {
-        JSKeys::ArrowDown => JoypadKey::ArrowDown,
-        JSKeys::ArrowUp => JoypadKey::ArrowUp,
-        JSKeys::ArrowLeft => JoypadKey::ArrowLeft,
-        JSKeys::ArrowRight => JoypadKey::ArrowRight,
-        JSKeys::A => JoypadKey::A,
-        JSKeys::B => JoypadKey::B,
-        JSKeys::Start => JoypadKey::Start,
-        JSKeys::Select => JoypadKey::Select,
+        JsKeys::ArrowDown => JoypadKey::ArrowDown,
+        JsKeys::ArrowUp => JoypadKey::ArrowUp,
+        JsKeys::ArrowLeft => JoypadKey::ArrowLeft,
+        JsKeys::ArrowRight => JoypadKey::ArrowRight,
+        JsKeys::A => JoypadKey::A,
+        JsKeys::B => JoypadKey::B,
+        JsKeys::Start => JoypadKey::Start,
+        JsKeys::Select => JoypadKey::Select,
     }
 }
 
@@ -69,11 +69,11 @@ impl WebEmulator {
         self.e.get_screen_buffer().get_raw_data()
     }
 
-    pub fn on_key_down(&mut self, input_key: JSKeys) {
+    pub fn on_key_down(&mut self, input_key: JsKeys) {
         self.e.on_key_down(translate_key(input_key));
     }
 
-    pub fn on_key_up(&mut self, input_key: JSKeys) {
+    pub fn on_key_up(&mut self, input_key: JsKeys) {
         self.e.on_key_up(translate_key(input_key));
     }
 }

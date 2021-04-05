@@ -1,24 +1,24 @@
 import { useCallback, useContext } from 'react'
-import { JSKeys, WebEmulator } from '../../gb-web/pkg'
+import { JsKeys, WebEmulator } from '../../gb-web/pkg'
 import { InputContext } from '../context/InputContext'
 
-const keysMap: { [key in string]: JSKeys } = {
-  ArrowDown: JSKeys.ArrowDown,
-  ArrowUp: JSKeys.ArrowUp,
-  ArrowLeft: JSKeys.ArrowLeft,
-  ArrowRight: JSKeys.ArrowRight,
+const keysMap: { [key in string]: JsKeys } = {
+  ArrowDown: JsKeys.ArrowDown,
+  ArrowUp: JsKeys.ArrowUp,
+  ArrowLeft: JsKeys.ArrowLeft,
+  ArrowRight: JsKeys.ArrowRight,
   // AWSD
-  KeyD: JSKeys.ArrowRight,
-  KeyA: JSKeys.ArrowLeft,
-  KeyW: JSKeys.ArrowUp,
-  KeyS: JSKeys.ArrowDown,
+  KeyD: JsKeys.ArrowRight,
+  KeyA: JsKeys.ArrowLeft,
+  KeyW: JsKeys.ArrowUp,
+  KeyS: JsKeys.ArrowDown,
 
-  KeyJ: JSKeys.A,
-  KeyX: JSKeys.A,
-  KeyK: JSKeys.B,
-  KeyC: JSKeys.B,
-  KeyB: JSKeys.Start,
-  KeyN: JSKeys.Select
+  KeyJ: JsKeys.A,
+  KeyX: JsKeys.A,
+  KeyK: JsKeys.B,
+  KeyC: JsKeys.B,
+  KeyB: JsKeys.Start,
+  KeyN: JsKeys.Select
 }
 
 /**

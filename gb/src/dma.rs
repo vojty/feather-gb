@@ -1,9 +1,9 @@
 #[derive(PartialEq)]
 enum State {
-    IDLE,
-    REQUESTED,
-    TRIGGERED,
-    ACTIVE,
+    Idle,
+    Requested,
+    Triggered,
+    Active,
 }
 pub struct OamDma {
     state: State,
@@ -16,7 +16,7 @@ pub struct OamDma {
 impl OamDma {
     pub fn new() -> OamDma {
         OamDma {
-            state: State::IDLE,
+            state: State::Idle,
             last_written: 0xff,
             transfer_from_addr: 0,
             offset: 0,
@@ -29,7 +29,7 @@ impl OamDma {
     }
 
     pub fn is_active(&self) -> bool {
-        if [State::ACTIVE].contains(&self.state) {
+        if [State::Active].contains(&self.state) {
             return true;
         }
         false
@@ -39,8 +39,8 @@ impl OamDma {
         self.last_written = value;
 
         self.requested = Some(value);
-        if self.state == State::IDLE {
-            self.state = State::REQUESTED;
+        if self.state == State::Idle {
+            self.state = State::Requested;
         }
     }
 
@@ -53,27 +53,27 @@ impl OamDma {
     }
 
     pub fn tick(&mut self) -> Option<(u16, u16)> {
-        if self.state == State::IDLE {
+        if self.state == State::Idle {
             return None;
         }
 
         // Request write + tick is same M cycle
         // One cycle delay before start
-        if self.state == State::REQUESTED {
-            self.state = State::TRIGGERED;
+        if self.state == State::Requested {
+            self.state = State::Triggered;
             self.transfer_from_addr = (self.last_written as u16) << 8;
             self.requested = None;
             self.offset = 0;
             return None;
         }
 
-        if self.state == State::TRIGGERED {
-            self.state = State::ACTIVE;
+        if self.state == State::Triggered {
+            self.state = State::Active;
         }
 
         // One cycle delay before end
         if self.offset == 160 {
-            self.state = State::IDLE;
+            self.state = State::Idle;
             return None;
         }
 

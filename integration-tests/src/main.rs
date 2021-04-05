@@ -17,15 +17,15 @@ mod utils;
 pub async fn main() {
     let now = Instant::now();
 
-    let mut suites = vec![];
-
-    suites.push(tokio::spawn(blarggs_tests::run_tests()));
-    suites.push(tokio::spawn(mooneye_tests::run_tests()));
-    suites.push(tokio::spawn(wilbertpol_tests::run_tests()));
-    suites.push(tokio::spawn(scribbl_tests::run_tests()));
-    suites.push(tokio::spawn(turtle_tests::run_tests()));
-    suites.push(tokio::spawn(mbc3_tester::run_tests()));
-    suites.push(tokio::spawn(mealybug_tearoom_tests::run_tests()));
+    let suites = vec![
+        tokio::spawn(blarggs_tests::run_tests()),
+        tokio::spawn(mooneye_tests::run_tests()),
+        tokio::spawn(wilbertpol_tests::run_tests()),
+        tokio::spawn(scribbl_tests::run_tests()),
+        tokio::spawn(turtle_tests::run_tests()),
+        tokio::spawn(mbc3_tester::run_tests()),
+        tokio::spawn(mealybug_tearoom_tests::run_tests()),
+    ];
 
     let results = join_all(suites).await;
     let mut content = results

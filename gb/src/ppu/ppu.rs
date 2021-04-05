@@ -39,27 +39,27 @@ pub enum MapLayer {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct RGB {
+pub struct Rgb {
     pub r: u8,
     pub g: u8,
     pub b: u8,
 }
 
-impl RGB {
+impl Rgb {
     pub fn to_array(&self) -> [u8; 3] {
         [self.r, self.g, self.b]
     }
 
-    pub fn empty() -> RGB {
-        RGB { r: 0, g: 0, b: 0 }
+    pub fn empty() -> Rgb {
+        Rgb { r: 0, g: 0, b: 0 }
     }
 
-    pub fn new(r: u8, g: u8, b: u8) -> RGB {
-        RGB { r, g, b }
+    pub fn new(r: u8, g: u8, b: u8) -> Rgb {
+        Rgb { r, g, b }
     }
 }
 
-pub type Palette = [RGB; 4];
+pub type Palette = [Rgb; 4];
 pub enum Palettes {
     Gray,
     Green,
@@ -70,24 +70,24 @@ impl Palettes {
     fn get_palette(&self) -> Palette {
         match self {
             Palettes::Gray => [
-                RGB::new(255, 255, 255),
-                RGB::new(192, 192, 192),
-                RGB::new(96, 96, 96),
-                RGB::new(0, 0, 0),
+                Rgb::new(255, 255, 255),
+                Rgb::new(192, 192, 192),
+                Rgb::new(96, 96, 96),
+                Rgb::new(0, 0, 0),
             ],
             // Used in scribbltests
             Palettes::Green => [
-                RGB::new(224, 248, 208),
-                RGB::new(136, 191, 112),
-                RGB::new(52, 104, 86),
-                RGB::new(9, 25, 33),
+                Rgb::new(224, 248, 208),
+                Rgb::new(136, 191, 112),
+                Rgb::new(52, 104, 86),
+                Rgb::new(9, 25, 33),
             ],
             // https://www.designpieces.com/palette/game-boy-original-color-palette-hex-and-rgb/
             Palettes::GreenDmg => [
-                RGB::new(155, 188, 15),
-                RGB::new(139, 172, 15),
-                RGB::new(48, 98, 48),
-                RGB::new(15, 56, 15),
+                Rgb::new(155, 188, 15),
+                Rgb::new(139, 172, 15),
+                Rgb::new(48, 98, 48),
+                Rgb::new(15, 56, 15),
             ],
         }
     }
@@ -510,7 +510,7 @@ impl Ppu {
         ]
     }
 
-    fn render_pixel(&mut self, pixel: RGB) {
+    fn render_pixel(&mut self, pixel: Rgb) {
         self.screen_buffer.get_write_buffer_mut().set_pixel(
             self.x as usize,
             self.ly as usize,
@@ -543,7 +543,7 @@ impl Ppu {
 
         let sprites = self.get_visible_sprites();
 
-        let pixels: Vec<(usize, usize, RGB, bool)> = sprites
+        let pixels: Vec<(usize, usize, Rgb, bool)> = sprites
             .iter()
             .flat_map(|sprite| self.render_sprite(sprite))
             .collect();
@@ -563,7 +563,7 @@ impl Ppu {
         }
     }
 
-    fn render_sprite(&self, sprite: &Sprite) -> Vec<(usize, usize, RGB, bool)> {
+    fn render_sprite(&self, sprite: &Sprite) -> Vec<(usize, usize, Rgb, bool)> {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
         let palette_register = if sprite.palette == 0 {
             self.obp0

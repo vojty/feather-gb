@@ -9,6 +9,7 @@ use crate::traits::DisplayHex;
 use super::cpu;
 
 #[derive(Display, FromStr, Copy, Clone, PartialEq)]
+#[allow(clippy::clippy::upper_case_acronyms)]
 pub enum JumpConditions {
     NZ,
     Z,
@@ -19,6 +20,7 @@ pub enum JumpConditions {
 }
 
 #[derive(Display, FromStr, Copy, Clone)]
+#[allow(clippy::clippy::upper_case_acronyms)]
 #[display("({})")]
 pub enum Addr {
     BC,

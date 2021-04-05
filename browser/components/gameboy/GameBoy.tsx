@@ -3,7 +3,7 @@ import { useTheme } from '../../hooks/useTheme'
 import { useInput } from '../../hooks/useInput'
 import { Display } from './Display'
 import { Styled, ArrowOrientation } from './GameBoy.styled'
-import { JSKeys } from '../../../gb-web/pkg'
+import { JsKeys } from '../../../gb-web/pkg'
 
 export const DISPLAY_WIDTH = 160
 export const DISPLAY_HEIGHT = 144
@@ -15,14 +15,14 @@ function GameBoyComponent(
   const { zoom } = useTheme()
   const input = useInput()
 
-  const pressedA = input.includes(JSKeys.A)
-  const pressedB = input.includes(JSKeys.B)
-  const pressedStart = input.includes(JSKeys.Start)
-  const pressedSelect = input.includes(JSKeys.Select)
-  const pressedLeft = input.includes(JSKeys.ArrowLeft)
-  const pressedRight = input.includes(JSKeys.ArrowRight)
-  const pressedUp = input.includes(JSKeys.ArrowUp)
-  const pressedDown = input.includes(JSKeys.ArrowDown)
+  const pressedA = input.includes(JsKeys.A)
+  const pressedB = input.includes(JsKeys.B)
+  const pressedStart = input.includes(JsKeys.Start)
+  const pressedSelect = input.includes(JsKeys.Select)
+  const pressedLeft = input.includes(JsKeys.ArrowLeft)
+  const pressedRight = input.includes(JsKeys.ArrowRight)
+  const pressedUp = input.includes(JsKeys.ArrowUp)
+  const pressedDown = input.includes(JsKeys.ArrowDown)
 
   // The whole styling is kinda ugly and pixel-perfect but I don't care, I love it https://www.youtube.com/watch?v=UxxajLWwzqY
   return (

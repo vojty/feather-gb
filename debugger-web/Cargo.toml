@@ -1,6 +1,10 @@
 [package]
 name = "debugger-web"
 version = "0.1.0"
+authors = ["Tomáš Vojtášek <tomas.vojtasek@tipsport.cz>"]
+repository = "https://github.com/vojty/feather-gb"
+description = "Just another GameBoy emulator written in Rust 🦀"
+license = "UNLICENSED"
 edition = "2018"
 
 [lib]

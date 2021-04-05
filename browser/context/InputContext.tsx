@@ -1,10 +1,10 @@
 import { createContext, useCallback, useState } from 'react'
-import { JSKeys } from '../../gb-web/pkg'
+import { JsKeys } from '../../gb-web/pkg'
 
 export const InputContext = createContext<{
-  input: JSKeys[]
-  onKeyDown: (key: JSKeys) => void
-  onKeyUp: (key: JSKeys) => void
+  input: JsKeys[]
+  onKeyDown: (key: JsKeys) => void
+  onKeyUp: (key: JsKeys) => void
 }>({
   input: [],
   onKeyDown: () => {},
@@ -16,13 +16,13 @@ export function InputContextProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [input, setInput] = useState<JSKeys[]>([])
+  const [input, setInput] = useState<JsKeys[]>([])
 
-  const onKeyUp = useCallback((key: JSKeys) => {
+  const onKeyUp = useCallback((key: JsKeys) => {
     setInput((prevInput) => prevInput.filter((k) => key !== k))
   }, [])
 
-  const onKeyDown = useCallback((key: JSKeys) => {
+  const onKeyDown = useCallback((key: JsKeys) => {
     setInput((prevInput) => {
       if (prevInput.includes(key)) {
         return prevInput
