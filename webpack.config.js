@@ -24,7 +24,9 @@ function getPlugins(isProduction) {
         }
       ]
     }),
-    new MiniCssExtractPlugin(),
+    new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css'
+    }),
     new ForkTsCheckerWebpackPlugin(),
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, './debugger-web'),
@@ -68,9 +70,12 @@ module.exports = (env, argv) => {
   return {
     mode: isProduction ? 'production' : 'development',
     entry: './browser/main.tsx',
+    optimization: {
+      minimize: isProduction
+    },
     output: {
       path: path.resolve(__dirname, 'public'),
-      filename: 'main.js'
+      filename: '[name].[contenthash].js'
     },
     experiments: {
       syncWebAssembly: true
