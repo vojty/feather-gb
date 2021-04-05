@@ -1,0 +1,1 @@
+(self.webpackChunkgb_emu=self.webpackChunkgb_emu||[]).push([[670],{2670:(_,e,b)=>{"use strict";b.r(e),b.d(e,{JsKeys:()=>r.Lt,WebCartridge:()=>r.n6,WebEmulator:()=>r.O7,__wbg_error_4bb6c2a97407129a:()=>r.kF,__wbg_new_59cb74e423758ede:()=>r.h9,__wbg_stack_558ba5917b466edd:()=>r.Dz,__wbindgen_object_drop_ref:()=>r.ug,__wbindgen_throw:()=>r.Or,init:()=>r.S1});var r=b(3595)}}]);
