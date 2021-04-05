@@ -1,6 +1,7 @@
 {
   "name": "gb-emu",
   "license": "UNLICENSED",
+  "homepage": "https://vojty.github.io/feather-gb/",
   "scripts": {
     "build": "rimraf public && NODE_ENV=production webpack --mode=production",
     "serve": "webpack serve"
