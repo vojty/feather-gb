@@ -2,7 +2,7 @@
   <h1><img src="./browser/assets/images/feather.svg" height="20" /> FeatherGB</h1>
   Just another GameBoy emulator written in Rust 🦀
   <p align="center">
-    <img alt="Debugger" src="./browser/assets/images/screen.png" />
+    <img alt="Debugger" src="./browser/assets/images/screen-debugger.png" />
   </p>
 </div>
 
