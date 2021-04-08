@@ -120,10 +120,8 @@ impl epi::App for Debugger {
                 emulator.run_instruction();
             }
 
-            if ui.button("Next 500 instructions").clicked() {
-                (0..500).for_each(|_| {
-                    emulator.run_instruction();
-                });
+            if ui.button("Step").clicked() {
+                emulator.run_instruction();
             }
 
             if ui.button("Next frame").clicked() {

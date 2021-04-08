@@ -134,7 +134,7 @@ pub struct Ppu {
     window_x: i32,
     x: u8,
     sampled_scx: u8,
-    prev_stat_flag: bool,
+    pub prev_stat_flag: bool,
     pub line_clocks: u32,
     pub mode: Mode,
     pub line: u8,
@@ -239,18 +239,13 @@ impl Ppu {
 
         // LY=LYC handler
         match self.line_clocks {
-            // There is no delay for line to compare at line 0
-            0 => {
-                if self.line > 0 {
-                    self.ly_to_compare = None;
-                } else {
-                    self.ly_to_compare = Some(0);
-                }
-            }
             // Line to compare is 4 cycles late
             4 => {
-                self.ly_to_compare = Some(self.ly);
-                self.check_ly_equals_lyc(ic); // TODO lyc=ly should not be checked at 0 line?
+                // the check for 0 line is performed during line 153 or when LCD is turned on
+                if self.line != 0 {
+                    self.ly_to_compare = Some(self.ly);
+                    self.check_ly_equals_lyc(ic);
+                }
             }
             _ => {}
         }
@@ -294,7 +289,7 @@ impl Ppu {
                     self.ly += 1;
                     self.line += 1;
                     self.ly_to_compare = None;
-                    self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
+                    self.check_ly_equals_lyc(ic);
 
                     match self.ly {
                         0..=143 => {
@@ -322,10 +317,6 @@ impl Ppu {
         match self.line {
             144..=152 => {
                 match self.line_clocks {
-                    0 => {
-                        self.ly_to_compare = None;
-                        self.check_ly_equals_lyc(ic);
-                    }
                     4 => {
                         self.ly_to_compare = Some(self.ly);
                         self.check_ly_equals_lyc(ic);
@@ -346,10 +337,6 @@ impl Ppu {
                 self.stat_update(ic, Mode::VBlank);
             }
             153 => match self.line_clocks {
-                0 => {
-                    self.ly_to_compare = None;
-                    self.check_ly_equals_lyc(ic);
-                }
                 4 => {
                     self.ly_to_compare = Some(153);
                     self.check_ly_equals_lyc(ic);
@@ -697,7 +684,8 @@ impl Ppu {
                     self.line_clocks = 4;
                     // Only LY=LYC can trigger STAT interrupt now
                     self.check_ly_equals_lyc_no_mode(ic);
-                    self.prev_stat_flag = false;
+                    // self.prev_stat_flag = false;
+                    self.ly_to_compare = None;
 
                     // The first frame (after LCD is turned on) is skipped
                     self.skip_frames = 1;

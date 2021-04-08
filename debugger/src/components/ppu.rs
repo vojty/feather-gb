@@ -49,6 +49,10 @@ impl Ppu {
                 });
                 ui.end_row();
 
+                ui.label("STAT interrupt line");
+                ui.mono_label(e.hw.ppu.prev_stat_flag as u32);
+                ui.end_row();
+
                 ui.label("Line clocks");
                 ui.mono_label(e.hw.ppu.line_clocks);
                 ui.end_row();
@@ -80,17 +84,18 @@ impl Ppu {
             ui.heading("Registers");
             Grid::new("PPU Registers").show(ui, |ui| {
                 let registers = [
+                    ("IF", 0xff0f, e.hw.read_byte(0xff0f)),
                     ("LCDC", R_LCDC, e.hw.read_byte(R_LCDC)),
                     ("STAT", R_STAT, e.hw.read_byte(R_STAT)),
-                    ("SCY", R_SCY, e.hw.ppu.read_byte(R_SCY)),
-                    ("SCX", R_SCX, e.hw.ppu.read_byte(R_SCX)),
-                    ("LY", R_LY, e.hw.ppu.read_byte(R_LY)),
-                    ("LYC", R_LYC, e.hw.ppu.read_byte(R_LYC)),
-                    ("BGP", R_BGP, e.hw.ppu.read_byte(R_BGP)),
-                    ("OBP0", R_OBP0, e.hw.ppu.read_byte(R_OBP0)),
-                    ("OBP1", R_OBP1, e.hw.ppu.read_byte(R_OBP1)),
-                    ("WY", R_WY, e.hw.ppu.read_byte(R_WY)),
-                    ("WX", R_WX, e.hw.ppu.read_byte(R_WX)),
+                    ("SCY", R_SCY, e.hw.read_byte(R_SCY)),
+                    ("SCX", R_SCX, e.hw.read_byte(R_SCX)),
+                    ("LY", R_LY, e.hw.read_byte(R_LY)),
+                    ("LYC", R_LYC, e.hw.read_byte(R_LYC)),
+                    ("BGP", R_BGP, e.hw.read_byte(R_BGP)),
+                    ("OBP0", R_OBP0, e.hw.read_byte(R_OBP0)),
+                    ("OBP1", R_OBP1, e.hw.read_byte(R_OBP1)),
+                    ("WY", R_WY, e.hw.read_byte(R_WY)),
+                    ("WX", R_WX, e.hw.read_byte(R_WX)),
                 ];
 
                 registers.iter().for_each(|(name, address, value)| {
