@@ -15,8 +15,8 @@ crate-type =["cdylib"]
 log = "0.4.14"
 debugger = { path = "../debugger" }
 env_logger = "0.8.3"
-eframe = "0.10.0" # Gives us egui, epi and web+native backends
-egui_web = "0.10.0"
+eframe = "0.11.0" # Gives us egui, epi and web+native backends
+egui_web = "0.11.0"
 wasm-bindgen = { version = "0.2.71", features = ["serde-serialize"] }
 js-sys = "*"
 console_error_panic_hook = "0.1.6"
