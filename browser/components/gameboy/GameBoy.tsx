@@ -13,7 +13,7 @@ function GameBoyComponent(
   ref: ForwardedRef<HTMLCanvasElement | null>
 ) {
   const { zoom } = useTheme()
-  const input = useInput()
+  const { input, onKeyDown, onKeyUp } = useInput()
 
   const pressedA = input.includes(JsKeys.A)
   const pressedB = input.includes(JsKeys.B)
@@ -55,6 +55,9 @@ function GameBoyComponent(
           <Styled.Arrows>
             <Styled.ArrowsLine>
               <Styled.ArrowUp
+                // TODO memoize?
+                onPointerDown={() => onKeyDown(JsKeys.ArrowUp)}
+                onPointerUp={() => onKeyUp(JsKeys.ArrowUp)}
                 $orientation={ArrowOrientation.HORIZONTAL}
                 $pressed={pressedUp}>
                 <Styled.ArrowStripe />
@@ -64,6 +67,8 @@ function GameBoyComponent(
             </Styled.ArrowsLine>
             <Styled.ArrowsLine>
               <Styled.ArrowLeft
+                onPointerDown={() => onKeyDown(JsKeys.ArrowLeft)}
+                onPointerUp={() => onKeyUp(JsKeys.ArrowLeft)}
                 $orientation={ArrowOrientation.VERTICAL}
                 $pressed={pressedLeft}>
                 <Styled.ArrowStripe />
@@ -72,6 +77,8 @@ function GameBoyComponent(
               </Styled.ArrowLeft>
               <Styled.ArrowCenter />
               <Styled.ArrowRight
+                onPointerDown={() => onKeyDown(JsKeys.ArrowRight)}
+                onPointerUp={() => onKeyUp(JsKeys.ArrowRight)}
                 $orientation={ArrowOrientation.VERTICAL}
                 $pressed={pressedRight}>
                 <Styled.ArrowStripe />
@@ -81,6 +88,8 @@ function GameBoyComponent(
             </Styled.ArrowsLine>
             <Styled.ArrowsLine>
               <Styled.ArrowDown
+                onPointerDown={() => onKeyDown(JsKeys.ArrowDown)}
+                onPointerUp={() => onKeyUp(JsKeys.ArrowDown)}
                 $orientation={ArrowOrientation.HORIZONTAL}
                 $pressed={pressedDown}>
                 <Styled.ArrowStripe />
@@ -93,12 +102,20 @@ function GameBoyComponent(
           <div className="ml-auto">
             <Styled.ButtonsAB className=" font-nes">
               <Styled.CircleButtonWrapper>
-                <Styled.CircleButton $pressed={pressedB} />
+                <Styled.CircleButton
+                  onPointerDown={() => onKeyDown(JsKeys.B)}
+                  onPointerUp={() => onKeyUp(JsKeys.B)}
+                  $pressed={pressedB}
+                />
                 <Styled.ButtonText $spacing={10}>B</Styled.ButtonText>
               </Styled.CircleButtonWrapper>
 
               <Styled.CircleButtonWrapper>
-                <Styled.CircleButton $pressed={pressedA} />
+                <Styled.CircleButton
+                  onPointerDown={() => onKeyDown(JsKeys.A)}
+                  onPointerUp={() => onKeyUp(JsKeys.A)}
+                  $pressed={pressedA}
+                />
                 <Styled.ButtonText $spacing={10}>A</Styled.ButtonText>
               </Styled.CircleButtonWrapper>
             </Styled.ButtonsAB>
@@ -108,13 +125,21 @@ function GameBoyComponent(
         <Styled.ButtonsStartSelect className="font-nes">
           <Styled.WideButtonContainer>
             <Styled.WideButtonWrapper>
-              <Styled.WideButton $pressed={pressedSelect} />
+              <Styled.WideButton
+                onPointerDown={() => onKeyDown(JsKeys.Select)}
+                onPointerUp={() => onKeyUp(JsKeys.Select)}
+                $pressed={pressedSelect}
+              />
             </Styled.WideButtonWrapper>
             <Styled.ButtonText $spacing={1}>SELECT</Styled.ButtonText>
           </Styled.WideButtonContainer>
           <Styled.WideButtonContainer>
             <Styled.WideButtonWrapper>
-              <Styled.WideButton $pressed={pressedStart} />
+              <Styled.WideButton
+                onPointerDown={() => onKeyDown(JsKeys.Start)}
+                onPointerUp={() => onKeyUp(JsKeys.Start)}
+                $pressed={pressedStart}
+              />
             </Styled.WideButtonWrapper>
             <Styled.ButtonText $spacing={1}>START</Styled.ButtonText>
           </Styled.WideButtonContainer>

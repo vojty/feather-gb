@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect, useRef } from 'react'
 import { JsKeys, WebEmulator } from '../../gb-web/pkg'
 import { InputContext } from '../context/InputContext'
 
@@ -25,13 +25,25 @@ const keysMap: { [key in string]: JsKeys } = {
  * Hook for binding keys to current instance of emulator
  */
 export function useInputHandler() {
-  const { onKeyDown, onKeyUp } = useContext(InputContext)
+  const { onKeyDown, onKeyUp, input } = useContext(InputContext)
+  const emulatorRef = useRef<WebEmulator | null>()
 
-  const register = useCallback((emulator: WebEmulator) => {
+  // Propagate collected inputs to emulator
+  useEffect(() => {
+    Object.values(keysMap).forEach((key) => {
+      if (input.includes(key)) {
+        emulatorRef.current?.on_key_down(key)
+      } else {
+        emulatorRef.current?.on_key_up(key)
+      }
+    })
+  }, [input])
+
+  // Store pressed keyboard keys to context
+  useEffect(() => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
       const key = keysMap[event.code]
       if (key !== undefined) {
-        emulator.on_key_down(key)
         onKeyDown(key)
       }
     }
@@ -39,7 +51,6 @@ export function useInputHandler() {
     const onWindowKeyUp = (event: KeyboardEvent) => {
       const key = keysMap[event.code]
       if (key !== undefined) {
-        emulator.on_key_up(key)
         onKeyUp(key)
       }
     }
@@ -51,6 +62,10 @@ export function useInputHandler() {
       window.removeEventListener('keydown', onWindowKeyDown)
       window.removeEventListener('keyup', onWindowKeyUp)
     }
+  }, [])
+
+  const register = useCallback((emulator: WebEmulator) => {
+    emulatorRef.current = emulator
   }, [])
 
   return register

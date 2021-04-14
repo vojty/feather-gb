@@ -81,6 +81,7 @@ module.exports = (env, argv) => {
       syncWebAssembly: true
     },
     devServer: {
+      host: '0.0.0.0',
       historyApiFallback: true
     },
     module: {

@@ -81,8 +81,7 @@ function DeviceHandler(props: Props) {
     emulator.current = new wasmModule.WebEmulator(cartridge)
     initScreen(ctx)
 
-    const cleanup = registerInputs(emulator.current)
-    return cleanup
+    registerInputs(emulator.current)
   }, [bytes, wasmModule, registerInputs])
 
   // Handle stop/start
@@ -160,70 +159,72 @@ export function Play() {
   }
 
   return (
-    <InputContextProvider>
-      <ThemeProvider theme={theme}>
-        <div className="grid grid-cols-3 justify-between items-center mx-2 pt-2">
-          <Backbutton />
-          <Zoom zoom={zoom} onChange={setZoom} />
-          <div className="justify-end">
-            <FpsCounter />
+    <div className="select-none">
+      <InputContextProvider>
+        <ThemeProvider theme={theme}>
+          <div className="grid grid-cols-3 justify-between items-center mx-2 pt-2">
+            <Backbutton />
+            <Zoom zoom={zoom} onChange={setZoom} />
+            <div className="justify-end">
+              <FpsCounter />
+            </div>
           </div>
-        </div>
-        <GameBoy running={running} ref={setRef} />
-        {ctx && (
-          <DeviceHandler
-            bytes={rom?.bytes}
-            wasmModule={wasmModule}
-            running={running}
-            ctx={ctx}
-          />
-        )}
+          <GameBoy running={running} ref={setRef} />
+          {ctx && (
+            <DeviceHandler
+              bytes={rom?.bytes}
+              wasmModule={wasmModule}
+              running={running}
+              ctx={ctx}
+            />
+          )}
 
-        <div className="mt-2 flex justify-center text-xs">
-          <button
-            className="mx-2 border rounded px-1 py-1"
-            onClick={onRunningToggle}>
-            {running ? 'Stop' : 'Run'}
-          </button>
+          <div className="mt-2 flex justify-center text-xs">
+            <button
+              className="mx-2 border rounded px-1 py-1"
+              onClick={onRunningToggle}>
+              {running ? 'Stop' : 'Run'}
+            </button>
 
-          <OpenButton
-            className="mx-2 border rounded px-1 py-1"
-            onLoad={onCartridgeLoad}>
-            Upload ROM
-          </OpenButton>
-        </div>
-
-        {rom?.custom && (
-          <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
-        )}
-
-        <div className="mt-2 flex justify-center text-xs">
-          <Cartridges
-            selectedName={rom?.name}
-            onCartridgeLoad={onCartridgeLoad}
-          />
-        </div>
-
-        <div className="mt-2 flex text-center justify-center text-xs">
-          <div>
-            <p>
-              Select one of available demos or upload your custom *.gb file and
-              press Run
-            </p>
-            <p>
-              Test ROMs are available in{' '}
-              <Link className="underline" to="/debug">
-                debug mode
-              </Link>{' '}
-              or see{' '}
-              <Link className="underline" to="/test-results">
-                the test results
-              </Link>
-            </p>
+            <OpenButton
+              className="mx-2 border rounded px-1 py-1"
+              onLoad={onCartridgeLoad}>
+              Upload ROM
+            </OpenButton>
           </div>
-        </div>
-      </ThemeProvider>
-    </InputContextProvider>
+
+          {rom?.custom && (
+            <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
+          )}
+
+          <div className="mt-2 flex justify-center text-xs">
+            <Cartridges
+              selectedName={rom?.name}
+              onCartridgeLoad={onCartridgeLoad}
+            />
+          </div>
+
+          <div className="mt-2 flex text-center justify-center text-xs">
+            <div>
+              <p>
+                Select one of available demos or upload your custom *.gb file
+                and press Run
+              </p>
+              <p>
+                Test ROMs are available in{' '}
+                <Link className="underline" to="/debug">
+                  debug mode
+                </Link>{' '}
+                or see{' '}
+                <Link className="underline" to="/test-results">
+                  the test results
+                </Link>
+              </p>
+            </div>
+          </div>
+        </ThemeProvider>
+      </InputContextProvider>
+    </div>
   )
 }
 
