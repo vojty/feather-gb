@@ -95,10 +95,10 @@ impl Palettes {
 
 #[derive(Clone, Copy, PartialEq, Debug, Display)]
 pub enum Mode {
-    HBlank, // 0
-    VBlank, // 1
-    OamSearch,
-    PixelTransfer,
+    HBlank,        // m0
+    VBlank,        // m1
+    OamSearch,     // m2
+    PixelTransfer, // m3
 }
 
 impl Mode {
@@ -108,6 +108,16 @@ impl Mode {
             Mode::VBlank => 0b01,
             Mode::OamSearch => 0b10,
             Mode::PixelTransfer => 0b11,
+        }
+    }
+
+    pub fn from_bits(bits: u8) -> Mode {
+        match bits & 0b11 {
+            0b00 => Mode::HBlank,
+            0b01 => Mode::VBlank,
+            0b10 => Mode::OamSearch,
+            0b11 => Mode::PixelTransfer,
+            _ => panic!("Unable to parse PPU mode from {}", bits),
         }
     }
 }

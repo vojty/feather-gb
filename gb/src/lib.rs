@@ -15,7 +15,7 @@ pub mod constants;
 pub mod cpu;
 mod dma;
 pub mod emulator;
-mod interrupts;
+pub mod interrupts;
 pub mod joypad;
 pub mod ppu;
 mod timer;
