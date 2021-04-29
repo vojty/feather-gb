@@ -24,12 +24,21 @@ pub enum CartridgeType {
     Mbc5RamBattery,
 }
 
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Display)]
+pub enum CGBFlag {
+    None,
+    Supported,
+    Required,
+}
+
 pub struct Meta {
     pub cartridge_type: CartridgeType,
     pub cartridge_type_byte: u8,
     pub name: String,
     pub rom_size: usize,
     pub ram_size: usize,
+    pub cgb_flag: CGBFlag,
 }
 
 impl Meta {
@@ -87,6 +96,7 @@ impl Cartridge {
                 name: String::from("empty"),
                 ram_size: 0,
                 rom_size,
+                cgb_flag: CGBFlag::None,
             },
         }
     }
@@ -126,7 +136,13 @@ impl Cartridge {
 
         let ram = vec![0xff; ram_size].into_boxed_slice();
 
-        let s = &rom[0x0134..0x0144];
+        let cgb_flag = match &rom[0x143] {
+            0x80 => CGBFlag::Supported,
+            0xC0 => CGBFlag::Required,
+            _ => CGBFlag::None,
+        };
+
+        let s = &rom[0x0134..0x0143];
         let name = s.iter().map(|byte| *byte as char).collect::<String>();
         let data = Data::new(rom, ram, rom_size, ram_size);
         let controller: Box<dyn Controller> = match cartridge_type {
@@ -151,6 +167,7 @@ impl Cartridge {
             name,
             rom_size,
             ram_size,
+            cgb_flag,
         };
 
         Cartridge { meta, controller }

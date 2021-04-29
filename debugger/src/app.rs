@@ -131,17 +131,19 @@ impl epi::App for Debugger {
 
             // ------------------ CARTRIDGE INFO ----------------------
             ui.heading("Cartridge");
-            ui.label(format!("Name: {}", emulator.hw.cartridge.meta.get_name(),));
+            let meta = &emulator.hw.cartridge.meta;
+            ui.label(format!("Name: {}", meta.get_name(),));
             ui.label(format!(
                 "Type: {} (0x{})",
-                emulator.hw.cartridge.meta.cartridge_type,
-                emulator.hw.cartridge.meta.cartridge_type_byte.to_hex(),
+                meta.cartridge_type,
+                meta.cartridge_type_byte.to_hex(),
             ));
             ui.label(format!(
                 "ROM={:.0}B, RAM={:.0}B",
-                SizeFormatterBinary::new(emulator.hw.cartridge.meta.rom_size as u64),
-                SizeFormatterBinary::new(emulator.hw.cartridge.meta.ram_size as u64)
+                SizeFormatterBinary::new(meta.rom_size as u64),
+                SizeFormatterBinary::new(meta.ram_size as u64)
             ));
+            ui.label(format!("CGB Flag: {}", meta.cgb_flag));
             ui.separator();
 
             // ------------------ SERIAL ----------------------
