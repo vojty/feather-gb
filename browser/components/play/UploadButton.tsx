@@ -27,7 +27,7 @@ export function OpenButton(props: Props) {
     <>
       <input
         onChange={onChange}
-        accept=".gb"
+        accept=".gb,.gbc"
         style={{ display: 'none' }}
         id="file"
         multiple

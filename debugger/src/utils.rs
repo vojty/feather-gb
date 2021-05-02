@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-use glob::glob;
+use globwalk::GlobWalkerBuilder;
 use regex::Regex;
 
 fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
@@ -42,18 +42,22 @@ impl BinarySource for FileSystemRom {
 pub fn load_roms() -> Vec<Box<dyn BinarySource>> {
     let mut files = vec![];
 
-    for entry in glob("./roms/**/*.gb").expect("Failed to read glob pattern") {
-        match entry {
-            Ok(path) => files.push(path),
-            Err(e) => log::debug!("Glob file error, {:?}", e),
-        }
+    let iterator = GlobWalkerBuilder::from_patterns("roms", &["**/*.{gb,gbc}"])
+        .build()
+        .unwrap()
+        .into_iter()
+        .filter_map(Result::ok);
+
+    for entry in iterator {
+        files.push(entry.path().to_str().unwrap().to_string());
     }
+
+    files.sort();
     let regex = Regex::new("^roms/").unwrap();
 
     let paths = files
         .into_iter()
         .map(|path| {
-            let path = path.into_os_string().into_string().unwrap();
             let name = regex.replace(&path, "").to_string();
             let name = sanitize_name(&name);
             let item: Box<dyn BinarySource> = Box::new(FileSystemRom { path, name });

@@ -5,7 +5,7 @@ const fs = require('fs')
 const prettier = require('prettier')
 const config = require('./.prettierrc.js')
 
-const entries = fg.sync(['roms/**/*.gb'])
+const entries = fg.sync(['roms/**/*.{gb,gbc}'])
 
 const roms = entries.map((e) => e.replace('roms/', '')).sort()
 
