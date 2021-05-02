@@ -21,3 +21,4 @@ pub mod ppu;
 mod timer;
 pub mod traits;
 mod utils;
+mod wram;

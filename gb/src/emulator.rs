@@ -16,6 +16,7 @@ use crate::{
     },
     timer::Timer,
     traits::{DisplayHex, MemoryAccess},
+    wram::Wram,
 };
 pub trait SplitU16 {
     fn split_to_u8(self) -> (u8, u8);
@@ -29,10 +30,6 @@ impl SplitU16 for u16 {
     }
 }
 
-const RAM_START: u16 = 0xc000;
-const RAM_END: u16 = 0xdfff;
-const RAM_SIZE: usize = RAM_END as usize - RAM_START as usize + 1;
-
 const HRAM_START: u16 = 0xff80;
 const HRAM_END: u16 = 0xfffe;
 const HRAM_SIZE: usize = HRAM_END as usize - HRAM_START as usize + 1;
@@ -41,7 +38,7 @@ pub struct Hardware {
     bios_enabled: bool,
     pub cartridge: Cartridge,
     pub ppu: Ppu,
-    ram: Box<[u8; RAM_SIZE]>,
+    wram: Wram,
     hram: Box<[u8; HRAM_SIZE]>,
     capture_serial: bool,
     pub serial_output: Vec<char>,
@@ -73,10 +70,10 @@ impl MemoryAccess for Hardware {
             0xa000..=0xbfff => self.cartridge.read_byte(address),
 
             // Working RAM - 8kb
-            0xc000..=0xdfff => self.ram[(address & 0x1fff) as usize],
+            0xc000..=0xdfff => self.wram.read_byte(address),
 
             // Working RAM (shadow) exact copy of previous working RAM, due to the HW wiring
-            0xe000..=0xfdff => self.ram[(address & 0x1fff) as usize],
+            0xe000..=0xfdff => self.wram.read_byte(address - 0x2000),
 
             // Sprite attribute table (OAM)
             0xfe00..=0xfe9f => {
@@ -100,6 +97,7 @@ impl MemoryAccess for Hardware {
                 0xff40..=0xff45 => self.ppu.read_byte(address),   // PPU
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
+                0xff70 => self.wram.read_byte(address),           // CGB WRAM bank switch
                 _ => 0xff,                                        // unused
             },
 
@@ -127,10 +125,10 @@ impl MemoryAccess for Hardware {
             0xa000..=0xbfff => self.cartridge.write_byte(address, value),
 
             // Working RAM - 8kb
-            0xc000..=0xdfff => self.ram[(address & 0x1fff) as usize] = value,
+            0xc000..=0xdfff => self.wram.write_byte(address, value),
 
             // Working RAM (shadow) exact copy of previous working RAM, due to the HW wiring
-            0xe000..=0xfdff => self.ram[(address & 0x1fff) as usize] = value,
+            0xe000..=0xfdff => self.wram.write_byte(address - 0x2000, value),
 
             // Sprite attribute table (OAM)
             0xfe00..=0xfe9f => {
@@ -161,7 +159,8 @@ impl MemoryAccess for Hardware {
                 0xff50 => {
                     self.bios_enabled = false;
                 }
-                _ => {} // unused
+                0xff70 => self.wram.write_byte(address, value), // CGB WRAM bank switch
+                _ => {}                                         // unused
             },
 
             // High RAM (HRAM)
@@ -178,12 +177,14 @@ pub struct Emulator {
     pub hw: Hardware,
     pub frames: u32,
     executed_instructions: u32,
+    is_cgb: bool,
 }
 
 impl Emulator {
     pub fn new(bios_enabled: bool, cartridge: Cartridge) -> Emulator {
         let interrupt_controller = InterruptController::new();
         let ppu = Ppu::new();
+        let is_cgb = cartridge.supports_cgb();
         let mut e = Emulator {
             cpu: Cpu::new(),
             frames: 0,
@@ -196,17 +197,19 @@ impl Emulator {
                 cartridge,
                 capture_serial: false,
                 serial_output: Vec::new(),
-                ram: Box::new([0xff; RAM_SIZE]),
+                wram: Wram::new(),
                 hram: Box::new([0xff; HRAM_SIZE]),
                 oam_dma: OamDma::new(),
                 joypad: Joypad::new(),
                 events: vec![],
             },
+            is_cgb,
         };
 
         if !bios_enabled {
+            let a = if e.is_cgb { 0x11 } else { 0x01 };
             e.cpu
-                .write_reg8(Reg8::A, 0x01)
+                .write_reg8(Reg8::A, a)
                 .write_reg8(Reg8::B, 0xff)
                 .write_reg8(Reg8::C, 0x13)
                 .write_reg8(Reg8::D, 0x00)

@@ -180,6 +180,13 @@ impl Cartridge {
     pub fn write_byte(&mut self, address: u16, value: u8) {
         self.controller.write_byte(address, value)
     }
+
+    pub fn supports_cgb(&self) -> bool {
+        match self.meta.cgb_flag {
+            CGBFlag::None => false,
+            CGBFlag::Required | CGBFlag::Supported => true,
+        }
+    }
 }
 
 pub struct Data {
