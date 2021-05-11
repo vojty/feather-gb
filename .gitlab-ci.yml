@@ -15,7 +15,7 @@ build-test-roms:
     - main
 
 pages:
-  image: cimg/rust:1.50-node
+  image: cimg/rust:1.52.1-node
   stage: deploy
   script:
     - curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
