@@ -8,6 +8,8 @@ use std::{
 use crate::constants::TILE_SIZE;
 use crate::traits::MemoryAccess;
 
+use super::registers::R_VBK;
+
 pub const VRAM_START: u16 = 0x8000;
 pub const VRAM_END: u16 = 0x9fff;
 const TILES_COUNT: usize = 384;
@@ -53,8 +55,9 @@ impl Tile {
 }
 
 pub struct Vram {
-    pub memory: Box<[u8; VRAM_SIZE]>,
-    pub tiles: Box<[Tile; TILES_COUNT]>,
+    pub memory: Box<[u8]>,
+    pub tiles: Box<[Tile]>,
+    bank: u8,
 }
 
 fn get_bit(byte: u8, index: usize) -> u8 {
@@ -72,21 +75,29 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
 
 impl Vram {
     pub fn new() -> Vram {
+        // CGB has doubled VRAM size (extra ram bank)
         Vram {
-            memory: Box::new([0x00; VRAM_SIZE]),
-            tiles: Box::new([Tile::new(); TILES_COUNT]),
+            bank: 0,
+            memory: Box::new([0x00; 2 * VRAM_SIZE]),
+            tiles: Box::new([Tile::new(); 2 * TILES_COUNT]),
         }
     }
 
-    fn update_tile(&mut self, address: usize) {
-        // 16 bytes per tile
-        let index = address >> 4;
+    fn update_tile(&mut self, address: u16) {
+        // TODO this should be removed
+        // Fetcher shouldn't use this - it's not accurate (tile can be changed between fetching high & low)
+        // move this logic somewhere to debugger UI
+
+        let local_address = (address & DATA_MASK) as usize;
+
+        // 16 bytes per tile + bank offset
+        let index = (local_address >> 4) + (TILES_COUNT * self.bank as usize);
 
         // 2 bytes per line
-        let row = address >> 1 & 7;
+        let row = (local_address >> 1 & 7) as usize;
 
         // always recompute with odd line as the base line, ignore first bit
-        let base_address = address & 0xfffe;
+        let base_address = (local_address + (self.bank as usize) * VRAM_SIZE) & 0xfffe;
         let tile_data_low = self.memory[base_address];
         let tile_data_high = self.memory[base_address + 1];
 
@@ -98,41 +109,44 @@ impl Vram {
             self.tiles[index].data[row][x as usize] = pixel;
         }
         self.tiles[index].data[row].reverse();
-        // debug!("Tile @ {} {}", address, self.tiles[index]);
     }
 
-    pub fn get_tiles(&self) -> &[Tile; TILES_COUNT] {
+    pub fn get_tiles(&self) -> &[Tile] {
         &self.tiles
     }
 
     pub fn get_tiles_hash(&self) -> u64 {
         calculate_hash(&self.tiles)
     }
-
-    pub fn get_tile_at(&self, tile_number: usize) -> &Tile {
-        &self.tiles[tile_number]
-    }
 }
 
-fn get_address(address: u16) -> usize {
+fn get_address(address: u16, bank: u8) -> usize {
     // 0x8001 -> 0x0001
-    (address & DATA_MASK) as usize
+    let offset = (address & DATA_MASK) as usize;
+    let bank_offset = (bank as usize) * VRAM_SIZE;
+    offset + bank_offset
 }
 
 impl MemoryAccess for Vram {
     fn read_byte(&self, address: u16) -> u8 {
-        self.memory[get_address(address)]
+        if address == R_VBK {
+            return self.bank | 0b1111_1110;
+        }
+        self.memory[get_address(address, self.bank)]
     }
 
     fn write_byte(&mut self, address: u16, value: u8) {
+        if address == R_VBK {
+            self.bank = value & 1;
+            return;
+        }
+
         // Tiles            0x8000 -> 0x97ff - store + transform pixels
         // Background maps  0x9800 -> 0x9fff - just store
-        let addr = get_address(address);
-
-        self.memory[addr] = value;
+        self.memory[get_address(address, self.bank)] = value;
 
         if (0x8000..=0x97ff).contains(&address) {
-            self.update_tile(addr);
+            self.update_tile(address);
         }
     }
 }

@@ -1,5 +1,5 @@
 use eframe::{
-    egui::{self, Color32, TextureId, Vec2},
+    egui::{self, Color32, TextureId},
     epi,
 };
 use egui::Ui;
@@ -12,27 +12,9 @@ use super::scale::render_scale;
 pub struct Tiles {
     scale: usize,
     canvas: Canvas,
-    tiles_width: usize,
-    tiles_height: usize,
     texture_id: TextureId,
     texture_hash: u64,
-}
-
-impl Default for Tiles {
-    fn default() -> Self {
-        let scale = 2;
-        let tiles_width = TILES_PER_LINE * TILE_SIZE;
-        let tiles_height = 24 * TILE_SIZE;
-
-        Tiles {
-            texture_id: TextureId::default(),
-            texture_hash: 0,
-            scale,
-            tiles_height,
-            tiles_width,
-            canvas: Canvas::new(tiles_width, tiles_height, scale),
-        }
-    }
+    is_cgb: bool,
 }
 
 const TILES_PER_LINE: usize = 16;
@@ -41,6 +23,33 @@ const C1: Color32 = Color32::from_rgb(255, 255, 255);
 const C2: Color32 = Color32::from_rgb(192, 192, 192);
 const C3: Color32 = Color32::from_rgb(96, 96, 96);
 const C4: Color32 = Color32::from_rgb(0, 0, 0);
+
+const BASE_HEIGHT: usize = 24 * TILE_SIZE;
+
+fn get_canvas_height(is_cgb: bool) -> usize {
+    if is_cgb {
+        return BASE_HEIGHT * 2;
+    }
+    BASE_HEIGHT
+}
+
+impl Default for Tiles {
+    fn default() -> Self {
+        let scale = 2;
+        let is_cgb = false;
+        let tiles_width = TILES_PER_LINE * TILE_SIZE;
+        let tiles_height = get_canvas_height(is_cgb);
+        let canvas = Canvas::new(tiles_width, tiles_height, scale);
+
+        Tiles {
+            texture_id: TextureId::default(),
+            texture_hash: 0,
+            scale,
+            is_cgb,
+            canvas,
+        }
+    }
+}
 
 impl Tiles {
     pub fn show(
@@ -58,16 +67,14 @@ impl Tiles {
     pub fn ui(&mut self, ui: &mut Ui, e: &Emulator, tex_allocator: &mut dyn epi::TextureAllocator) {
         let tiles = e.hw.ppu.vram.get_tiles();
         let hash = e.hw.ppu.vram.get_tiles_hash();
-        let size = Vec2::new(
-            (self.tiles_width * self.scale) as f32,
-            (self.tiles_height * self.scale) as f32,
-        );
+
+        let size = self.canvas.get_scaled_size();
 
         if hash != self.texture_hash {
             tex_allocator.free(self.texture_id);
 
-            for ty in 0..self.tiles_height {
-                for tx in 0..self.tiles_width {
+            for ty in 0..self.canvas.get_height() {
+                for tx in 0..self.canvas.get_width() {
                     let tile_x = tx % TILE_SIZE;
                     let tile_y = ty % TILE_SIZE;
 
@@ -98,10 +105,17 @@ impl Tiles {
 
         ui.image(self.texture_id, size);
 
+        if self.is_cgb != e.is_cgb() {
+            // CGB has doubled height (2x more tiles)
+            self.is_cgb = e.is_cgb();
+            self.texture_hash = 0;
+            self.canvas.resize_height(get_canvas_height(e.is_cgb()));
+        }
+
         if self.canvas.get_scale() != self.scale {
             // Invalidate texture cache & create new resized canvas
             self.texture_hash = 0;
-            self.canvas.resize(self.scale);
+            self.canvas.resize_scale(self.scale);
         }
     }
 }

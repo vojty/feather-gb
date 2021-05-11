@@ -69,7 +69,7 @@ impl Display {
 
                 if self.canvas.get_scale() != self.scale {
                     // Create new resized canvas
-                    self.canvas.resize(self.scale);
+                    self.canvas.resize_scale(self.scale);
                 }
             });
     }

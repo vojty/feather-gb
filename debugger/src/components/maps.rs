@@ -100,7 +100,7 @@ impl Maps {
 
             if self.canvas.get_scale() != self.scale {
                 // create new resized canvas
-                self.canvas.resize(self.scale);
+                self.canvas.resize_scale(self.scale);
             }
         });
     }

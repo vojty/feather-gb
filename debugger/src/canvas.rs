@@ -1,4 +1,4 @@
-use eframe::egui::Color32;
+use eframe::egui::{Color32, Vec2};
 
 pub struct Canvas {
     width: usize,
@@ -31,10 +31,19 @@ impl Canvas {
         self.scale * self.width
     }
 
-    pub fn resize(&mut self, scale: usize) {
-        self.scale = scale;
-        let size = get_size(self.width, self.height, scale);
+    fn reset_pixels(&mut self) {
+        let size = get_size(self.width, self.height, self.scale);
         self.pixels = create_pixels(size);
+    }
+
+    pub fn resize_scale(&mut self, scale: usize) {
+        self.scale = scale;
+        self.reset_pixels();
+    }
+
+    pub fn resize_height(&mut self, height: usize) {
+        self.height = height;
+        self.reset_pixels();
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, pixel: Color32) {
@@ -56,5 +65,20 @@ impl Canvas {
 
     pub fn get_pixels(&self) -> &[Color32] {
         &self.pixels
+    }
+
+    pub fn get_height(&self) -> usize {
+        self.height
+    }
+
+    pub fn get_width(&self) -> usize {
+        self.width
+    }
+
+    pub fn get_scaled_size(&self) -> Vec2 {
+        Vec2::new(
+            (self.width * self.scale) as f32,
+            (self.height * self.scale) as f32,
+        )
     }
 }

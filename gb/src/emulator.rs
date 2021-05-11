@@ -97,6 +97,7 @@ impl MemoryAccess for Hardware {
                 0xff40..=0xff45 => self.ppu.read_byte(address),   // PPU
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
+                0xff4f => self.ppu.read_byte(address),            // CGB VRAM bank switch
                 0xff70 => self.wram.read_byte(address),           // CGB WRAM bank switch
                 _ => 0xff,                                        // unused
             },
@@ -149,18 +150,16 @@ impl MemoryAccess for Hardware {
                         self.serial_output.push(value as char);
                     }
                 } // Serial
-                0xff03 => {}                                      // unused
                 0xff04..=0xff07 => self.timer.write_byte(address, value, ic), // Timer
                 0xff0f => self.interrupts.write_byte(address, value), // Interrupt controller
                 0xff10..=0xff3f => {}                             // APU
                 0xff40..=0xff45 => self.ppu.write_byte(address, value, ic), // PPU
                 0xff46 => self.oam_dma.request(value),            // DMA
                 0xff47..=0xff4b => self.ppu.write_byte(address, value, ic), // PPU
-                0xff50 => {
-                    self.bios_enabled = false;
-                }
-                0xff70 => self.wram.write_byte(address, value), // CGB WRAM bank switch
-                _ => {}                                         // unused
+                0xff50 => self.bios_enabled = false,              // Remove bios
+                0xff4f => self.ppu.write_byte(address, value, ic), // CGB VRAM bank switch
+                0xff70 => self.wram.write_byte(address, value),   // CGB WRAM bank switch
+                _ => {}                                           // unused
             },
 
             // High RAM (HRAM)
@@ -183,8 +182,8 @@ pub struct Emulator {
 impl Emulator {
     pub fn new(bios_enabled: bool, cartridge: Cartridge) -> Emulator {
         let interrupt_controller = InterruptController::new();
-        let ppu = Ppu::new();
         let is_cgb = cartridge.supports_cgb();
+        let ppu = Ppu::new();
         let mut e = Emulator {
             cpu: Cpu::new(),
             frames: 0,
@@ -352,5 +351,9 @@ impl Emulator {
 
     pub fn set_capture_serial(&mut self, capture: bool) {
         self.hw.capture_serial = capture;
+    }
+
+    pub fn is_cgb(&self) -> bool {
+        self.is_cgb
     }
 }

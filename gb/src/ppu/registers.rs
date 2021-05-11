@@ -120,3 +120,10 @@ pub const R_OBP1: u16 = 0xff49;
  */
 pub const R_WY: u16 = 0xff4a;
 pub const R_WX: u16 = 0xff4b;
+
+/**
+ * CGB Mode Only - VRAM Bank (R/W)
+ *
+ * This register can be written to to change VRAM banks. Only bit 0 matters, all other bits are ignored.
+ */
+pub const R_VBK: u16 = 0xff4f;
