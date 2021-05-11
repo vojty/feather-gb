@@ -20,10 +20,10 @@ impl Canvas {
         let size = get_size(width, height, scale);
         let pixels = create_pixels(size);
         Self {
-            pixels,
             width,
             height,
             scale,
+            pixels,
         }
     }
 

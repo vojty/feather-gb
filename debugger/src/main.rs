@@ -7,6 +7,7 @@
     clippy::clippy::trivial_regex
 )]
 
+use eframe::{egui::Vec2, NativeOptions};
 use env_logger::Env;
 
 use debugger::app::Debugger;
@@ -23,5 +24,11 @@ fn main() {
         .target(env_logger::Target::Stdout)
         .init();
 
-    eframe::run_native(Box::new(app));
+    let options = NativeOptions {
+        resizable: true,
+        initial_window_size: Some(Vec2::new(1700.0, 1000.0)),
+        ..NativeOptions::default()
+    };
+
+    eframe::run_native(Box::new(app), options);
 }

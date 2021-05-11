@@ -234,16 +234,8 @@ impl epi::App for Debugger {
         std::time::Duration::from_secs(30)
     }
 
-    fn initial_window_size(&self) -> Option<egui::Vec2> {
-        Some(Vec2::new(1700.0, 1000.0))
-    }
-
     fn max_size_points(&self) -> egui::Vec2 {
         Vec2::new(2000.0, 2000.0)
-    }
-
-    fn is_resizable(&self) -> bool {
-        true
     }
 
     fn clear_color(&self) -> egui::Rgba {

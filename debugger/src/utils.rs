@@ -60,7 +60,7 @@ pub fn load_roms() -> Vec<Box<dyn BinarySource>> {
         .map(|path| {
             let name = regex.replace(&path, "").to_string();
             let name = sanitize_name(&name);
-            let item: Box<dyn BinarySource> = Box::new(FileSystemRom { path, name });
+            let item: Box<dyn BinarySource> = Box::new(FileSystemRom { name, path });
             item
         })
         .collect::<Vec<Box<dyn BinarySource>>>();
