@@ -4,6 +4,11 @@ declare module '*.gb' {
   export = _
 }
 
+declare module '*.gbc' {
+  const _: string
+  export = _
+}
+
 // remark
 declare module '*.md' {
   const _: string

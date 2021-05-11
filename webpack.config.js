@@ -117,7 +117,7 @@ module.exports = (env, argv) => {
           ]
         },
         {
-          test: /\.gb$/i,
+          test: /\.(gb|gbc)$/i,
           use: [
             {
               loader: 'file-loader'
