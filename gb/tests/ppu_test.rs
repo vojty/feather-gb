@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn basic_mode_transitions() {
-        let mut ppu = Ppu::new();
+        let mut ppu = Ppu::new(false);
 
         ppu.init_without_bios();
 

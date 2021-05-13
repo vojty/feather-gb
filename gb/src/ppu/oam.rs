@@ -17,6 +17,7 @@ pub struct Sprite {
     pub is_y_flipped: bool,
     pub is_x_flipped: bool,
     pub palette: usize,
+    pub tile_vram_bank: u8,
 }
 
 impl Sprite {
@@ -29,6 +30,7 @@ impl Sprite {
             is_y_flipped: false,
             is_x_flipped: false,
             palette: 0,
+            tile_vram_bank: 0,
         }
     }
 }
@@ -65,6 +67,7 @@ impl Oam {
                 sprite.is_x_flipped = value & 0x20 > 0;
                 sprite.is_y_flipped = value & 0x40 > 0;
                 sprite.is_above_bg = value & 0x80 == 0;
+                sprite.tile_vram_bank = ((value & 0b0000_1000) >> 3) as u8;
             }
             _ => panic!(get_invalid_address("OAM (write)", address as u16)),
         }

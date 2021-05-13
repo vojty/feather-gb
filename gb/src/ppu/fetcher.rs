@@ -8,7 +8,7 @@ use super::{
         get_background_tile_map_address, get_window_tile_map_address, transform_tile_number,
         LcdcBits,
     },
-    vram::Vram,
+    vram::{TileAttributes, Vram},
 };
 
 enum FetcherState {
@@ -20,9 +20,11 @@ enum FetcherState {
 
 pub struct Fetcher {
     pub mode: MapLayer,
+    is_cgb: bool,
     x: u8,
     y: u8,
     tile_number: usize,
+    tile_attributes: TileAttributes,
     tile_offset: u32,
     tile_data_lower: u8,
     tile_data_upper: u8,
@@ -39,12 +41,14 @@ fn get_bit(byte: u8, index: usize) -> u8 {
 }
 
 impl Fetcher {
-    pub fn new() -> Fetcher {
+    pub fn new(is_cgb: bool) -> Fetcher {
         Fetcher {
+            is_cgb,
             mode: MapLayer::Background,
             x: 0,
             y: 0,
             tile_number: 0,
+            tile_attributes: TileAttributes::new(),
             tile_data_upper: 0,
             tile_data_lower: 0,
 
@@ -94,27 +98,28 @@ impl Fetcher {
                 let map_address = match self.mode {
                     MapLayer::Background => get_background_tile_map_address(lcdc),
                     MapLayer::Window => get_window_tile_map_address(lcdc),
-                } as usize;
+                };
 
-                let tile_row = (y / 8) as usize;
-                let tile_col = (((self.x as u32 + self.tile_offset * 8) & 0xff) / 8) as usize;
-                let tile_address = (map_address + (tile_row * 32 + tile_col)) as usize;
-                let n = vram.memory[tile_address] as usize;
+                let tile_row = (y / 8) as u16;
+                let tile_col = (((self.x as u32 + self.tile_offset * 8) & 0xff) / 8) as u16;
+                let tile_address = map_address + (tile_row * 32 + tile_col);
+
+                let n = vram.read_byte(tile_address);
                 self.tile_number = transform_tile_number(lcdc, n);
                 self.state = FetcherState::ReadTileData0;
+
+                if self.is_cgb {
+                    self.tile_attributes = vram.get_tile_attributes(tile_address);
+                }
             }
             FetcherState::ReadTileData0 => {
-                let line = ((y % 8) * 2) as usize;
-                let tile_mask = self.tile_number << 4;
-                let address = tile_mask | line;
-                self.tile_data_lower = vram.read_byte(address as u16);
+                self.tile_data_lower =
+                    vram.get_tile_low(self.tile_number, y as usize, self.get_bank_number());
                 self.state = FetcherState::ReadTileData1;
             }
             FetcherState::ReadTileData1 => {
-                let line = ((y % 8) * 2) as usize;
-                let tile_mask = self.tile_number << 4;
-                let address = tile_mask | (line + 1);
-                self.tile_data_upper = vram.read_byte(address as u16);
+                self.tile_data_upper =
+                    vram.get_tile_high(self.tile_number, y as usize, self.get_bank_number());
                 self.state = FetcherState::PushToFifo;
             }
             FetcherState::PushToFifo => {
@@ -131,5 +136,13 @@ impl Fetcher {
                 }
             }
         }
+    }
+
+    fn get_bank_number(&self) -> u8 {
+        if !self.is_cgb {
+            return 0;
+        }
+
+        self.tile_attributes.bank_number
     }
 }

@@ -78,7 +78,7 @@ pub fn get_window_tile_map_address(lcdc: &LcdcBits) -> u16 {
     base_address & 0x1fff
 }
 
-pub fn transform_tile_number(lcdc: &LcdcBits, tile_number: usize) -> usize {
+pub fn transform_tile_number(lcdc: &LcdcBits, tile_number: u8) -> usize {
     let unsigned = lcdc.contains(LcdcBits::BG_WIN_TILE_DATA);
     /*
      * 8000-87FF  Tile set #1: tiles 0-127
@@ -89,7 +89,7 @@ pub fn transform_tile_number(lcdc: &LcdcBits, tile_number: usize) -> usize {
 
     // Tile set #1
     if unsigned {
-        return tile_number;
+        return tile_number as usize;
     }
 
     // Tile set #0

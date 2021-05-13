@@ -13,11 +13,36 @@ use super::registers::R_VBK;
 pub const VRAM_START: u16 = 0x8000;
 pub const VRAM_END: u16 = 0x9fff;
 const TILES_COUNT: usize = 384;
-// 8x8 pixels, 384 tiles, 0x8000 -> 0x97ff
+// Tiles        0x8000 -> 0x97FF 8x8 pixels, 384 tiles
+// Tile maps    0x9800 -> 0x9BFF
+//              0x9C00 -> 0x9FFF
+// CGB has extra VRAM bank, tiles are doubled and 0x9800 -> 0x9FFF is reserved for BG Map Attributes
 
 const DATA_MASK: u16 = 0x1fff;
 
 const VRAM_SIZE: usize = VRAM_END as usize - VRAM_START as usize + 1;
+
+#[derive(Clone, Copy, Hash)]
+pub struct TileAttributes {
+    // Bit 7    BG-to-OAM Priority         (0=Use OAM Priority bit, 1=BG Priority)
+    // Bit 6    Vertical Flip              (0=Normal, 1=Mirror vertically)
+    // Bit 5    Horizontal Flip            (0=Normal, 1=Mirror horizontally)
+    // Bit 4    Not used
+    // Bit 3    Tile VRAM Bank number      (0=Bank 0, 1=Bank 1)
+    // Bit 2-0  Background Palette number  (BGP0-7)
+    pub bank_number: u8,
+}
+
+impl TileAttributes {
+    pub fn new() -> Self {
+        Self { bank_number: 0 }
+    }
+
+    pub fn from_bits(bits: u8) -> Self {
+        let bank_number = (bits & 0b0000_1000) >> 3;
+        Self { bank_number }
+    }
+}
 
 #[derive(Clone, Copy, Hash)]
 pub struct Tile {
@@ -73,6 +98,11 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
     s.finish()
 }
 
+enum TileData {
+    Low,
+    High,
+}
+
 impl Vram {
     pub fn new() -> Vram {
         // CGB has doubled VRAM size (extra ram bank)
@@ -81,6 +111,45 @@ impl Vram {
             memory: Box::new([0x00; 2 * VRAM_SIZE]),
             tiles: Box::new([Tile::new(); 2 * TILES_COUNT]),
         }
+    }
+
+    fn get_tile_address(
+        &self,
+        tile_data: TileData,
+        tile_number: usize,
+        y: usize,
+        bank: u8,
+    ) -> usize {
+        let line = match tile_data {
+            TileData::Low => (y % 8) * 2,
+            TileData::High => (y % 8) * 2 + 1,
+        };
+        let tile_mask = tile_number << 4;
+        let address = tile_mask | line;
+        if bank == 0 {
+            return address;
+        }
+        address + VRAM_SIZE
+    }
+
+    pub fn get_tile_low(&self, tile_number: usize, y: usize, bank: u8) -> u8 {
+        let address = self.get_tile_address(TileData::Low, tile_number, y, bank);
+        self.memory[address]
+    }
+
+    pub fn get_tile_high(&self, tile_number: usize, y: usize, bank: u8) -> u8 {
+        let address = self.get_tile_address(TileData::High, tile_number, y, bank);
+        self.memory[address]
+    }
+
+    // TODO used only for the sprites, remove eventually
+    pub fn get_tile(&self, tile_number: usize, bank: u8) -> &Tile {
+        &self.tiles[tile_number + (bank as usize) * TILES_COUNT]
+    }
+
+    pub fn get_tile_attributes(&self, tile_address: u16) -> TileAttributes {
+        let bits = self.memory[tile_address as usize + VRAM_SIZE];
+        TileAttributes::from_bits(bits)
     }
 
     fn update_tile(&mut self, address: u16) {

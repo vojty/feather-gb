@@ -185,7 +185,7 @@ impl Emulator {
     pub fn new(bios_enabled: bool, cartridge: Cartridge) -> Emulator {
         let interrupt_controller = InterruptController::new();
         let is_cgb = cartridge.supports_cgb();
-        let ppu = Ppu::new();
+        let ppu = Ppu::new(is_cgb);
         let mut e = Emulator {
             cpu: Cpu::new(),
             frames: 0,

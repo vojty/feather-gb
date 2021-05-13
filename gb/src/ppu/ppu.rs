@@ -158,13 +158,15 @@ pub struct Ppu {
 
     fetcher: Fetcher,
 
+    is_cgb: bool,
+
     // RAM
     pub vram: Vram,
     pub oam: Oam,
 }
 
 impl Ppu {
-    pub fn new() -> Ppu {
+    pub fn new(is_cgb: bool) -> Ppu {
         Ppu {
             stat_mode: Mode::HBlank,
             lcdc: LcdcBits::empty(),
@@ -198,7 +200,9 @@ impl Ppu {
             dropped_pixels: 0,
 
             screen_buffer: ScreenBuffer::new(),
-            fetcher: Fetcher::new(),
+            fetcher: Fetcher::new(is_cgb),
+
+            is_cgb,
 
             // RAM
             vram: Vram::new(),
@@ -591,7 +595,12 @@ impl Ppu {
                 sprite.tile_number
             };
 
-            let tile = &self.vram.tiles[tile_number + extra_offset];
+            let bank = if self.is_cgb {
+                sprite.tile_vram_bank
+            } else {
+                0
+            };
+            let tile = self.vram.get_tile(tile_number + extra_offset, bank);
             let x_index = x - sprite.x;
             let tile_row = y as usize;
             let tile_col = if sprite.is_x_flipped {
@@ -776,7 +785,7 @@ impl Ppu {
             MapLayer::Window => get_window_tile_map_address(&self.lcdc),
         } as usize;
 
-        let n = self.vram.memory[base_address + index] as usize;
+        let n = self.vram.memory[base_address + index];
         let tile_number = transform_tile_number(&self.lcdc, n);
 
         &self.vram.tiles[tile_number]
