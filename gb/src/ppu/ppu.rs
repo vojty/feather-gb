@@ -21,7 +21,7 @@ use super::{
 };
 
 use super::registers::{
-    R_BGP, R_LCDC, R_LY, R_LYC, R_OBP0, R_OBP1, R_SCX, R_SCY, R_STAT, R_VBK, R_WX, R_WY,
+    R_BGP, R_LCDC, R_LY, R_LYC, R_OBP0, R_OBP1, R_OPRI, R_SCX, R_SCY, R_STAT, R_VBK, R_WX, R_WY,
 };
 
 const TOTAL_LINE_CLOCKS: u32 = 456;
@@ -136,6 +136,7 @@ pub struct Ppu {
     bgp: u8,
     obp0: u8,
     obp1: u8,
+    opri: u8,
 
     // internals
     pub ly_to_compare: Option<u8>,
@@ -177,6 +178,7 @@ impl Ppu {
             bgp: 0,
             obp0: 0,
             obp1: 0,
+            opri: 0,
 
             // internals
             ly_to_compare: Some(0),
@@ -660,6 +662,7 @@ impl Ppu {
             R_WY => self.wy,
             R_OBP0 => self.obp0,
             R_OBP1 => self.obp1,
+            R_OPRI => self.opri | 0b1111_1110,
             R_VBK => self.vram.read_byte(address),
             VRAM_START..=VRAM_END => {
                 if !self.can_access_vram(Access::Read) {
@@ -742,6 +745,7 @@ impl Ppu {
             R_WY => self.wy = value,
             R_OBP0 => self.obp0 = value,
             R_OBP1 => self.obp1 = value,
+            R_OPRI => self.opri = value & 1,
             R_VBK => self.vram.write_byte(address, value),
             VRAM_START..=VRAM_END => {
                 if !self.can_access_vram(Access::Write) {

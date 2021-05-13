@@ -98,6 +98,7 @@ impl MemoryAccess for Hardware {
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
                 0xff4f => self.ppu.read_byte(address),            // CGB VRAM bank switch
+                0xff6c => self.ppu.read_byte(address),            // CGB Object Priority Mode
                 0xff70 => self.wram.read_byte(address),           // CGB WRAM bank switch
                 _ => 0xff,                                        // unused
             },
@@ -158,6 +159,7 @@ impl MemoryAccess for Hardware {
                 0xff47..=0xff4b => self.ppu.write_byte(address, value, ic), // PPU
                 0xff50 => self.bios_enabled = false,              // Remove bios
                 0xff4f => self.ppu.write_byte(address, value, ic), // CGB VRAM bank switch
+                0xff6c => self.ppu.write_byte(address, value, ic), // CGB Object Priority Mode
                 0xff70 => self.wram.write_byte(address, value),   // CGB WRAM bank switch
                 _ => {}                                           // unused
             },

@@ -127,3 +127,13 @@ pub const R_WX: u16 = 0xff4b;
  * This register can be written to to change VRAM banks. Only bit 0 matters, all other bits are ignored.
  */
 pub const R_VBK: u16 = 0xff4f;
+
+/**
+ * CGB Mode Only - Object Priority Mode
+ *
+ * This register serves as a flag for which object priority mode to use. While the DMG prioritizes objects by x-coordinate,
+ * the CGB prioritizes them by location in OAM. This flag is set by the CGB bios after checking the game's CGB compatibility.
+ *
+ * Bit 0: OBJ Priority Mode (0=OAM Priority, 1=Coordinate Priority) (Read/Write)
+ */
+pub const R_OPRI: u16 = 0xff6c;
