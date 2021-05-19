@@ -3,7 +3,8 @@ use wasm_bindgen::prelude::*;
 use std::panic;
 
 use gb::{
-    cartridges::cartridge::Cartridge, emulator::Emulator, joypad::JoypadKey, ppu::ppu::Palettes,
+    cartridges::cartridge::Cartridge, emulator::Emulator, joypad::JoypadKey,
+    ppu::palettes::DmgPalettes,
 };
 
 #[wasm_bindgen]
@@ -57,7 +58,7 @@ impl WebEmulator {
     #[wasm_bindgen(constructor)]
     pub fn new(web_cartridge: WebCartridge) -> WebEmulator {
         let mut e = Emulator::new(false, web_cartridge.cartridge);
-        e.set_system_palette(Palettes::GreenDmg);
+        e.set_system_palette(DmgPalettes::GreenDmg);
         WebEmulator { e }
     }
 

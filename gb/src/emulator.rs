@@ -10,10 +10,7 @@ use crate::{
     dma::OamDma,
     interrupts::InterruptController,
     joypad::{Joypad, JoypadKey},
-    ppu::{
-        ppu::{Palettes, Ppu},
-        screen_buffer::Buffer,
-    },
+    ppu::{palettes::DmgPalettes, ppu::Ppu, screen_buffer::Buffer},
     timer::Timer,
     traits::{DisplayHex, MemoryAccess},
     wram::Wram,
@@ -98,6 +95,10 @@ impl MemoryAccess for Hardware {
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
                 0xff4f => self.ppu.read_byte(address),            // CGB VRAM bank switch
+                0xff68 => self.ppu.read_byte(address),            // CGB Background Palette Index
+                0xff69 => self.ppu.read_byte(address),            // CGB Background Palette Data
+                0xff6a => self.ppu.read_byte(address),            // CGB Object Palette Index
+                0xff6b => self.ppu.read_byte(address),            // CGB Object Palette Data
                 0xff6c => self.ppu.read_byte(address),            // CGB Object Priority Mode
                 0xff70 => self.wram.read_byte(address),           // CGB WRAM bank switch
                 _ => 0xff,                                        // unused
@@ -159,6 +160,10 @@ impl MemoryAccess for Hardware {
                 0xff47..=0xff4b => self.ppu.write_byte(address, value, ic), // PPU
                 0xff50 => self.bios_enabled = false,              // Remove bios
                 0xff4f => self.ppu.write_byte(address, value, ic), // CGB VRAM bank switch
+                0xff68 => self.ppu.write_byte(address, value, ic), // CGB Background Palette Index
+                0xff69 => self.ppu.write_byte(address, value, ic), // CGB Background Palette Data
+                0xff6a => self.ppu.write_byte(address, value, ic), // CGB Object Palette Index
+                0xff6b => self.ppu.write_byte(address, value, ic), // CGB Object Palette Data
                 0xff6c => self.ppu.write_byte(address, value, ic), // CGB Object Priority Mode
                 0xff70 => self.wram.write_byte(address, value),   // CGB WRAM bank switch
                 _ => {}                                           // unused
@@ -347,7 +352,7 @@ impl Emulator {
         self.hw.ppu.get_screen_buffer()
     }
 
-    pub fn set_system_palette(&mut self, palette: Palettes) {
+    pub fn set_system_palette(&mut self, palette: DmgPalettes) {
         self.hw.ppu.set_system_palette(palette);
     }
 

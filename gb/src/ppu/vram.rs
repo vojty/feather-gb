@@ -1,6 +1,5 @@
 use std::{
     collections::hash_map::DefaultHasher,
-    fmt::Display,
     hash::{Hash, Hasher},
     usize,
 };
@@ -22,51 +21,62 @@ const DATA_MASK: u16 = 0x1fff;
 
 const VRAM_SIZE: usize = VRAM_END as usize - VRAM_START as usize + 1;
 
-#[derive(Clone, Copy, Hash)]
+#[derive(Hash, Clone, Copy, PartialEq, Eq)]
+pub enum BgToOamPriority {
+    OamPriorityBit, // Object has priority according to its priority flag (DMG behavior)
+    BgPriority,     // BG tile is always on top of the objects
+}
+
+#[derive(Hash)]
 pub struct TileAttributes {
-    // Bit 7    BG-to-OAM Priority         (0=Use OAM Priority bit, 1=BG Priority)
-    // Bit 6    Vertical Flip              (0=Normal, 1=Mirror vertically)
-    // Bit 5    Horizontal Flip            (0=Normal, 1=Mirror horizontally)
-    // Bit 4    Not used
-    // Bit 3    Tile VRAM Bank number      (0=Bank 0, 1=Bank 1)
-    // Bit 2-0  Background Palette number  (BGP0-7)
+    // Bit 7        BG-to-OAM Priority          (0=Use OAM Priority bit, 1=BG Priority)
+    // Bit 6        Vertical Flip               (0=Normal, 1=Mirror vertically)
+    // Bit 5        Horizontal Flip             (0=Normal, 1=Mirror horizontally)
+    // Bit 4        Not used
+    // Bit 3        Tile VRAM Bank number       (0=Bank 0, 1=Bank 1)
+    // Bit 2-0      Background Palette number   (BGP0-7)
     pub bank_number: u8,
+    pub is_y_flipped: bool,
+    pub is_x_flipped: bool,
+    pub priority: BgToOamPriority,
+    pub bg_palette_index: u8,
 }
 
 impl TileAttributes {
     pub fn new() -> Self {
-        Self { bank_number: 0 }
+        // DMG defaults
+        Self {
+            bank_number: 0,
+            is_x_flipped: false,
+            is_y_flipped: false,
+            priority: BgToOamPriority::OamPriorityBit,
+            bg_palette_index: 0,
+        }
     }
 
     pub fn from_bits(bits: u8) -> Self {
+        let bg_palette_index = bits & 0b000_0111;
         let bank_number = (bits & 0b0000_1000) >> 3;
-        Self { bank_number }
+        let is_x_flipped = (bits & 0b0010_0000) > 0;
+        let is_y_flipped = (bits & 0b0100_0000) > 0;
+        let priority = if (bits & 0b1000_0000) > 0 {
+            BgToOamPriority::BgPriority
+        } else {
+            BgToOamPriority::OamPriorityBit
+        };
+        Self {
+            bank_number,
+            is_y_flipped,
+            is_x_flipped,
+            priority,
+            bg_palette_index,
+        }
     }
 }
 
 #[derive(Clone, Copy, Hash)]
 pub struct Tile {
     pub data: [[u8; 8]; 8],
-}
-
-impl Display for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut str = String::new();
-        for y in 0..TILE_SIZE {
-            let row = self.data[y];
-
-            let a = row
-                .iter()
-                .map(|item| format!("{:02x}", item))
-                .collect::<Vec<String>>()
-                .join(" ");
-
-            str.push_str(&a);
-            str.push('\n');
-        }
-
-        write!(f, "\n{}", str)
-    }
 }
 
 impl Tile {
@@ -117,34 +127,58 @@ impl Vram {
         &self,
         tile_data: TileData,
         tile_number: usize,
-        y: usize,
-        bank: u8,
+        tile_row: usize,
+        attributes: &TileAttributes,
     ) -> usize {
-        let line = match tile_data {
-            TileData::Low => (y % 8) * 2,
-            TileData::High => (y % 8) * 2 + 1,
+        // 2x = 2 bytes per line
+        let line_base = if attributes.is_y_flipped {
+            (7 - tile_row) * 2
+        } else {
+            tile_row * 2
         };
+
+        let line_offset = match tile_data {
+            TileData::Low => line_base,
+            TileData::High => line_base + 1,
+        };
+
         let tile_mask = tile_number << 4;
-        let address = tile_mask | line;
-        if bank == 0 {
-            return address;
+        let address = tile_mask + line_offset;
+
+        let offset = attributes.bank_number as usize * VRAM_SIZE;
+        address + offset
+    }
+
+    pub fn get_tile_low(
+        &self,
+        tile_number: usize,
+        tile_row: usize,
+        attributes: &TileAttributes,
+    ) -> u8 {
+        let address = self.get_tile_address(TileData::Low, tile_number, tile_row, attributes);
+        let data = self.memory[address];
+
+        if attributes.is_x_flipped {
+            data.reverse_bits()
+        } else {
+            data
         }
-        address + VRAM_SIZE
     }
 
-    pub fn get_tile_low(&self, tile_number: usize, y: usize, bank: u8) -> u8 {
-        let address = self.get_tile_address(TileData::Low, tile_number, y, bank);
-        self.memory[address]
-    }
+    pub fn get_tile_high(
+        &self,
+        tile_number: usize,
+        tile_row: usize,
+        attributes: &TileAttributes,
+    ) -> u8 {
+        let address = self.get_tile_address(TileData::High, tile_number, tile_row, attributes);
+        let data = self.memory[address];
 
-    pub fn get_tile_high(&self, tile_number: usize, y: usize, bank: u8) -> u8 {
-        let address = self.get_tile_address(TileData::High, tile_number, y, bank);
-        self.memory[address]
-    }
-
-    // TODO used only for the sprites, remove eventually
-    pub fn get_tile(&self, tile_number: usize, bank: u8) -> &Tile {
-        &self.tiles[tile_number + (bank as usize) * TILES_COUNT]
+        if attributes.is_x_flipped {
+            data.reverse_bits()
+        } else {
+            data
+        }
     }
 
     pub fn get_tile_attributes(&self, tile_address: u16) -> TileAttributes {
@@ -152,6 +186,12 @@ impl Vram {
         TileAttributes::from_bits(bits)
     }
 
+    // TODO used only for the sprites, remove eventually
+    pub fn get_tile(&self, tile_number: usize, bank: u8) -> &Tile {
+        &self.tiles[tile_number + (bank as usize) * TILES_COUNT]
+    }
+
+    // TODO remove with sprite fetcher eventually
     fn update_tile(&mut self, address: u16) {
         // TODO this should be removed
         // Fetcher shouldn't use this - it's not accurate (tile can be changed between fetching high & low)

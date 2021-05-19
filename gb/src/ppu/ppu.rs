@@ -1,27 +1,32 @@
+use std::collections::HashMap;
+
 use constants::DISPLAY_WIDTH;
 use parse_display::Display;
 
 use crate::{
     constants::{self, TILE_SIZE},
     interrupts::{InterruptBits, InterruptController},
+    ppu::vram::BgToOamPriority,
     traits::MemoryAccess,
     utils::get_invalid_address,
 };
 
 use super::{
-    fetcher::Fetcher,
+    fetcher::{Fetcher, FifoItem},
     oam::{Oam, Sprite, OAM_END, OAM_START},
+    palettes::{ColorPaletteMemory, DmgPalette, DmgPalettes, Palette, Rgb},
     screen_buffer::{Buffer, ScreenBuffer},
     utils::{
-        are_sprites_enabled, get_background_tile_map_address, get_sprites_height,
+        are_sprites_enabled, get_background_tile_map_address, get_oam_priority, get_sprites_height,
         get_window_tile_map_address, is_background_or_window_enable, is_lcd_enabled,
-        is_window_enabled, transform_tile_number, LcdcBits, StatBits,
+        is_window_enabled, transform_tile_number, LcdcBits, OamPriority, StatBits,
     },
     vram::{Tile, Vram, VRAM_END, VRAM_START},
 };
 
 use super::registers::{
-    R_BGP, R_LCDC, R_LY, R_LYC, R_OBP0, R_OBP1, R_OPRI, R_SCX, R_SCY, R_STAT, R_VBK, R_WX, R_WY,
+    R_BGP, R_BGPD, R_BGPI, R_LCDC, R_LY, R_LYC, R_OBP0, R_OBP1, R_OBPD, R_OBPI, R_OPRI, R_SCX,
+    R_SCY, R_STAT, R_VBK, R_WX, R_WY,
 };
 
 const TOTAL_LINE_CLOCKS: u32 = 456;
@@ -36,61 +41,6 @@ enum Access {
 pub enum MapLayer {
     Background,
     Window,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Rgb {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-}
-
-impl Rgb {
-    pub fn to_array(&self) -> [u8; 3] {
-        [self.r, self.g, self.b]
-    }
-
-    pub fn empty() -> Rgb {
-        Rgb { r: 0, g: 0, b: 0 }
-    }
-
-    pub fn new(r: u8, g: u8, b: u8) -> Rgb {
-        Rgb { r, g, b }
-    }
-}
-
-pub type Palette = [Rgb; 4];
-pub enum Palettes {
-    Gray,
-    Green,
-    GreenDmg,
-}
-
-impl Palettes {
-    fn get_palette(&self) -> Palette {
-        match self {
-            Palettes::Gray => [
-                Rgb::new(255, 255, 255),
-                Rgb::new(192, 192, 192),
-                Rgb::new(96, 96, 96),
-                Rgb::new(0, 0, 0),
-            ],
-            // Used in scribbltests
-            Palettes::Green => [
-                Rgb::new(224, 248, 208),
-                Rgb::new(136, 191, 112),
-                Rgb::new(52, 104, 86),
-                Rgb::new(9, 25, 33),
-            ],
-            // https://www.designpieces.com/palette/game-boy-original-color-palette-hex-and-rgb/
-            Palettes::GreenDmg => [
-                Rgb::new(155, 188, 15),
-                Rgb::new(139, 172, 15),
-                Rgb::new(48, 98, 48),
-                Rgb::new(15, 56, 15),
-            ],
-        }
-    }
 }
 
 #[derive(Clone, Copy, PartialEq, Debug, Display)]
@@ -133,9 +83,6 @@ pub struct Ppu {
     scy: u8,
     wx: u8,
     wy: u8,
-    bgp: u8,
-    obp0: u8,
-    obp1: u8,
     opri: u8,
 
     // internals
@@ -152,10 +99,19 @@ pub struct Ppu {
     dropped_pixels: u8,
     pending_mode: Option<Mode>,
     skip_frames: u32,
-    system_palette: Palette,
+    system_palette: DmgPalette,
+
+    bg_color_palettes: ColorPaletteMemory,
+    obj_color_palettes: ColorPaletteMemory,
+
+    // Pre-computed palettes
+    bgp_pal: Palette,
+    obp0_pal: Palette,
+    obp1_pal: Palette,
 
     screen_buffer: ScreenBuffer,
 
+    line_tiles: HashMap<u8, (u8, BgToOamPriority)>, // key = x, value = (color index,priority)
     fetcher: Fetcher,
 
     is_cgb: bool,
@@ -167,6 +123,7 @@ pub struct Ppu {
 
 impl Ppu {
     pub fn new(is_cgb: bool) -> Ppu {
+        let system_palette = DmgPalettes::Gray.get_palette();
         Ppu {
             stat_mode: Mode::HBlank,
             lcdc: LcdcBits::empty(),
@@ -177,9 +134,6 @@ impl Ppu {
             scy: 0,
             wx: 0,
             wy: 0,
-            bgp: 0,
-            obp0: 0,
-            obp1: 0,
             opri: 0,
 
             // internals
@@ -195,12 +149,19 @@ impl Ppu {
             line: 0,
             pending_mode: None,
             skip_frames: 0,
-            system_palette: Palettes::Gray.get_palette(),
+            system_palette,
+
+            bg_color_palettes: ColorPaletteMemory::new(),
+            obj_color_palettes: ColorPaletteMemory::new(),
+            bgp_pal: Palette::empty(),
+            obp0_pal: Palette::empty(),
+            obp1_pal: Palette::empty(),
 
             dropped_pixels: 0,
 
             screen_buffer: ScreenBuffer::new(),
             fetcher: Fetcher::new(is_cgb),
+            line_tiles: HashMap::new(),
 
             is_cgb,
 
@@ -216,9 +177,9 @@ impl Ppu {
         self.scy = 0x00;
         self.scx = 0x00;
         self.lyc = 0x00;
-        self.bgp = 0xfc;
-        self.obp0 = 0xff;
-        self.obp1 = 0xff;
+        self.bgp_pal = Palette::from_bits(0xfc, &self.system_palette);
+        self.obp0_pal = Palette::from_bits(0xff, &self.system_palette);
+        self.obp1_pal = Palette::from_bits(0xff, &self.system_palette);
         self.wy = 0x00;
         self.wx = 0x00;
     }
@@ -438,6 +399,8 @@ impl Ppu {
         self.window_x = (self.wx as i32) - 7;
         self.dropped_pixels = 0;
 
+        self.line_tiles.clear();
+
         // TODO check this
         self.sampled_scx = self.scx;
 
@@ -485,35 +448,49 @@ impl Ppu {
             }
         }
 
-        let pixel = self.fetcher.shift();
-        if is_background_or_window_enable(&self.lcdc) {
-            match pixel {
-                Some(pixel) => {
-                    let palette = self.get_palette(self.bgp);
-                    let color = palette[pixel as usize];
-                    self.render_pixel(color);
+        let fifo_item = self.fetcher.shift();
+        let bg_layer_enabled = if self.is_cgb {
+            true
+        } else {
+            is_background_or_window_enable(&self.lcdc)
+        };
+        if bg_layer_enabled {
+            match fifo_item {
+                Some(fifo_item) => {
+                    let palette = if self.is_cgb {
+                        self.bg_color_palettes.get_palette(fifo_item.palette)
+                    } else {
+                        &self.bgp_pal
+                    };
+
+                    let color = palette.colors[fifo_item.data as usize];
+                    let priority = self.get_bg_tile_priority(&fifo_item);
+                    self.line_tiles.insert(self.x, (fifo_item.data, priority));
+
+                    self.render_pixel(&color);
                 }
                 None => panic!("Trying to pop pixels from empty FIFO."),
             }
         } else {
-            let palette = self.get_palette(self.bgp);
-            self.render_pixel(palette[0]);
+            // TODO is this true for CGB?
+            let color = self.bgp_pal.colors[0];
+            self.render_pixel(&color);
         }
 
         self.x += 1;
     }
 
-    fn get_palette(&self, palette_register: u8) -> Palette {
-        let reg = palette_register as usize;
-        [
-            self.system_palette[(reg & 0b11)],
-            self.system_palette[(reg >> 2 & 0b11)],
-            self.system_palette[(reg >> 4 & 0b11)],
-            self.system_palette[(reg >> 6 & 0b11)],
-        ]
+    fn get_bg_tile_priority(&self, fifo_item: &FifoItem) -> BgToOamPriority {
+        if !self.is_cgb {
+            return BgToOamPriority::OamPriorityBit;
+        }
+        if self.lcdc.bits() & 0b0000_0001 == 0 {
+            return BgToOamPriority::OamPriorityBit;
+        }
+        fifo_item.priority
     }
 
-    fn render_pixel(&mut self, pixel: Rgb) {
+    fn render_pixel(&mut self, pixel: &Rgb) {
         self.screen_buffer.get_write_buffer_mut().set_pixel(
             self.x as usize,
             self.ly as usize,
@@ -531,7 +508,10 @@ impl Ppu {
             .iter()
             .filter(|sprite| sprite.y <= current_line && current_line < sprite.y + sprite_height)
             .collect();
-        possible_sprites.sort_by(|&a, &b| a.x.cmp(&b.x));
+
+        if !self.is_cgb || get_oam_priority(self.opri) == OamPriority::XPosition {
+            possible_sprites.sort_by(|&a, &b| a.x.cmp(&b.x));
+        }
 
         let mut visible_sprites: Vec<&Sprite> = possible_sprites.into_iter().take(10).collect();
         visible_sprites.reverse();
@@ -551,29 +531,45 @@ impl Ppu {
             .flat_map(|sprite| self.render_sprite(sprite))
             .collect();
 
+        // TODO refactor this sh**
         for (x, y, pixel, is_above_bg) in pixels {
-            if !is_above_bg {
-                let bg_pal = self.get_palette(self.bgp);
-                let current_pixel = self.screen_buffer.get_write_buffer_mut().get_pixel(x, y);
+            if self.is_cgb {
+                let obj_on_top = self.lcdc.bits() & 1 == 0;
+                let bg_is_zero = self
+                    .line_tiles
+                    .get(&(x as u8))
+                    .map_or(false, |pair| pair.0 == 0);
+                let bg_has_priority = self
+                    .line_tiles
+                    .get(&(x as u8))
+                    .map_or(false, |pair| pair.1 == BgToOamPriority::BgPriority);
 
-                if current_pixel != bg_pal[0] {
-                    continue;
+                if obj_on_top || bg_is_zero || (is_above_bg && !bg_has_priority) {
+                    self.screen_buffer
+                        .get_write_buffer_mut()
+                        .set_pixel(x, y, &pixel);
                 }
+            } else {
+                if !is_above_bg {
+                    let current_pixel = self.screen_buffer.get_write_buffer_mut().get_pixel(x, y);
+                    if current_pixel != self.bgp_pal.colors[0] {
+                        continue;
+                    }
+                }
+                self.screen_buffer
+                    .get_write_buffer_mut()
+                    .set_pixel(x, y, &pixel);
             }
-            self.screen_buffer
-                .get_write_buffer_mut()
-                .set_pixel(x, y, pixel);
         }
     }
 
     fn render_sprite(&self, sprite: &Sprite) -> Vec<(usize, usize, Rgb, bool)> {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
-        let palette_register = if sprite.palette == 0 {
-            self.obp0
+        let palette = if sprite.palette == 0 {
+            &self.obp0_pal
         } else {
-            self.obp1
+            &self.obp1_pal
         };
-        let palette = self.get_palette(palette_register);
         let current_line = self.ly as isize;
 
         let y = if sprite.is_y_flipped {
@@ -617,7 +613,13 @@ impl Ppu {
                 continue;
             }
 
-            let color = palette[pixel as usize];
+            let obj_palette = if self.is_cgb {
+                self.obj_color_palettes
+                    .get_palette(sprite.cgb_palette as u8)
+            } else {
+                palette
+            };
+            let color = obj_palette.colors[pixel as usize];
             pixels.push((x as usize, current_line as usize, color, sprite.is_above_bg));
         }
         pixels
@@ -666,13 +668,11 @@ impl Ppu {
             R_STAT => self.stat.bits() | STAT_UNUSED_MASK | self.stat_mode.to_bits(),
             R_SCX => self.scx,
             R_SCY => self.scy,
-            R_BGP => self.bgp,
             R_WX => self.wx,
             R_WY => self.wy,
-            R_OBP0 => self.obp0,
-            R_OBP1 => self.obp1,
-            R_OPRI => self.opri | 0b1111_1110,
-            R_VBK => self.vram.read_byte(address),
+            R_BGP => self.bgp_pal.bits(),
+            R_OBP0 => self.obp0_pal.bits(),
+            R_OBP1 => self.obp1_pal.bits(),
             VRAM_START..=VRAM_END => {
                 if !self.can_access_vram(Access::Read) {
                     return 0xff;
@@ -685,7 +685,23 @@ impl Ppu {
                 }
                 self.oam.read_byte(address)
             }
-            _ => panic!(get_invalid_address("PPU (read)", address)),
+            _ => {
+                if self.is_cgb {
+                    return match address {
+                        R_BGPI => self.bg_color_palettes.read_index(),
+                        R_BGPD => self.bg_color_palettes.read_data(),
+                        R_OBPI => self.obj_color_palettes.read_index(),
+                        R_OBPD => self.obj_color_palettes.read_data(),
+                        R_OPRI => self.opri | 0b1111_1110,
+                        R_VBK => self.vram.read_byte(address),
+                        _ => panic!(get_invalid_address("PPU (read)", address)),
+                    };
+                }
+                match address {
+                    R_BGPI | R_BGPD | R_OBPI | R_OBPD | R_OPRI | R_VBK => 0xff,
+                    _ => panic!(get_invalid_address("PPU (read)", address)),
+                }
+            }
         }
     }
 
@@ -721,7 +737,7 @@ impl Ppu {
                     self.change_stat_mode(Mode::HBlank);
                     self.screen_buffer
                         .get_write_buffer_mut()
-                        .clear_with(self.system_palette[0]);
+                        .clear_with(&self.system_palette.colors[0]);
                 }
             }
             R_LY => {} // read-only
@@ -749,13 +765,12 @@ impl Ppu {
                 // this should be immediately propagated to fetcher
                 self.scy = value
             }
-            R_BGP => self.bgp = value,
             R_WX => self.wx = value,
             R_WY => self.wy = value,
-            R_OBP0 => self.obp0 = value,
-            R_OBP1 => self.obp1 = value,
-            R_OPRI => self.opri = value & 1,
-            R_VBK => self.vram.write_byte(address, value),
+            R_BGP => self.bgp_pal = Palette::from_bits(value, &self.system_palette),
+            R_OBP0 => self.obp0_pal = Palette::from_bits(value, &self.system_palette),
+            R_OBP1 => self.obp1_pal = Palette::from_bits(value, &self.system_palette),
+
             VRAM_START..=VRAM_END => {
                 if !self.can_access_vram(Access::Write) {
                     return;
@@ -768,15 +783,34 @@ impl Ppu {
                 }
                 self.oam.write_byte(address, value);
             }
-            _ => panic!(get_invalid_address("PPU (write)", address)),
+            _ => {
+                if self.is_cgb {
+                    return match address {
+                        R_BGPI => self.bg_color_palettes.write_index(value),
+                        R_BGPD => self.bg_color_palettes.write_data(value),
+                        R_OBPI => self.obj_color_palettes.write_index(value),
+                        R_OBPD => self.obj_color_palettes.write_data(value),
+                        R_OPRI => self.opri = value & 1,
+                        R_VBK => self.vram.write_byte(address, value),
+                        _ => panic!(get_invalid_address("PPU (write)", address)),
+                    };
+                }
+                match address {
+                    R_BGPI | R_BGPD | R_OBPI | R_OBPD | R_OPRI | R_VBK => {}
+                    _ => panic!(get_invalid_address("PPU (write)", address)),
+                }
+            }
         }
     }
 }
 
 // Debug info
 impl Ppu {
-    pub fn set_system_palette(&mut self, palette: Palettes) {
+    pub fn set_system_palette(&mut self, palette: DmgPalettes) {
         self.system_palette = palette.get_palette();
+        self.bgp_pal.change_system_palette(&self.system_palette);
+        self.obp0_pal.change_system_palette(&self.system_palette);
+        self.obp1_pal.change_system_palette(&self.system_palette);
     }
 
     pub fn get_tile(&self, index: usize, layer: MapLayer) -> &Tile {
@@ -791,8 +825,8 @@ impl Ppu {
         &self.vram.tiles[tile_number]
     }
 
-    pub fn get_backround_palette(&self) -> Palette {
-        self.get_palette(self.bgp)
+    pub fn get_backround_palette(&self) -> &Palette {
+        &self.bgp_pal
     }
 
     pub fn get_background_pos(&self) -> (u8, u8, bool) {

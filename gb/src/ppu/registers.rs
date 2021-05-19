@@ -129,6 +129,29 @@ pub const R_WX: u16 = 0xff4b;
 pub const R_VBK: u16 = 0xff4f;
 
 /**
+ * CGB Mode Only BCPS/BGPI (Background Color Palette Specification or Background Palette Index)
+ *
+ * This register is used to address a byte in the CGBs Background Palette Memory. Each two byte in that memory define a color value. The first 8 bytes define Color 0-3 of Palette 0 (BGP0), and so on for BGP1-7.
+ *
+ *  Bit 7     Auto Increment  (0=Disabled, 1=Increment after Writing)
+ *  Bit 5-0   Index (00-3F)
+ */
+pub const R_BGPI: u16 = 0xff68;
+
+/**
+ * CGB Mode Only - BCPD/BGPD (Background Color Palette Data or Background Palette Data)
+ *
+ * This register allows to read/write data to the CGBs Background Palette Memory, addressed through Register FF68. Each color is defined by two bytes (Bit 0-7 in first byte).
+ *  Bit 0-4   Red Intensity   (00-1F)
+ *  Bit 5-9   Green Intensity (00-1F)
+ *  Bit 10-14 Blue Intensity  (00-1F)
+ */
+pub const R_BGPD: u16 = 0xff69;
+
+pub const R_OBPI: u16 = 0xff6a;
+pub const R_OBPD: u16 = 0xff6b;
+
+/**
  * CGB Mode Only - Object Priority Mode
  *
  * This register serves as a flag for which object priority mode to use. While the DMG prioritizes objects by x-coordinate,
