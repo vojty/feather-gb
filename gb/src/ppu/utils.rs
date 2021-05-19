@@ -95,3 +95,16 @@ pub fn transform_tile_number(lcdc: &LcdcBits, tile_number: u8) -> usize {
     // Tile set #0
     ((tile_number as i8 as i16) + 256) as usize
 }
+
+#[derive(PartialEq, Eq)]
+pub enum OamPriority {
+    OamLocation,
+    XPosition,
+}
+
+pub fn get_oam_priority(opri: u8) -> OamPriority {
+    if opri & 0b0000_0001 == 0 {
+        return OamPriority::OamLocation;
+    }
+    OamPriority::XPosition
+}

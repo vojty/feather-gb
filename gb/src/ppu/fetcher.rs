@@ -8,7 +8,7 @@ use super::{
         get_background_tile_map_address, get_window_tile_map_address, transform_tile_number,
         LcdcBits,
     },
-    vram::{TileAttributes, Vram},
+    vram::{BgToOamPriority, TileAttributes, Vram},
 };
 
 enum FetcherState {
@@ -16,6 +16,12 @@ enum FetcherState {
     ReadTileData0,
     ReadTileData1,
     PushToFifo,
+}
+
+pub struct FifoItem {
+    pub data: u8,
+    pub priority: BgToOamPriority,
+    pub palette: u8,
 }
 
 pub struct Fetcher {
@@ -29,7 +35,7 @@ pub struct Fetcher {
     tile_data_lower: u8,
     tile_data_upper: u8,
     state: FetcherState,
-    fifo: VecDeque<u8>,
+    fifo: VecDeque<FifoItem>,
     cycles: u8,
 }
 
@@ -74,7 +80,7 @@ impl Fetcher {
         self.fifo.len()
     }
 
-    pub fn shift(&mut self) -> Option<u8> {
+    pub fn shift(&mut self) -> Option<FifoItem> {
         self.fifo.pop_front()
     }
 
@@ -108,18 +114,22 @@ impl Fetcher {
                 self.tile_number = transform_tile_number(lcdc, n);
                 self.state = FetcherState::ReadTileData0;
 
-                if self.is_cgb {
-                    self.tile_attributes = vram.get_tile_attributes(tile_address);
+                self.tile_attributes = if self.is_cgb {
+                    vram.get_tile_attributes(tile_address)
+                } else {
+                    TileAttributes::new()
                 }
             }
             FetcherState::ReadTileData0 => {
+                let tile_row = (y % 8) as usize;
                 self.tile_data_lower =
-                    vram.get_tile_low(self.tile_number, y as usize, self.get_bank_number());
+                    vram.get_tile_low(self.tile_number, tile_row, &self.tile_attributes);
                 self.state = FetcherState::ReadTileData1;
             }
             FetcherState::ReadTileData1 => {
+                let tile_row = (y % 8) as usize;
                 self.tile_data_upper =
-                    vram.get_tile_high(self.tile_number, y as usize, self.get_bank_number());
+                    vram.get_tile_high(self.tile_number, tile_row, &self.tile_attributes);
                 self.state = FetcherState::PushToFifo;
             }
             FetcherState::PushToFifo => {
@@ -128,7 +138,11 @@ impl Fetcher {
                         let high = get_bit(self.tile_data_upper, x);
                         let low = get_bit(self.tile_data_lower, x);
                         let pixel = (high << 1) | low;
-                        self.fifo.push_back(pixel);
+                        self.fifo.push_back(FifoItem {
+                            data: pixel,
+                            priority: self.tile_attributes.priority,
+                            palette: self.tile_attributes.bg_palette_index,
+                        });
                     }
 
                     self.tile_offset += 1;
@@ -136,13 +150,5 @@ impl Fetcher {
                 }
             }
         }
-    }
-
-    fn get_bank_number(&self) -> u8 {
-        if !self.is_cgb {
-            return 0;
-        }
-
-        self.tile_attributes.bank_number
     }
 }

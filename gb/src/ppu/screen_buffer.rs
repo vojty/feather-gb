@@ -1,6 +1,6 @@
 use crate::constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH, PIXELS};
 
-use super::ppu::{Mode, Rgb};
+use super::{palettes::Rgb, ppu::Mode};
 #[derive(PartialEq)]
 enum ActiveBuffer {
     Front,
@@ -62,7 +62,7 @@ impl Buffer {
         }
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, pixel: Rgb) {
+    pub fn set_pixel(&mut self, x: usize, y: usize, pixel: &Rgb) {
         let offset = get_offset(x, y);
 
         self.data[offset] = pixel.r;
@@ -82,7 +82,7 @@ impl Buffer {
         self.data = Box::new([0; PIXEL_DATA_SIZE]);
     }
 
-    pub fn clear_with(&mut self, pixel: Rgb) {
+    pub fn clear_with(&mut self, pixel: &Rgb) {
         for y in 0..DISPLAY_HEIGHT {
             for x in 0..DISPLAY_WIDTH {
                 self.set_pixel(x, y, pixel)

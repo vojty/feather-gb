@@ -17,6 +17,7 @@ pub struct Sprite {
     pub is_y_flipped: bool,
     pub is_x_flipped: bool,
     pub palette: usize,
+    pub cgb_palette: usize,
     pub tile_vram_bank: u8,
 }
 
@@ -30,6 +31,7 @@ impl Sprite {
             is_y_flipped: false,
             is_x_flipped: false,
             palette: 0,
+            cgb_palette: 0,
             tile_vram_bank: 0,
         }
     }
@@ -63,6 +65,7 @@ impl Oam {
             1 => sprite.x = value as isize - 8,
             2 => sprite.tile_number = value,
             3 => {
+                sprite.cgb_palette = value & 0b111;
                 sprite.palette = if value & 0x10 > 0 { 1 } else { 0 };
                 sprite.is_x_flipped = value & 0x20 > 0;
                 sprite.is_y_flipped = value & 0x40 > 0;

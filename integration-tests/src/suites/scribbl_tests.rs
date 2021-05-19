@@ -1,5 +1,5 @@
 use futures::{future::join_all, TryFutureExt};
-use gb::ppu::ppu::Palettes;
+use gb::ppu::palettes::DmgPalettes;
 
 use crate::{
     markdown,
@@ -61,7 +61,7 @@ fn execute_test(test_case: TestCase) -> TestResult {
         result_image,
     } = test_case;
     let mut e = create_emulator(&path);
-    e.set_system_palette(Palettes::Green);
+    e.set_system_palette(DmgPalettes::Green);
     let max_frames_to_run = 250; // statcount-auto
 
     for _ in 0..max_frames_to_run {

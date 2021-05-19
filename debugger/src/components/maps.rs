@@ -67,7 +67,7 @@ impl Maps {
                             let canvas_y = ty + (y * TILE_SIZE);
 
                             let tile_pixel = tile.get_at(tx, ty);
-                            let pixel = palette[tile_pixel as usize];
+                            let pixel = &palette.colors[tile_pixel as usize];
                             let color = Color32::from_rgb(pixel.r, pixel.g, pixel.b);
 
                             self.canvas.set_pixel(canvas_x, canvas_y, color)
