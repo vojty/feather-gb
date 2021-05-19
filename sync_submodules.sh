@@ -1,6 +1,6 @@
 #!/bin/bash
 # git submodule foreach git pull --rebase origin master
-git submodule update --recursive
+git submodule update --init --recursive
 
 # Update TurtleTests
 (
@@ -22,6 +22,22 @@ git submodule update --recursive
 (
     echo "[ Make mealybug-tearoom-tests ]"
     cd roms/mealybug-tearoom-tests
+    make clean
+    make all
+)
+
+# Update dmg-acid2
+(
+    echo "[ Make dmg-acid2 ]"
+    cd roms/dmg-acid2
+    make clean
+    make all
+)
+
+# Update cgb-acid2
+(
+    echo "[ Make cgb-acid2 ]"
+    cd roms/cgb-acid2
     make clean
     make all
 )

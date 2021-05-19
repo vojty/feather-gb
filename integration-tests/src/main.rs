@@ -9,6 +9,8 @@ use suites::{mooneye_tests, turtle_tests};
 use tokio::time::Instant;
 use utils::OUTPUT_DIR;
 
+use crate::suites::acid2_tests;
+
 mod markdown;
 mod suites;
 mod utils;
@@ -21,6 +23,7 @@ pub async fn main() {
         tokio::spawn(blarggs_tests::run_tests()),
         tokio::spawn(mooneye_tests::run_tests()),
         tokio::spawn(wilbertpol_tests::run_tests()),
+        tokio::spawn(acid2_tests::run_tests()),
         tokio::spawn(scribbl_tests::run_tests()),
         tokio::spawn(turtle_tests::run_tests()),
         tokio::spawn(mbc3_tester::run_tests()),
