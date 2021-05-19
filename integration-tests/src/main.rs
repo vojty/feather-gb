@@ -13,6 +13,7 @@ use crate::suites::acid2_tests;
 
 mod markdown;
 mod suites;
+mod tests;
 mod utils;
 
 #[tokio::main]

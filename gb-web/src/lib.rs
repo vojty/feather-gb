@@ -58,7 +58,7 @@ impl WebEmulator {
     #[wasm_bindgen(constructor)]
     pub fn new(web_cartridge: WebCartridge) -> WebEmulator {
         let mut e = Emulator::new(false, web_cartridge.cartridge);
-        e.set_system_palette(DmgPalettes::GreenDmg);
+        e.set_system_palette(&DmgPalettes::GreenDmg);
         WebEmulator { e }
     }
 

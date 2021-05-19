@@ -806,7 +806,7 @@ impl Ppu {
 
 // Debug info
 impl Ppu {
-    pub fn set_system_palette(&mut self, palette: DmgPalettes) {
+    pub fn set_system_palette(&mut self, palette: &DmgPalettes) {
         self.system_palette = palette.get_palette();
         self.bgp_pal.change_system_palette(&self.system_palette);
         self.obp0_pal.change_system_palette(&self.system_palette);

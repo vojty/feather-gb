@@ -1,7 +1,7 @@
 use std::{
     fs::{self, create_dir_all, File},
     io::Read,
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use gb::{
@@ -36,6 +36,15 @@ pub fn get_result_mark(valid: bool) -> String {
     } else {
         String::from('❌')
     }
+}
+
+pub fn create_path(paths: &[&str]) -> String {
+    paths
+        .iter()
+        .collect::<PathBuf>()
+        .to_str()
+        .unwrap()
+        .to_string()
 }
 
 pub fn create_emulator(path: &str) -> Emulator {

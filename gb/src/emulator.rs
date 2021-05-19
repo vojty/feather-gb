@@ -352,7 +352,7 @@ impl Emulator {
         self.hw.ppu.get_screen_buffer()
     }
 
-    pub fn set_system_palette(&mut self, palette: DmgPalettes) {
+    pub fn set_system_palette(&mut self, palette: &DmgPalettes) {
         self.hw.ppu.set_system_palette(palette);
     }
 

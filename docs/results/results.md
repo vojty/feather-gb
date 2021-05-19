@@ -186,8 +186,8 @@ From https://github.com/Amjad50/mooneye-gb
 
 ## acid2 tests
 
-https://github.com/mattcurrie/dmg-acid2
-https://github.com/mattcurrie/cgb-acid2
+- https://github.com/mattcurrie/dmg-acid2
+- https://github.com/mattcurrie/cgb-acid2
 
 | Name      | Expected                    | Result                    | Diff                    | Status     |
 | --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
@@ -208,7 +208,7 @@ https://github.com/Hacktix/scribbltests
 
 ## TurtleTests
 
-https://github.com/Powerlated/TurtleTests/
+https://github.com/Powerlated/TurtleTests
 
 | Name                          | Expected                                        | Result                                        | Diff                                        | Status     |
 | ----------------------------- | ----------------------------------------------- | --------------------------------------------- | ------------------------------------------- | ---------- |
@@ -254,4 +254,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-05-19 07:16:24.549935 UTC
+Generated at: 2021-05-19 12:29:06.326449 UTC
