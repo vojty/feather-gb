@@ -16,3 +16,9 @@
 [submodule "roms/mealybug-tearoom-tests"]
 	path = roms/mealybug-tearoom-tests
 	url = https://github.com/mattcurrie/mealybug-tearoom-tests.git
+[submodule "roms/cgb-acid2"]
+	path = roms/cgb-acid2
+	url = https://github.com/mattcurrie/cgb-acid2
+[submodule "roms/dmg-acid2"]
+	path = roms/dmg-acid2
+	url = https://github.com/mattcurrie/dmg-acid2.git

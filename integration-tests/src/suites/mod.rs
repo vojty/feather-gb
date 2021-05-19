@@ -1,3 +1,4 @@
+pub mod acid2_tests;
 pub mod blarggs_tests;
 pub mod mbc3_tester;
 pub mod mealybug_tearoom_tests;

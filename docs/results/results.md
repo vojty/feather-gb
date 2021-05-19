@@ -184,6 +184,16 @@ From https://github.com/Amjad50/mooneye-gb
 | roms/wilbertpol-tests/gpu/vblank_if_timing.gb                      | ✅     |
 | roms/wilbertpol-tests/gpu/vblank_stat_intr-GS.gb                   | ✅     |
 
+## acid2 tests
+
+https://github.com/mattcurrie/dmg-acid2
+https://github.com/mattcurrie/cgb-acid2
+
+| Name      | Expected                    | Result                    | Diff                    | Status     |
+| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
+| dmg-acid2 | ![](dmg-acid2/expected.png) | ![](dmg-acid2/result.png) | ![](dmg-acid2/diff.png) | ✅ Diff: 0 |
+| cgb-acid2 | ![](cgb-acid2/expected.png) | ![](cgb-acid2/result.png) | ![](cgb-acid2/diff.png) | ✅ Diff: 0 |
+
 ## Scribbltests
 
 https://github.com/Hacktix/scribbltests
@@ -244,4 +254,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-05-19 06:51:37.672448 UTC
+Generated at: 2021-05-19 07:16:24.549935 UTC
