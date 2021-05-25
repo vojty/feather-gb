@@ -128,6 +128,12 @@ pub const R_WX: u16 = 0xff4b;
  */
 pub const R_VBK: u16 = 0xff4f;
 
+pub const R_HDMA1: u16 = 0xff51;
+pub const R_HDMA2: u16 = 0xff52;
+pub const R_HDMA3: u16 = 0xff53;
+pub const R_HDMA4: u16 = 0xff54;
+pub const R_HDMA5: u16 = 0xff55;
+
 /**
  * CGB Mode Only BCPS/BGPI (Background Color Palette Specification or Background Palette Index)
  *
