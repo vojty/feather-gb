@@ -95,6 +95,11 @@ impl MemoryAccess for Hardware {
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
                 0xff4f => self.ppu.read_byte(address),            // CGB VRAM bank switch
+                0xff51 => self.ppu.read_byte(address),            // CGB HDMA1
+                0xff52 => self.ppu.read_byte(address),            // CGB HDMA2
+                0xff53 => self.ppu.read_byte(address),            // CGB HDMA3
+                0xff54 => self.ppu.read_byte(address),            // CGB HDMA4
+                0xff55 => self.ppu.read_byte(address),            // CGB HDMA5
                 0xff68 => self.ppu.read_byte(address),            // CGB Background Palette Index
                 0xff69 => self.ppu.read_byte(address),            // CGB Background Palette Data
                 0xff6a => self.ppu.read_byte(address),            // CGB Object Palette Index
@@ -160,6 +165,11 @@ impl MemoryAccess for Hardware {
                 0xff47..=0xff4b => self.ppu.write_byte(address, value, ic), // PPU
                 0xff50 => self.bios_enabled = false,              // Remove bios
                 0xff4f => self.ppu.write_byte(address, value, ic), // CGB VRAM bank switch
+                0xff51 => self.ppu.write_byte(address, value, ic), // CGB HDMA1
+                0xff52 => self.ppu.write_byte(address, value, ic), // CGB HDMA2
+                0xff53 => self.ppu.write_byte(address, value, ic), // CGB HDMA3
+                0xff54 => self.ppu.write_byte(address, value, ic), // CGB HDMA4
+                0xff55 => self.ppu.write_byte(address, value, ic), // CGB HDMA5
                 0xff68 => self.ppu.write_byte(address, value, ic), // CGB Background Palette Index
                 0xff69 => self.ppu.write_byte(address, value, ic), // CGB Background Palette Data
                 0xff6a => self.ppu.write_byte(address, value, ic), // CGB Object Palette Index
