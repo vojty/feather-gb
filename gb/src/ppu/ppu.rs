@@ -463,9 +463,10 @@ impl Ppu {
                         &self.bgp_pal
                     };
 
-                    let color = palette.colors[fifo_item.data as usize];
+                    let color = palette.colors[fifo_item.color_number as usize];
                     let priority = self.get_bg_tile_priority(&fifo_item);
-                    self.line_tiles.insert(self.x, (fifo_item.data, priority));
+                    self.line_tiles
+                        .insert(self.x, (fifo_item.color_number, priority));
 
                     self.render_pixel(&color);
                 }
