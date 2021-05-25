@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::traits::MemoryAccess;
+use crate::{constants::TILE_WIDTH, traits::MemoryAccess};
 
 use super::{
     ppu::MapLayer,
@@ -19,9 +19,19 @@ enum FetcherState {
 }
 
 pub struct FifoItem {
-    pub data: u8,
+    pub color_number: u8,
     pub priority: BgToOamPriority,
     pub palette: u8,
+}
+
+impl FifoItem {
+    fn new(color_number: u8, attributes: &TileAttributes) -> Self {
+        Self {
+            color_number,
+            priority: attributes.priority,
+            palette: attributes.bg_palette_index,
+        }
+    }
 }
 
 pub struct Fetcher {
@@ -134,15 +144,12 @@ impl Fetcher {
             }
             FetcherState::PushToFifo => {
                 if self.fifo.len() <= 8 {
-                    for x in (0..=7).rev() {
+                    for x in (0..TILE_WIDTH).rev() {
                         let high = get_bit(self.tile_data_upper, x);
                         let low = get_bit(self.tile_data_lower, x);
                         let pixel = (high << 1) | low;
-                        self.fifo.push_back(FifoItem {
-                            data: pixel,
-                            priority: self.tile_attributes.priority,
-                            palette: self.tile_attributes.bg_palette_index,
-                        });
+                        self.fifo
+                            .push_back(FifoItem::new(pixel, &self.tile_attributes));
                     }
 
                     self.tile_offset += 1;

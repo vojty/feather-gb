@@ -134,7 +134,6 @@ impl ColorPaletteMemory {
         }
     }
 
-    // TODO consider borrowing here
     pub fn get_palette(&self, index: u8) -> &Palette {
         &self.palettes[index as usize]
     }

@@ -9,4 +9,5 @@ pub const CYCLES_PER_FRAME: u32 = 70224;
 pub const CPU_CLOCK_SPEED: usize = 4194304;
 
 pub const TILE_SIZE: usize = 8;
+pub const TILE_WIDTH: usize = 8;
 pub const SPRITES_COUNT: usize = 40;
