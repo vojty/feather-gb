@@ -25,13 +25,11 @@ use super::{
 };
 
 use super::registers::{
-    R_BGP, R_BGPD, R_BGPI, R_HDMA1, R_HDMA2, R_HDMA3, R_HDMA4, R_HDMA5, R_LCDC, R_LY, R_LYC,
-    R_OBP0, R_OBP1, R_OBPD, R_OBPI, R_OPRI, R_SCX, R_SCY, R_STAT, R_VBK, R_WX, R_WY,
+    R_BGP, R_BGPD, R_BGPI, R_LCDC, R_LY, R_LYC, R_OBP0, R_OBP1, R_OBPD, R_OBPI, R_OPRI, R_SCX,
+    R_SCY, R_STAT, R_VBK, R_WX, R_WY,
 };
 
-const CGB_REGISTERS: [u16; 11] = [
-    R_BGPD, R_BGPI, R_HDMA1, R_HDMA2, R_HDMA3, R_HDMA4, R_HDMA5, R_OBPD, R_OBPI, R_OPRI, R_VBK,
-];
+const CGB_REGISTERS: [u16; 6] = [R_BGPD, R_BGPI, R_OBPD, R_OBPI, R_OPRI, R_VBK];
 
 const TOTAL_LINE_CLOCKS: u32 = 456;
 const STAT_UNUSED_MASK: u8 = 0b1000_0000;
@@ -698,11 +696,6 @@ impl Ppu {
                         R_OBPI => self.obj_color_palettes.read_index(),
                         R_OBPD => self.obj_color_palettes.read_data(),
                         R_OPRI => self.opri | 0b1111_1110,
-                        R_HDMA1 => 0xff,
-                        R_HDMA2 => 0xff,
-                        R_HDMA3 => 0xff,
-                        R_HDMA4 => 0xff,
-                        R_HDMA5 => 0xff,
                         R_VBK => self.vram.read_byte(address),
                         _ => panic!(get_invalid_address("PPU (read)", address)),
                     };
@@ -801,11 +794,6 @@ impl Ppu {
                         R_OBPI => self.obj_color_palettes.write_index(value),
                         R_OBPD => self.obj_color_palettes.write_data(value),
                         R_OPRI => self.opri = value & 1,
-                        R_HDMA1 => {}
-                        R_HDMA2 => {}
-                        R_HDMA3 => {}
-                        R_HDMA4 => {}
-                        R_HDMA5 => {}
                         R_VBK => self.vram.write_byte(address, value),
                         _ => panic!(get_invalid_address("PPU (write)", address)),
                     };

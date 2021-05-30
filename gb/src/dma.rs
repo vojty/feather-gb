@@ -45,7 +45,7 @@ impl OamDma {
     }
 
     fn get_source_addr(&self) -> u16 {
-        // 0xfe00 -> 0xffff cannot be accessed by DMA and are mapped to work RAM
+        // 0xfe00 -> 0xffff range cannot be accessed by DMA and is mapped to WRAM
         if 0xfe00 <= self.transfer_from_addr {
             return self.transfer_from_addr - 0x2000;
         }
