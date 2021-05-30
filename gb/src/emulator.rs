@@ -8,6 +8,7 @@ use crate::{
     constants::CYCLES_PER_FRAME,
     cpu::cpu::{Cpu, Flags, Reg8},
     dma::OamDma,
+    hdma::Hdma,
     interrupts::InterruptController,
     joypad::{Joypad, JoypadKey},
     ppu::{palettes::DmgPalettes, ppu::Ppu, screen_buffer::Buffer},
@@ -42,6 +43,7 @@ pub struct Hardware {
     pub interrupts: InterruptController,
     pub timer: Timer,
     pub oam_dma: OamDma,
+    pub hdma: Hdma,
     joypad: Joypad,
     pub events: Vec<u8>, // TODO this is ugly check for tests for LD B,B breakpoint
 }
@@ -95,11 +97,7 @@ impl MemoryAccess for Hardware {
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
                 0xff4f => self.ppu.read_byte(address),            // CGB VRAM bank switch
-                0xff51 => self.ppu.read_byte(address),            // CGB HDMA1
-                0xff52 => self.ppu.read_byte(address),            // CGB HDMA2
-                0xff53 => self.ppu.read_byte(address),            // CGB HDMA3
-                0xff54 => self.ppu.read_byte(address),            // CGB HDMA4
-                0xff55 => self.ppu.read_byte(address),            // CGB HDMA5
+                0xff51..=0xff55 => self.hdma.read_byte(address),  // CGB HDMA
                 0xff68 => self.ppu.read_byte(address),            // CGB Background Palette Index
                 0xff69 => self.ppu.read_byte(address),            // CGB Background Palette Data
                 0xff6a => self.ppu.read_byte(address),            // CGB Object Palette Index
@@ -165,11 +163,7 @@ impl MemoryAccess for Hardware {
                 0xff47..=0xff4b => self.ppu.write_byte(address, value, ic), // PPU
                 0xff50 => self.bios_enabled = false,              // Remove bios
                 0xff4f => self.ppu.write_byte(address, value, ic), // CGB VRAM bank switch
-                0xff51 => self.ppu.write_byte(address, value, ic), // CGB HDMA1
-                0xff52 => self.ppu.write_byte(address, value, ic), // CGB HDMA2
-                0xff53 => self.ppu.write_byte(address, value, ic), // CGB HDMA3
-                0xff54 => self.ppu.write_byte(address, value, ic), // CGB HDMA4
-                0xff55 => self.ppu.write_byte(address, value, ic), // CGB HDMA5
+                0xff51..=0xff55 => self.hdma.write_byte(address, value), // CGB HDMA
                 0xff68 => self.ppu.write_byte(address, value, ic), // CGB Background Palette Index
                 0xff69 => self.ppu.write_byte(address, value, ic), // CGB Background Palette Data
                 0xff6a => self.ppu.write_byte(address, value, ic), // CGB Object Palette Index
@@ -216,6 +210,7 @@ impl Emulator {
                 wram: Wram::new(),
                 hram: Box::new([0xff; HRAM_SIZE]),
                 oam_dma: OamDma::new(),
+                hdma: Hdma::new(),
                 joypad: Joypad::new(),
                 events: vec![],
             },
