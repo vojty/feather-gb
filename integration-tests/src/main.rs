@@ -4,12 +4,13 @@ use std::{
 };
 
 use futures::future::join_all;
-use suites::{blarggs_tests, mbc3_tester, mealybug_tearoom_tests, scribbl_tests, wilbertpol_tests};
+use suites::{
+    acid2_tests, blarggs_sound_tests, blarggs_tests, mbc3_tester, mealybug_tearoom_tests,
+    scribbl_tests, wilbertpol_tests,
+};
 use suites::{mooneye_tests, turtle_tests};
 use tokio::time::Instant;
 use utils::OUTPUT_DIR;
-
-use crate::suites::acid2_tests;
 
 mod markdown;
 mod suites;
@@ -22,6 +23,7 @@ pub async fn main() {
 
     let suites = vec![
         tokio::spawn(blarggs_tests::run_tests()),
+        tokio::spawn(blarggs_sound_tests::run_tests()),
         tokio::spawn(mooneye_tests::run_tests()),
         tokio::spawn(wilbertpol_tests::run_tests()),
         tokio::spawn(acid2_tests::run_tests()),

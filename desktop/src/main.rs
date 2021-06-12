@@ -1,22 +1,20 @@
-use std::{fs::File, io::Read, thread::sleep, time::Duration};
+use std::{
+    fs::File,
+    io::Read,
+    time::{Duration, Instant},
+};
 
+use crate::audio::Audio;
 use env_logger::Env;
 use gb::{
     cartridges::cartridge::Cartridge,
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
     emulator::Emulator,
+    joypad::JoypadKey,
 };
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
 
-extern crate log;
-
-struct Cleanup;
-
-impl Drop for Cleanup {
-    fn drop(&mut self) {
-        eprintln!("Doing some final cleanup");
-    }
-}
+mod audio;
 
 fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
     let mut f = File::open(&filename).expect("no file found");
@@ -27,9 +25,21 @@ fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
     data
 }
 
-fn main() -> Result<(), String> {
-    let _cleanup = Cleanup;
+fn map_joypad_key(key: Keycode) -> Option<JoypadKey> {
+    match key {
+        Keycode::Down | Keycode::S => Some(JoypadKey::ArrowDown),
+        Keycode::Left | Keycode::A => Some(JoypadKey::ArrowLeft),
+        Keycode::Up | Keycode::W => Some(JoypadKey::ArrowUp),
+        Keycode::Right | Keycode::D => Some(JoypadKey::ArrowRight),
+        Keycode::J | Keycode::X => Some(JoypadKey::A),
+        Keycode::K | Keycode::C => Some(JoypadKey::B),
+        Keycode::B => Some(JoypadKey::Start),
+        Keycode::N => Some(JoypadKey::Select),
+        _ => None,
+    }
+}
 
+fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("debug"))
         .format_timestamp(None)
         .format_level(false)
@@ -37,8 +47,8 @@ fn main() -> Result<(), String> {
         .target(env_logger::Target::Stdout)
         .init();
 
-    let sdl_context = sdl2::init()?;
-    let video_subsystem = sdl_context.video()?;
+    let sdl_context = sdl2::init().unwrap();
+    let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem
         .window(
@@ -51,23 +61,37 @@ fn main() -> Result<(), String> {
         .unwrap();
 
     let mut canvas = window.into_canvas().software().build().unwrap();
+    let mut event_pump = sdl_context.event_pump().unwrap();
 
-    let mut event_pump = sdl_context.event_pump()?;
+    // let bytes = get_file_as_byte_vec("roms/demos/gejmboj.gb");
+    let bytes = get_file_as_byte_vec("roms/demos/oh.gb");
+    // let bytes = get_file_as_byte_vec("roms/games/mario.gb");
+    // let bytes = get_file_as_byte_vec("roms/games/pokemon-silver.gbc");
 
-    let bytes = get_file_as_byte_vec("roms/demos/dmg-acid2.gb");
+    let audio_device = Box::new(Audio::new(sdl_context));
 
-    let mut emulator = Emulator::new(false, Cartridge::from_bytes(bytes));
+    let mut emulator = Emulator::new(false, Cartridge::from_bytes(bytes), audio_device);
+
+    let mut carry = Duration::new(0, 0);
 
     'running: loop {
+        let time = Instant::now();
+
         // Handle events
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => {
+                Event::Quit { .. } => {
                     break 'running;
+                }
+                Event::KeyUp { keycode, .. } => {
+                    if let Some(key) = keycode.and_then(map_joypad_key) {
+                        emulator.on_key_up(key)
+                    }
+                }
+                Event::KeyDown { keycode, .. } => {
+                    if let Some(key) = keycode.and_then(map_joypad_key) {
+                        emulator.on_key_down(key)
+                    }
                 }
                 _ => {}
             }
@@ -91,9 +115,13 @@ fn main() -> Result<(), String> {
 
         canvas.present();
 
-        // Time management
-        sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        let elapsed = time.elapsed() + carry;
+        let sleep = Duration::new(0, 1_000_000_000 / 60);
+        if elapsed < sleep {
+            carry = Duration::new(0, 0);
+            std::thread::sleep(sleep - elapsed);
+        } else {
+            carry = elapsed - sleep;
+        }
     }
-
-    Ok(())
 }

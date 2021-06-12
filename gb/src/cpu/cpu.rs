@@ -261,8 +261,9 @@ impl Cpu {
         // When drawing only background it generates 8 pixels every 8 cycles into the upper part of the FIFO
         // and then shifts them down over the next 8 cycles ready for the next 8 pixels to be written
         for _ in 0..cycles {
-            hw.ppu.tick(&mut hw.interrupts);
+            hw.ppu.tick(&mut hw.interrupts, &mut hw.events);
             hw.timer.tick(&mut hw.interrupts);
+            hw.apu.tick();
         }
 
         self.frame_cycles += cycles;

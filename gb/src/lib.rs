@@ -9,12 +9,15 @@
     non_fmt_panic
 )]
 
+mod apu;
+pub mod audio;
 mod bios;
 pub mod cartridges;
 pub mod constants;
 pub mod cpu;
 mod dma;
 pub mod emulator;
+pub mod events;
 mod hdma;
 pub mod interrupts;
 pub mod joypad;

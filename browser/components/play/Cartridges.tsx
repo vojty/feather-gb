@@ -14,8 +14,8 @@ type Option = {
   name: string
 }
 
-const options: readonly Option[] = roms.filter((rom) =>
-  rom.name.startsWith('demos/')
+const options: readonly Option[] = roms.filter(
+  (rom) => rom.name.startsWith('demos/') || rom.name.startsWith('games/')
 )
 
 const initial = options.find((rom) => rom.name === 'demos/oh.gb') || null

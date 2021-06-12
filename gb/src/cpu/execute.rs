@@ -1,7 +1,7 @@
 use emulator::Hardware;
 
-use crate::emulator;
 use crate::traits::DisplayHex;
+use crate::{emulator, events::Events};
 
 use super::{
     cpu::{
@@ -85,7 +85,7 @@ impl Cpu {
 
             0x40 => {
                 // Magic breakpoint
-                hw.events.push(0xff);
+                hw.events.insert(Events::MAGIC_BREAKPOINT);
                 self.load8(hw, B, B)
             }
             0x41 => self.load8(hw, B, C),

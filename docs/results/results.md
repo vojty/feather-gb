@@ -24,6 +24,25 @@ Some of those tests are skipped, see `blarggs_tests.rs` why.
 | roms/gb-test-roms/mem_timing/individual/03-modify_timing.gb      | ✅     |
 | roms/gb-test-roms/mem_timing/mem_timing.gb                       | ✅     |
 
+## Blargg's tests - dmg_sound
+
+https://github.com/retrio/gb-test-roms
+
+| Name                     | Expected                                   | Result                                   | Diff                                   | Status        |
+| ------------------------ | ------------------------------------------ | ---------------------------------------- | -------------------------------------- | ------------- |
+| 01-registers             | ![](01-registers/expected.png)             | ![](01-registers/result.png)             | ![](01-registers/diff.png)             | ✅ Diff: 0    |
+| 02-len_ctr               | ![](02-len_ctr/expected.png)               | ![](02-len_ctr/result.png)               | ![](02-len_ctr/diff.png)               | ✅ Diff: 0    |
+| 03-trigger               | ![](03-trigger/expected.png)               | ![](03-trigger/result.png)               | ![](03-trigger/diff.png)               | ✅ Diff: 0    |
+| 04-sweep                 | ![](04-sweep/expected.png)                 | ![](04-sweep/result.png)                 | ![](04-sweep/diff.png)                 | ✅ Diff: 0    |
+| 05-sweep_details         | ![](05-sweep_details/expected.png)         | ![](05-sweep_details/result.png)         | ![](05-sweep_details/diff.png)         | ✅ Diff: 0    |
+| 06-overflow_on_trigger   | ![](06-overflow_on_trigger/expected.png)   | ![](06-overflow_on_trigger/result.png)   | ![](06-overflow_on_trigger/diff.png)   | ✅ Diff: 0    |
+| 07-len_sweep_period_sync | ![](07-len_sweep_period_sync/expected.png) | ![](07-len_sweep_period_sync/result.png) | ![](07-len_sweep_period_sync/diff.png) | ✅ Diff: 0    |
+| 08-len_ctr_during_power  | ![](08-len_ctr_during_power/expected.png)  | ![](08-len_ctr_during_power/result.png)  | ![](08-len_ctr_during_power/diff.png)  | ✅ Diff: 0    |
+| 09-wave_read_while_on    | ![](09-wave_read_while_on/expected.png)    | ![](09-wave_read_while_on/result.png)    | ![](09-wave_read_while_on/diff.png)    | ❌ Diff: 3433 |
+| 10-wave_trigger_while_on | ![](10-wave_trigger_while_on/expected.png) | ![](10-wave_trigger_while_on/result.png) | ![](10-wave_trigger_while_on/diff.png) | ❌ Diff: 290  |
+| 11-regs_after_power      | ![](11-regs_after_power/expected.png)      | ![](11-regs_after_power/result.png)      | ![](11-regs_after_power/diff.png)      | ✅ Diff: 0    |
+| 12-wave_write_while_on   | ![](12-wave_write_while_on/expected.png)   | ![](12-wave_write_while_on/result.png)   | ![](12-wave_write_while_on/diff.png)   | ❌ Diff: 549  |
+
 ## Mooneye's tests
 
 https://github.com/Gekkio/mooneye-gb
@@ -254,4 +273,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-05-19 12:29:06.326449 UTC
+Generated at: 2021-06-12 12:45:18.677390 UTC

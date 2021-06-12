@@ -1,6 +1,6 @@
 use futures::{future::join_all, TryFutureExt};
 
-use gb::ppu::palettes::DmgPalettes;
+use gb::{emulator::Emulator, events::Events, ppu::palettes::DmgPalettes};
 
 use crate::{
     markdown,
@@ -13,6 +13,8 @@ use crate::{
 pub struct VisualTestCaseBuilder {
     test: VisualTestCase,
 }
+
+type EndCallback = fn(&Emulator) -> bool;
 
 impl VisualTestCaseBuilder {
     pub fn new(
@@ -28,12 +30,18 @@ impl VisualTestCaseBuilder {
             has_breakpoint: true,
             max_frames: 10,
             palette: DmgPalettes::Gray,
+            end_callback: |_| false,
         };
         Self { test }
     }
 
     pub fn set_max_frames(mut self, frames: u32) -> Self {
         self.test.max_frames = frames;
+        self
+    }
+
+    pub fn set_end_callback(mut self, callback: EndCallback) -> Self {
+        self.test.end_callback = callback;
         self
     }
 
@@ -67,6 +75,8 @@ pub struct VisualTestCase {
     max_frames: u32,
     has_breakpoint: bool,
     palette: DmgPalettes,
+
+    end_callback: EndCallback,
 }
 
 pub enum ImageResultTypes {
@@ -113,8 +123,13 @@ impl VisualTestCase {
         for _ in 0..self.max_frames {
             e.run_frame();
 
-            // Dummy check for magic breakpoint LD B,B
-            if self.has_breakpoint && !e.hw.events.is_empty() {
+            // End callback check
+            if (self.end_callback)(&e) {
+                break;
+            }
+
+            // Check for magic breakpoint LD B,B
+            if self.has_breakpoint && e.hw.events.contains(Events::MAGIC_BREAKPOINT) {
                 break;
             }
         }

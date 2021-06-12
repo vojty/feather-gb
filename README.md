@@ -1,6 +1,11 @@
 <div align="center">
   <h1><img src="./browser/assets/images/feather.svg" height="20" /> FeatherGB</h1>
   Just another GameBoy emulator written in Rust 🦀
+
+  <p align="center">
+    <img alt="GameBoy" src="./browser/assets/images/screen-gb.png" />
+  </p>
+
   <p align="center">
     <img alt="Debugger" src="./browser/assets/images/screen-debugger.png" />
   </p>
@@ -9,7 +14,10 @@
 ## Info
 
 This is my first project in Rust, so many patterns might not be ideal. I also wanted to try WebAssembly a little bit.
-The browser part is kinda hackish because I didn't intent to spent a lot of time styling/configuring webpack/improving UI. This might change in the future if the emulator is accurate "enough".
+
+## Status
+
+The emulator is somehow accurate - the CPU is cycle accurate and the emulator passes many tests, although the PPU's accuracy needs to be improved a lot. For more info see tests results below.
 
 ## Test results
 
@@ -20,11 +28,11 @@ Generated test report is [here](./docs/results/results.md)
 
 ## Modes
 
-The emulator can be run in 2 modes - the normal mode (shows just GameBoy's display) and the debugger mode (using amazing [egui](https://github.com/emilk/egui)). Both are available for the desktop and the browser.
+The emulator can be run in 2 modes - the normal mode (shows just GameBoy's display) and the debugger mode (using [egui](https://github.com/emilk/egui)). Both are available for the desktop and the browser.
 
 ### Desktop
 
-- Standard - **WIP** rendered by SDL2 (should be cross platform, but I've tested only MacOS)
+- Standard - rendered by SDL2 (should be cross platform, but I've tested only MacOS)
 - Debugger - rendered by egui (using glium as backend)
 
 ### Browser
@@ -40,11 +48,17 @@ No specific priority here
 
 - standard (play) mode
   - support for custom controls + gamepad
-- APU (currently with no sound - WIP in the previous TypeScript only version of the emulator)
-- FIFO for sprites
+- APU
+  - audio + video synchronization
+  - channel 4 implementation
+- FIFO & Fetcher for sprites
 - save & load
-- make PPU more accurate and pass some [mealybug-tearoom-tests](https://github.com/mattcurrie/mealybug-tearoom-tests)
+- make PPU more accurate
+  - pass all [wilbertpol's tests](https://github.com/Amjad50/mooneye-gb)
+  - pass some [mealybug-tearoom-tests](https://github.com/mattcurrie/mealybug-tearoom-tests)
+- memory bus conflicts
 - GameBoy Color support
+  - implement HDMA & GDMA
 
 ## Project structure
 
@@ -56,6 +70,18 @@ No specific priority here
 - `/integration-tests` - ROM tests
 
 ## Resources
+
+### Links
+
+- General GB documentation https://gbdev.io/pandocs/
+- PPU details https://hacktixme.ga/GBEDG/
+- opcode table https://izik1.github.io/gbops/
+- Memory banks https://github.com/Gekkio/gb-ctr
+- PPU interrupts timing https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf
+- Audio + video sync tips https://near.sh/articles/audio/dynamic-rate-control
+- Audio basics https://nightshade256.github.io/2021/03/27/gb-sound-emulation.html
+- Audio overview https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware
+- PPU fetcher timing http://blog.kevtris.org/blogfiles/Nitty%20Gritty%20Gameboy%20VRAM%20Timing.txt
 
 ### Test Roms
 

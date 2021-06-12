@@ -3,7 +3,9 @@ use eframe::{
     epi,
 };
 use egui::{Color32, TextStyle, Vec2};
-use gb::{cartridges::cartridge::Cartridge, emulator::Emulator, traits::DisplayHex};
+use gb::{
+    audio::AudioDevice, cartridges::cartridge::Cartridge, emulator::Emulator, traits::DisplayHex,
+};
 use size_format::SizeFormatterBinary;
 use std::sync::mpsc::Receiver;
 
@@ -40,13 +42,21 @@ pub struct Debugger {
     components: Components,
 }
 
+struct DummyAudio;
+
+impl AudioDevice for DummyAudio {
+    fn queue(&mut self, _buffer: &[f32]) {
+        // TODO
+    }
+}
+
 impl Debugger {
     pub fn new(roms: Vec<Box<dyn BinarySource>>) -> Self {
         let cartridge = Cartridge::empty();
         Self {
             file_receiver: None,
             speed: 1,
-            emulator: Emulator::new(true, cartridge),
+            emulator: Emulator::new(true, cartridge, Box::new(DummyAudio {})),
             running: false,
             components: Components {
                 disassembly: Disassembly::new(),
@@ -88,7 +98,11 @@ impl epi::App for Debugger {
         if let Some(receiver) = file_receiver {
             if let Ok(result) = receiver.try_recv() {
                 *file_receiver = None;
-                *emulator = Emulator::new(false, Cartridge::from_bytes(result));
+                *emulator = Emulator::new(
+                    false,
+                    Cartridge::from_bytes(result),
+                    Box::new(DummyAudio {}),
+                );
             }
         }
 

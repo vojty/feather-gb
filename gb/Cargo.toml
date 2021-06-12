@@ -16,4 +16,4 @@ path = "src/lib.rs"
 [dependencies]
 bitflags = "1.2.1"
 log = "0.4.14"
-parse-display = "0.4.1"
+parse-display = "0.5.0"

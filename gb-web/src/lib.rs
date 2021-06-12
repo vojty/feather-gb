@@ -1,11 +1,14 @@
+use audio::WebAudio;
 use wasm_bindgen::prelude::*;
 
 use std::panic;
 
 use gb::{
-    cartridges::cartridge::Cartridge, emulator::Emulator, joypad::JoypadKey,
-    ppu::palettes::DmgPalettes,
+    audio::AudioDevice, cartridges::cartridge::Cartridge, constants::AUDIO_BUFFER_SIZE,
+    emulator::Emulator, joypad::JoypadKey, ppu::palettes::DmgPalettes,
 };
+
+mod audio;
 
 #[wasm_bindgen]
 pub struct WebCartridge {
@@ -20,6 +23,11 @@ impl WebCartridge {
             cartridge: Cartridge::from_bytes(bytes),
         }
     }
+}
+
+#[wasm_bindgen()]
+pub fn get_audio_buffer_size() -> usize {
+    AUDIO_BUFFER_SIZE
 }
 
 #[wasm_bindgen]
@@ -53,11 +61,22 @@ fn translate_key(input: JsKeys) -> JoypadKey {
     }
 }
 
+fn create_audio_device(audio_buffer_callback: &js_sys::Function) -> Box<dyn AudioDevice> {
+    Box::new(WebAudio::new(audio_buffer_callback))
+}
+
 #[wasm_bindgen]
 impl WebEmulator {
     #[wasm_bindgen(constructor)]
-    pub fn new(web_cartridge: WebCartridge) -> WebEmulator {
-        let mut e = Emulator::new(false, web_cartridge.cartridge);
+    pub fn new(
+        web_cartridge: WebCartridge,
+        audio_buffer_callback: &js_sys::Function,
+    ) -> WebEmulator {
+        let mut e = Emulator::new(
+            false,
+            web_cartridge.cartridge,
+            create_audio_device(audio_buffer_callback),
+        );
         e.set_system_palette(&DmgPalettes::GreenDmg);
         WebEmulator { e }
     }
@@ -76,6 +95,11 @@ impl WebEmulator {
 
     pub fn on_key_up(&mut self, input_key: JsKeys) {
         self.e.on_key_up(translate_key(input_key));
+    }
+
+    pub fn set_audio_buffer_callback(&mut self, audio_buffer_callback: &js_sys::Function) {
+        self.e
+            .set_audio_device(create_audio_device(audio_buffer_callback));
     }
 }
 
