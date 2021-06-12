@@ -3,11 +3,13 @@ use std::u16;
 use log::debug;
 
 use crate::{
+    apu::apu::Apu,
+    audio::AudioDevice,
     bios::BIOS,
     cartridges::cartridge::Cartridge,
-    constants::CYCLES_PER_FRAME,
     cpu::cpu::{Cpu, Flags, Reg8},
     dma::OamDma,
+    events::Events,
     hdma::Hdma,
     interrupts::InterruptController,
     joypad::{Joypad, JoypadKey},
@@ -36,6 +38,7 @@ pub struct Hardware {
     bios_enabled: bool,
     pub cartridge: Cartridge,
     pub ppu: Ppu,
+    pub apu: Apu,
     wram: Wram,
     hram: Box<[u8; HRAM_SIZE]>,
     capture_serial: bool,
@@ -45,7 +48,7 @@ pub struct Hardware {
     pub oam_dma: OamDma,
     pub hdma: Hdma,
     joypad: Joypad,
-    pub events: Vec<u8>, // TODO this is ugly check for tests for LD B,B breakpoint
+    pub events: Events,
 }
 
 impl MemoryAccess for Hardware {
@@ -92,7 +95,12 @@ impl MemoryAccess for Hardware {
                 0xff03 => 0xff,                                   // unused
                 0xff04..=0xff07 => self.timer.read_byte(address), // Timer
                 0xff0f => self.interrupts.read_byte(address),     // Interrupt controller
-                0xff10..=0xff3f => 0xff,                          // APU
+                0xff10..=0xff14 => self.apu.read_byte(address),   // APU Channel 1
+                0xff16..=0xff19 => self.apu.read_byte(address),   // APU Channel 2
+                0xff1a..=0xff1e => self.apu.read_byte(address),   // APU Channel 3
+                0xff20..=0xff23 => self.apu.read_byte(address),   // APU Channel 4
+                0xff24..=0xff26 => self.apu.read_byte(address),   // APU Sound controls
+                0xff30..=0xff3f => self.apu.read_byte(address),   // APU Channel 3 Wave RAM
                 0xff40..=0xff45 => self.ppu.read_byte(address),   // PPU
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
@@ -157,7 +165,12 @@ impl MemoryAccess for Hardware {
                 } // Serial
                 0xff04..=0xff07 => self.timer.write_byte(address, value, ic), // Timer
                 0xff0f => self.interrupts.write_byte(address, value), // Interrupt controller
-                0xff10..=0xff3f => {}                             // APU
+                0xff10..=0xff14 => self.apu.write_byte(address, value), // APU Channel 1
+                0xff16..=0xff19 => self.apu.write_byte(address, value), // APU Channel 2
+                0xff1a..=0xff1e => self.apu.write_byte(address, value), // APU Channel 3
+                0xff20..=0xff23 => self.apu.write_byte(address, value), // APU Channel 4
+                0xff24..=0xff26 => self.apu.write_byte(address, value), // APU Sound controls
+                0xff30..=0xff3f => self.apu.write_byte(address, value), // APU Channel 3 Wave RAM
                 0xff40..=0xff45 => self.ppu.write_byte(address, value, ic), // PPU
                 0xff46 => self.oam_dma.request(value),            // DMA
                 0xff47..=0xff4b => self.ppu.write_byte(address, value, ic), // PPU
@@ -191,10 +204,16 @@ pub struct Emulator {
 }
 
 impl Emulator {
-    pub fn new(bios_enabled: bool, cartridge: Cartridge) -> Emulator {
+    pub fn new(
+        bios_enabled: bool,
+
+        cartridge: Cartridge,
+        audio_device: Box<dyn AudioDevice>,
+    ) -> Emulator {
         let interrupt_controller = InterruptController::new();
         let is_cgb = cartridge.supports_cgb();
         let ppu = Ppu::new(is_cgb);
+        let apu = Apu::new(audio_device);
         let mut e = Emulator {
             cpu: Cpu::new(),
             frames: 0,
@@ -202,6 +221,7 @@ impl Emulator {
             hw: Hardware {
                 bios_enabled,
                 ppu,
+                apu,
                 timer: Timer::new(),
                 interrupts: interrupt_controller,
                 cartridge,
@@ -212,7 +232,7 @@ impl Emulator {
                 oam_dma: OamDma::new(),
                 hdma: Hdma::new(),
                 joypad: Joypad::new(),
-                events: vec![],
+                events: Events::empty(),
             },
             is_cgb,
         };
@@ -236,6 +256,7 @@ impl Emulator {
 
             e.hw.timer.init_without_bios();
             e.hw.ppu.init_without_bios();
+            e.hw.apu.init_without_bios();
             e.hw.interrupts.init_without_bios();
         }
 
@@ -243,9 +264,13 @@ impl Emulator {
     }
 
     pub fn run_frame(&mut self) {
-        while self.cpu.frame_cycles < CYCLES_PER_FRAME {
+        loop {
             self.run_instruction();
             self.executed_instructions += 1;
+            if self.hw.events.contains(Events::V_BLANK) {
+                self.hw.events.remove(Events::V_BLANK);
+                break;
+            }
         }
         self.frames += 1;
         self.cpu.frame_cycles = 0;
@@ -339,8 +364,6 @@ impl Emulator {
         } else {
             // should not happend invalid state?
         }
-
-        // self.create_peach_log_line();
     }
 
     pub fn on_key_down(&mut self, key: JoypadKey) {
@@ -363,6 +386,10 @@ impl Emulator {
 
     pub fn set_capture_serial(&mut self, capture: bool) {
         self.hw.capture_serial = capture;
+    }
+
+    pub fn set_audio_device(&mut self, audio_device: Box<dyn AudioDevice>) {
+        self.hw.apu.set_audio_device(audio_device);
     }
 
     pub fn is_cgb(&self) -> bool {

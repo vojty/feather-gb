@@ -7,3 +7,5 @@ pkg
 yarn-error.log
 browser/romsList.ts
 roms/games
+
+*.sav

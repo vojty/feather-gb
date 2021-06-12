@@ -11,7 +11,7 @@ fn should_collect(path: &str) -> bool {
         return false;
     }
 
-    // no DMG sound
+    // tested in different suite (sound tests don't have any output)
     if path.contains("/dmg_sound/") {
         return false;
     }
@@ -26,7 +26,7 @@ fn should_collect(path: &str) -> bool {
         return false;
     }
 
-    // those tests doesn't output anything :/
+    // those tests don't output anything :/
     if path.contains("mem_timing-2") {
         return false;
     }

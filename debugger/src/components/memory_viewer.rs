@@ -14,6 +14,7 @@ enum MemoryArea {
     WramShadow,
     Oam,
     Hram,
+    IO,
 }
 
 impl MemoryArea {
@@ -26,6 +27,7 @@ impl MemoryArea {
             MemoryArea::WramShadow => 0xe000..=0xfdff,
             MemoryArea::Oam => 0xfe00..=0xfe9f,
             MemoryArea::Hram => 0xff80..=0xfffe,
+            MemoryArea::IO => 0xff00..=0xffff,
         }
     }
     fn get_name(&self) -> String {
@@ -37,6 +39,7 @@ impl MemoryArea {
             MemoryArea::WramShadow => "WRAM Shadow".to_string(),
             MemoryArea::Oam => "OAM".to_string(),
             MemoryArea::Hram => "HRAM".to_string(),
+            MemoryArea::IO => "IO".to_string(),
         }
     }
 }
@@ -99,6 +102,7 @@ impl MemoryViewer {
                 MemoryArea::WramShadow,
                 MemoryArea::Oam,
                 MemoryArea::Hram,
+                MemoryArea::IO,
             ]
             .iter()
             .for_each(|area| {

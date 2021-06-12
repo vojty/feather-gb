@@ -5,6 +5,7 @@ use std::{
 };
 
 use gb::{
+    audio::AudioDevice,
     cartridges::cartridge::Cartridge,
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
     emulator::Emulator,
@@ -47,10 +48,18 @@ pub fn create_path(paths: &[&str]) -> String {
         .to_string()
 }
 
+struct DummyAudio;
+
+impl AudioDevice for DummyAudio {
+    fn queue(&mut self, _buffer: &[f32]) {
+        // noop - no sound for tests
+    }
+}
+
 pub fn create_emulator(path: &str) -> Emulator {
     let binary = get_file_as_byte_vec(path);
     let cartridge = Cartridge::from_bytes(binary);
-    Emulator::new(false, cartridge)
+    Emulator::new(false, cartridge, Box::new(DummyAudio {}))
 }
 
 pub fn save_screen(e: &Emulator, path: impl Into<String>) {
@@ -82,7 +91,8 @@ pub fn copy_file(from: &str, to: &str) {
 }
 
 pub fn save_diff_image(reference_image: &str, result_image: &str, diff_image: &str) -> usize {
-    let reference = File::open(reference_image).unwrap();
+    let reference =
+        File::open(reference_image).unwrap_or_else(|_| panic!("Can't open {}", reference_image));
     let result = File::open(result_image).unwrap();
 
     let mut diff_image_data = Vec::new();

@@ -28,11 +28,15 @@ type Props = {
   ctx: CanvasRenderingContext2D
   bytes?: Uint8Array
   running: boolean
+  soundEnabled: boolean
 }
+
+const audioContext = new AudioContext({
+  sampleRate: 44100
+})
 
 function renderFrame(emulator: WebEmulator, ctx: CanvasRenderingContext2D) {
   const canvasDataPointer = emulator.get_canvas_data_pointer()
-
   const imageData = ctx.createImageData(DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
   const canvasData = new Uint8Array(
@@ -60,10 +64,13 @@ function initScreen(ctx: CanvasRenderingContext2D) {
   ctx.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 }
 
+const CHANNELS_COUNT = 2
+
 // Helper component so we don't have to deal with nullable values in parent components
 function DeviceHandler(props: Props) {
-  const { bytes, wasmModule, running, ctx } = props
+  const { bytes, wasmModule, running, ctx, soundEnabled } = props
   const emulator = useRef<WebEmulator>()
+  const currentAudioSeconds = useRef(0)
   const loopId = useRef(0)
   const registerInputs = useInputHandler()
 
@@ -72,17 +79,61 @@ function DeviceHandler(props: Props) {
     initScreen(ctx)
   }, [ctx])
 
+  const onAudioBufferCallback = useCallback((bufferPtr: number) => {
+    const BUFFER_SIZE = wasmModule.get_audio_buffer_size()
+
+    const audioData = new Float32Array(memory.buffer, bufferPtr, BUFFER_SIZE)
+
+    const frameCount = audioData.length / CHANNELS_COUNT
+    const audioBuffer = audioContext.createBuffer(
+      CHANNELS_COUNT,
+      frameCount,
+      audioContext.sampleRate
+    )
+    for (let channel = 0; channel < CHANNELS_COUNT; channel++) {
+      let nowBuffering = audioBuffer.getChannelData(channel)
+      for (let i = 0; i < frameCount; i++) {
+        // audio data frames are interleaved
+        nowBuffering[i] = audioData[i * CHANNELS_COUNT + channel]
+      }
+    }
+    const audioSource = audioContext.createBufferSource()
+    audioSource.buffer = audioBuffer
+    audioSource.connect(audioContext.destination)
+
+    // taken from here https://github.com/Powerlated/OptimeGB/blob/master/src/core/audioplayer.ts#L91-L94
+    // TODO after some time, the game gets audio delay
+    // Reset time if close to buffer underrun
+    if (currentAudioSeconds.current <= audioContext.currentTime + 0.02) {
+      currentAudioSeconds.current = audioContext.currentTime + 0.06
+    }
+    audioSource.start(currentAudioSeconds.current)
+    currentAudioSeconds.current +=
+      BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
+  }, [])
+
   // Create emulator on cartridge load
   useEffect(() => {
     if (!bytes) {
       return
     }
+
     const cartridge = new wasmModule.WebCartridge(bytes)
-    emulator.current = new wasmModule.WebEmulator(cartridge)
+    currentAudioSeconds.current = 0
+    emulator.current = new wasmModule.WebEmulator(cartridge, () => {})
     initScreen(ctx)
 
     registerInputs(emulator.current)
   }, [bytes, wasmModule, registerInputs])
+
+  useEffect(() => {
+    const e = emulator.current
+    if (!e) {
+      return
+    }
+
+    e.set_audio_buffer_callback(soundEnabled ? onAudioBufferCallback : () => {})
+  }, [emulator.current, soundEnabled, onAudioBufferCallback])
 
   // Handle stop/start
   useEffect(() => {
@@ -108,6 +159,10 @@ function DeviceHandler(props: Props) {
 
 export function Play() {
   const [zoom, setZoom] = useLocalStorage('zoom', DEFAULT_ZOOM)
+  const [soundEnabled, setSoundEnabled] = useLocalStorage(
+    'sound_enabled',
+    false
+  )
   const [running, setRunning] = useState(false)
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
   const [rom, setRom] = useState<Rom | null>(null)
@@ -175,11 +230,12 @@ export function Play() {
               bytes={rom?.bytes}
               wasmModule={wasmModule}
               running={running}
+              soundEnabled={soundEnabled}
               ctx={ctx}
             />
           )}
 
-          <div className="mt-2 flex justify-center text-xs">
+          <div className="mt-2 flex justify-center items-center text-xs">
             <button
               className="mx-2 border rounded px-1 py-1"
               onClick={onRunningToggle}>
@@ -191,6 +247,16 @@ export function Play() {
               onLoad={onCartridgeLoad}>
               Upload ROM
             </OpenButton>
+
+            <label className="flex justify-center items-center">
+              <input
+                className="mr-1"
+                type="checkbox"
+                checked={soundEnabled}
+                onChange={(e) => setSoundEnabled(e.currentTarget.checked)}
+              />
+              Enable sound
+            </label>
           </div>
 
           {rom?.custom && (

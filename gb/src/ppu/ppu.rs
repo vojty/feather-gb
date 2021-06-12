@@ -5,6 +5,7 @@ use parse_display::Display;
 
 use crate::{
     constants::{self, TILE_SIZE},
+    events::Events,
     interrupts::{InterruptBits, InterruptController},
     ppu::vram::BgToOamPriority,
     traits::MemoryAccess,
@@ -24,10 +25,7 @@ use super::{
     vram::{Tile, Vram, VRAM_END, VRAM_START},
 };
 
-use super::registers::{
-    R_BGP, R_BGPD, R_BGPI, R_LCDC, R_LY, R_LYC, R_OBP0, R_OBP1, R_OBPD, R_OBPI, R_OPRI, R_SCX,
-    R_SCY, R_STAT, R_VBK, R_WX, R_WY,
-};
+use super::registers::*;
 
 const CGB_REGISTERS: [u16; 6] = [R_BGPD, R_BGPI, R_OBPD, R_OBPI, R_OPRI, R_VBK];
 
@@ -186,7 +184,7 @@ impl Ppu {
         self.wx = 0x00;
     }
 
-    pub fn tick(&mut self, ic: &mut InterruptController) {
+    pub fn tick(&mut self, ic: &mut InterruptController, events: &mut Events) {
         if !is_lcd_enabled(&self.lcdc) {
             self.line_clocks = 0;
             return;
@@ -202,7 +200,7 @@ impl Ppu {
         }
 
         if self.line < 144 {
-            self.process_screen_line(ic);
+            self.process_screen_line(ic, events);
         } else {
             self.process_vblank_line(ic);
         }
@@ -212,7 +210,7 @@ impl Ppu {
         self.stat_mode = mode;
     }
 
-    fn process_screen_line(&mut self, ic: &mut InterruptController) {
+    fn process_screen_line(&mut self, ic: &mut InterruptController, events: &mut Events) {
         // 2   -> 3              -> 0
         // OAM -> PIXEL TRANSFER -> H-BLANK
 
@@ -281,6 +279,7 @@ impl Ppu {
                             self.window_line_enabled = false;
 
                             if self.skip_frames == 0 {
+                                events.insert(Events::V_BLANK);
                                 self.screen_buffer.commit_frame();
                             }
                         }
@@ -725,7 +724,6 @@ impl Ppu {
                     self.line_clocks = 4;
                     // Only LY=LYC can trigger STAT interrupt now
                     self.check_ly_equals_lyc_no_mode(ic);
-                    // self.prev_stat_flag = false;
                     self.ly_to_compare = None;
 
                     // The first frame (after LCD is turned on) is skipped

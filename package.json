@@ -6,6 +6,7 @@
     "build": "rimraf public && NODE_ENV=production webpack --mode=production",
     "serve": "webpack serve",
     "debugger": "cargo run -p debugger --release",
+    "desktop": "cargo run -p desktop --release",
     "tests": "cargo run -p integration-tests --release"
   },
   "devDependencies": {

@@ -39,10 +39,13 @@ impl BinarySource for FileSystemRom {
     }
 }
 
+const FILE_PATTERN: &str = "**/*.{gb}";
+// const FILE_PATTERN: &str = "*/dmg_sound/**/*.{gb}";
+
 pub fn load_roms() -> Vec<Box<dyn BinarySource>> {
     let mut files = vec![];
 
-    let iterator = GlobWalkerBuilder::from_patterns("roms", &["**/*.{gb,gbc}"])
+    let iterator = GlobWalkerBuilder::from_patterns("roms", &[FILE_PATTERN])
         .build()
         .unwrap()
         .into_iter()

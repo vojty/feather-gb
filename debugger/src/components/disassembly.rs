@@ -11,7 +11,7 @@ use crate::ui_extensions::mono_label;
 
 pub struct Disassembly;
 
-type Definition = (&'static str, usize);
+type Definition = (&'static str, usize); // (name, length)
 
 const VISIBLE_LENGTH: usize = 10;
 

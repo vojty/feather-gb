@@ -1,5 +1,6 @@
 mod tests {
     use gb::{
+        events::Events,
         interrupts::InterruptController,
         ppu::ppu::{Mode, Ppu},
     };
@@ -23,7 +24,7 @@ mod tests {
 
         fn execute_cycles(&mut self, cycles: usize) {
             let mut ic = InterruptController::new();
-            (0..cycles).for_each(|_| self.tick(&mut ic));
+            (0..cycles).for_each(|_| self.tick(&mut ic, &mut Events::empty()));
         }
 
         fn prepare(&mut self, line: u8) {
