@@ -15,7 +15,7 @@ use crate::{
     joypad::{Joypad, JoypadKey},
     ppu::{palettes::DmgPalettes, ppu::Ppu, screen_buffer::Buffer},
     timer::Timer,
-    traits::{DisplayHex, MemoryAccess},
+    traits::MemoryAccess,
     wram::Wram,
 };
 pub trait SplitU16 {
@@ -349,18 +349,12 @@ impl Emulator {
             self.cpu.halted = false;
             self.handle_interrupts();
         } else if !self.cpu.halted {
-            let pc = self.cpu.pc;
-            let cycles = self.cpu.total_cycles;
             let op_code = self.cpu.read_imm_u8_tick(&mut self.hw);
             if self.cpu.halt_bug {
                 self.cpu.pc -= 1;
                 self.cpu.halt_bug = false;
             }
-            let executed = self.cpu.execute(op_code, &mut self.hw);
-
-            if false {
-                log::debug!("{} | {} | {}", cycles, pc.to_hex(), executed);
-            }
+            self.cpu.execute(op_code, &mut self.hw);
         } else {
             // should not happend invalid state?
         }

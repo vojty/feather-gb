@@ -1,6 +1,5 @@
 use emulator::Hardware;
 
-use crate::traits::DisplayHex;
 use crate::{emulator, events::Events};
 
 use super::{
@@ -13,9 +12,9 @@ use super::{
 };
 
 impl Cpu {
-    pub fn execute(&mut self, op_code: u8, hw: &mut Hardware) -> String {
+    pub fn execute(&mut self, op_code: u8, hw: &mut Hardware) {
         match op_code {
-            0x00 => "NOP".to_string(),
+            0x00 => (/* NOP */),
             0x01 => self.load16(hw, BC, ImmediateU16),
             0x02 => self.load8(hw, Addr::BC, A),
             0x03 => self.inc16(hw, BC),
@@ -32,7 +31,7 @@ impl Cpu {
             0x0E => self.load8(hw, C, ImmediateU8),
             0x0F => self.rrca(),
 
-            0x10 => "STOP".to_string(),
+            0x10 => (/* STOP */),
             0x11 => self.load16(hw, DE, ImmediateU16),
             0x12 => self.load8(hw, Addr::DE, A),
             0x13 => self.inc16(hw, DE),
@@ -236,7 +235,7 @@ impl Cpu {
             0xCA => self.jp_cc_imm_u16(hw, JumpConditions::Z),
             0xCB => {
                 let op_code = self.read_imm_u8_tick(hw);
-                self.execute_cb(op_code, hw)
+                self.execute_cb(op_code, hw);
             }
             0xCC => self.call_cc(hw, JumpConditions::Z),
             0xCD => self.call_cc(hw, JumpConditions::NONE),
@@ -289,8 +288,7 @@ impl Cpu {
             0xF9 => {
                 self.load16(hw, SP, HL);
                 self.tick(hw); // internal
-
-                "LD SP,HL".to_string()
+                               // LD SP,HL
             }
             0xFA => self.load8(hw, A, Addr::U16),
             0xFB => self.ei(),
@@ -301,7 +299,7 @@ impl Cpu {
         }
     }
 
-    pub fn execute_cb(&mut self, op_code: u8, hw: &mut Hardware) -> String {
+    pub fn execute_cb(&mut self, op_code: u8, hw: &mut Hardware) {
         match op_code {
             0x00 => self.rlc(hw, B),
             0x01 => self.rlc(hw, C),
@@ -577,7 +575,7 @@ impl Cpu {
         }
     }
 
-    fn invalid_opcode(&mut self, op_code: u8) -> String {
-        format!("INVALID {}", op_code.to_hex())
+    fn invalid_opcode(&mut self, _op_code: u8) {
+        // TODO panic?
     }
 }

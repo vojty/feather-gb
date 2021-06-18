@@ -4,7 +4,6 @@ use cpu::{Cpu, Flags, Reg16, Reg8};
 use parse_display::{Display, FromStr};
 
 use crate::emulator::Hardware;
-use crate::traits::DisplayHex;
 
 use super::cpu;
 
@@ -60,7 +59,7 @@ impl Cpu {
      H - Set if carry from bit 3
      C - Set if carry from bit 7
     */
-    pub fn add<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn add<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
@@ -76,11 +75,9 @@ impl Cpu {
         self.update_flag(Flags::H, half_carry);
 
         self.write_reg8(Reg8::A, result);
-
-        format!("ADD A, {}", source)
     }
 
-    pub fn adc<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn adc<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
@@ -99,8 +96,6 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         self.write_reg8(Reg8::A, result);
-
-        format!("ADC A,{}", source)
     }
 
     fn base_sub(&mut self, value: u8, subtract_carry: bool) -> u8 {
@@ -131,39 +126,33 @@ impl Cpu {
         result
     }
 
-    pub fn sub<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn sub<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
         let value = source.read8(self, hw);
         let result = self.base_sub(value, false);
         self.write_reg8(Reg8::A, result);
-
-        format!("SUB A,{}", source)
     }
 
-    pub fn cp<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn cp<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
         let value = source.read8(self, hw);
         self.base_sub(value, false);
-
-        format!("CP A,{}", source)
     }
 
-    pub fn sbc<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn sbc<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
         let value = source.read8(self, hw);
         let result = self.base_sub(value, true);
         self.write_reg8(Reg8::A, result);
-
-        format!("SBC A,{}", source)
     }
 
-    pub fn and<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn and<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
@@ -175,10 +164,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         self.write_reg8(Reg8::A, result);
-        format!("AND {}", source)
     }
 
-    pub fn or<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn or<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
@@ -189,11 +177,9 @@ impl Cpu {
             self.set_flag(Flags::Z);
         }
         self.write_reg8(Reg8::A, result);
-
-        format!("OR {}", source)
     }
 
-    pub fn xor<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn xor<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + std::fmt::Display + Copy,
     {
@@ -204,11 +190,9 @@ impl Cpu {
             self.set_flag(Flags::Z);
         }
         self.write_reg8(Reg8::A, result);
-
-        format!("XOR {}", source)
     }
 
-    pub fn inc<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn inc<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -219,11 +203,9 @@ impl Cpu {
         self.update_flag(Flags::H, value & 0xf == 0xf);
 
         source.write8(self, hw, result);
-
-        format!("INC {}", source)
     }
 
-    pub fn inc16<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn inc16<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read16 + Write16 + std::fmt::Display + Copy,
     {
@@ -231,11 +213,9 @@ impl Cpu {
         let result = value.wrapping_add(1);
         source.write16(self, hw, result);
         self.tick(hw); // internal
-
-        format!("INC {}", source)
     }
 
-    pub fn dec<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn dec<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -246,11 +226,9 @@ impl Cpu {
         self.update_flag(Flags::H, value & 0xf == 0);
 
         source.write8(self, hw, result);
-
-        format!("DEC {}", source)
     }
 
-    pub fn dec16<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn dec16<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read16 + Write16 + std::fmt::Display + Copy,
     {
@@ -258,19 +236,15 @@ impl Cpu {
         let result = value.wrapping_sub(1);
         source.write16(self, hw, result);
         self.tick(hw); // internal
-
-        format!("DEC {}", source)
     }
 
     /* Jumps */
-    pub fn jp_hl_address(&mut self) -> String {
+    pub fn jp_hl_address(&mut self) {
         let address = self.read_reg16(Reg16::HL);
         self.pc = address;
-
-        "JP HL".to_string()
     }
 
-    pub fn jp_cc_imm_u16(&mut self, hw: &mut Hardware, condition: JumpConditions) -> String {
+    pub fn jp_cc_imm_u16(&mut self, hw: &mut Hardware, condition: JumpConditions) {
         let address = self.read_imm_u16_tick(hw);
         let condition_result = match condition {
             JumpConditions::NZ => !self.f.contains(Flags::Z),
@@ -284,15 +258,9 @@ impl Cpu {
             self.pc = address;
             self.tick(hw) // internal
         }
-
-        if condition == JumpConditions::NONE {
-            "JP u16".to_string()
-        } else {
-            format!("JP {},u16", condition)
-        }
     }
 
-    pub fn jr_cc(&mut self, hw: &mut Hardware, condition: JumpConditions) -> String {
+    pub fn jr_cc(&mut self, hw: &mut Hardware, condition: JumpConditions) {
         let condition_result = match condition {
             JumpConditions::NZ => !self.f.contains(Flags::Z),
             JumpConditions::Z => self.f.contains(Flags::Z),
@@ -305,33 +273,24 @@ impl Cpu {
 
         let offset = self.read_imm_u8_tick(hw) as i8;
         if condition_result {
-            format!("pre PC={}", self.pc);
             self.pc = self.pc.wrapping_add(offset as u16);
-            format!("post PC={}", self.pc);
+
             self.tick(hw) // internal
         } else {
-        }
-
-        if condition == JumpConditions::NONE {
-            "JR i8".to_string()
-        } else {
-            format!("JR {},i8", condition)
         }
     }
 
     /* Returns */
-    pub fn ret(&mut self, hw: &mut Hardware) -> String {
+    pub fn ret(&mut self, hw: &mut Hardware) {
         let address = self.read_u16_tick(hw, self.sp);
 
         self.tick(hw); // internal
 
         self.pc = address;
         self.sp = self.sp.wrapping_add(2);
-
-        "RET".to_string()
     }
 
-    pub fn ret_cc(&mut self, hw: &mut Hardware, condition: JumpConditions) -> String {
+    pub fn ret_cc(&mut self, hw: &mut Hardware, condition: JumpConditions) {
         let condition_result = match condition {
             JumpConditions::NZ => !self.f.contains(Flags::Z),
             JumpConditions::Z => self.f.contains(Flags::Z),
@@ -344,27 +303,21 @@ impl Cpu {
         if condition_result {
             self.ret(hw);
         }
-
-        format!("RET {}", condition)
     }
 
-    pub fn reti(&mut self, hw: &mut Hardware) -> String {
+    pub fn reti(&mut self, hw: &mut Hardware) {
         self.ret(hw);
         self.ime = true;
-
-        "RETI".to_string()
     }
 
-    pub fn rst(&mut self, hw: &mut Hardware, address: u16) -> String {
+    pub fn rst(&mut self, hw: &mut Hardware, address: u16) {
         self.tick(hw);
         self.sp = self.sp.wrapping_sub(2);
         self.write_u16_tick(hw, self.sp, self.pc);
         self.pc = address;
-
-        format!("RST {}", address.to_hex())
     }
 
-    pub fn push<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn push<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read16 + std::fmt::Display + Copy,
     {
@@ -373,11 +326,9 @@ impl Cpu {
         let value = source.read16(self, hw);
         self.sp = self.sp.wrapping_sub(2);
         self.write_u16_tick(hw, self.sp, value);
-
-        format!("PUSH {}", source)
     }
 
-    pub fn pop<T>(&mut self, hw: &mut Hardware, target: T) -> String
+    pub fn pop<T>(&mut self, hw: &mut Hardware, target: T)
     where
         T: Write16 + std::fmt::Display + Copy,
     {
@@ -385,11 +336,9 @@ impl Cpu {
         self.sp = self.sp.wrapping_add(2);
 
         target.write16(self, hw, value);
-
-        format!("POP {}", target)
     }
 
-    pub fn ld_hl_sp_i8(&mut self, hw: &mut Hardware) -> String {
+    pub fn ld_hl_sp_i8(&mut self, hw: &mut Hardware) {
         let n = self.read_imm_u8_tick(hw) as i8 as i16 as u16;
         let result = self.sp.wrapping_add(n);
 
@@ -400,14 +349,12 @@ impl Cpu {
         self.update_flag(Flags::C, op & 0x100 > 0);
         self.write_reg16(Reg16::HL, result);
         self.tick(hw); // internal
-
-        "LD HL,SP+i8".to_string()
     }
 }
 
 // Rotates
 impl Cpu {
-    pub fn rlca(&mut self) -> String {
+    pub fn rlca(&mut self) {
         let value = self.read_reg8(Reg8::A);
         let old_7bit = value & 0b1000_0000;
         let result = value.rotate_left(1);
@@ -417,11 +364,9 @@ impl Cpu {
         self.update_flag(Flags::C, old_7bit > 0);
 
         self.write_reg8(Reg8::A, result);
-
-        "RLCA".to_string()
     }
 
-    pub fn rla(&mut self) -> String {
+    pub fn rla(&mut self) {
         let value = self.read_reg8(Reg8::A);
         let old_7bit = value & 0b1000_0000;
         let result = value << 1 | self.get_carry_bit();
@@ -432,11 +377,9 @@ impl Cpu {
         self.update_flag(Flags::C, old_7bit > 0);
 
         self.write_reg8(Reg8::A, result);
-
-        "RLA".to_string()
     }
 
-    pub fn rrca(&mut self) -> String {
+    pub fn rrca(&mut self) {
         let value = self.read_reg8(Reg8::A);
         let old_0bit = value & 0b0000_0001;
         let result = value.rotate_right(1);
@@ -447,11 +390,9 @@ impl Cpu {
         self.update_flag(Flags::C, old_0bit > 0);
 
         self.write_reg8(Reg8::A, result);
-
-        "RRCA".to_string()
     }
 
-    pub fn rra(&mut self) -> String {
+    pub fn rra(&mut self) {
         let value = self.read_reg8(Reg8::A);
         let old_0bit = value & 0b0000_0001;
         let result = (value >> 1) | (self.get_carry_bit() << 7);
@@ -462,22 +403,18 @@ impl Cpu {
         self.update_flag(Flags::C, old_0bit > 0);
 
         self.write_reg8(Reg8::A, result);
-
-        "RRA".to_string()
     }
 }
 
 // Misc
 impl Cpu {
-    pub fn scf(&mut self) -> String {
+    pub fn scf(&mut self) {
         self.clear_flag(Flags::N);
         self.clear_flag(Flags::H);
         self.set_flag(Flags::C);
-
-        "SCF".to_string()
     }
 
-    pub fn ccf(&mut self) -> String {
+    pub fn ccf(&mut self) {
         self.clear_flag(Flags::N);
         self.clear_flag(Flags::H);
         if self.f.contains(Flags::C) {
@@ -485,21 +422,17 @@ impl Cpu {
         } else {
             self.set_flag(Flags::C);
         }
-
-        "CCF".to_string()
     }
 
-    pub fn cpl(&mut self) -> String {
+    pub fn cpl(&mut self) {
         let value = self.read_reg8(Reg8::A);
         let result = value ^ 0xff;
         self.write_reg8(Reg8::A, result);
         self.set_flag(Flags::N);
         self.set_flag(Flags::H);
-
-        "CPL".to_string()
     }
 
-    pub fn daa(&mut self) -> String {
+    pub fn daa(&mut self) {
         // https://ehaskins.com/2018-01-30%20Z80%20DAA/
         // Thank you master
         let a = self.read_reg8(Reg8::A);
@@ -530,11 +463,9 @@ impl Cpu {
         self.update_flag(Flags::H, false);
         self.update_flag(Flags::Z, result == 0);
         self.write_reg8(Reg8::A, result);
-
-        "DDA".to_string()
     }
 
-    pub fn halt(&mut self, hw: &mut Hardware) -> String {
+    pub fn halt(&mut self, hw: &mut Hardware) {
         self.halted = true;
         if hw.interrupts.has_available_interrupts() {
             if self.ime {
@@ -546,26 +477,20 @@ impl Cpu {
             }
         }
         self.just_halted = true;
-
-        "HALT".to_string()
     }
 
-    pub fn di(&mut self) -> String {
+    pub fn di(&mut self) {
         self.ime = false;
-
-        "DI".to_string()
     }
 
-    pub fn ei(&mut self) -> String {
+    pub fn ei(&mut self) {
         self.ime_requested = true;
-
-        "EI".to_string()
     }
 }
 
 // Calls
 impl Cpu {
-    pub fn call_cc(&mut self, hw: &mut Hardware, condition: JumpConditions) -> String {
+    pub fn call_cc(&mut self, hw: &mut Hardware, condition: JumpConditions) {
         let condition_result = match condition {
             JumpConditions::NZ => !self.f.contains(Flags::Z),
             JumpConditions::Z => self.f.contains(Flags::Z),
@@ -582,14 +507,12 @@ impl Cpu {
             self.write_u16_tick(hw, self.sp, next_instruction_address);
             self.pc = new_address;
         }
-
-        format!("CALL {},u16", condition)
     }
 }
 
 // ALU16
 impl Cpu {
-    pub fn add16<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn add16<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read16 + std::fmt::Display + Copy,
     {
@@ -612,11 +535,9 @@ impl Cpu {
 
         self.write_reg16(Reg16::HL, result);
         self.tick(hw); // internal
-
-        format!("ADD HL,{}", source)
     }
 
-    pub fn add_sp_i8(&mut self, hw: &mut Hardware) -> String {
+    pub fn add_sp_i8(&mut self, hw: &mut Hardware) {
         let n = self.read_imm_u8_tick(hw) as i8 as i16 as u16;
         let result = self.sp.wrapping_add(n);
 
@@ -629,14 +550,12 @@ impl Cpu {
         self.sp = result;
         self.tick(hw); // internal
         self.tick(hw); // internal
-
-        "ADD SP,i8".to_string()
     }
 }
 
 // CB
 impl Cpu {
-    pub fn bit<S>(&mut self, hw: &mut Hardware, bit_index: u8, source: S) -> String
+    pub fn bit<S>(&mut self, hw: &mut Hardware, bit_index: u8, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -646,12 +565,9 @@ impl Cpu {
         self.update_flag(Flags::Z, bit == 0);
         self.update_flag(Flags::N, false);
         self.update_flag(Flags::H, true);
-
-        format!("BIT {},{} H={}", bit_index, source, value);
-        format!("BIT {},{}", bit_index, source)
     }
 
-    pub fn set<S>(&mut self, hw: &mut Hardware, bit_index: u8, source: S) -> String
+    pub fn set<S>(&mut self, hw: &mut Hardware, bit_index: u8, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -659,11 +575,9 @@ impl Cpu {
         let mask = 1 << bit_index;
         let result = value | mask;
         source.write8(self, hw, result);
-
-        format!("SET {},{}", bit_index, source)
     }
 
-    pub fn res<S>(&mut self, hw: &mut Hardware, bit_index: u8, source: S) -> String
+    pub fn res<S>(&mut self, hw: &mut Hardware, bit_index: u8, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -671,11 +585,9 @@ impl Cpu {
         let mask = !(1 << bit_index);
         let result = value & mask;
         source.write8(self, hw, result);
-
-        format!("RES {},{}", bit_index, source)
     }
 
-    pub fn rlc<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn rlc<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -688,11 +600,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("RLC {}", source)
     }
 
-    pub fn rrc<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn rrc<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -705,11 +615,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("RRC {}", source)
     }
 
-    pub fn rl<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn rl<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -723,11 +631,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("RL {}", source)
     }
 
-    pub fn rr<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn rr<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -740,11 +646,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("RR {}", source)
     }
 
-    pub fn sla<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn sla<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -757,11 +661,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("SLA {}", source)
     }
 
-    pub fn sra<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn sra<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -775,11 +677,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("SRA {}", source)
     }
 
-    pub fn srl<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn srl<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -791,11 +691,9 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("SRL {}", source)
     }
 
-    pub fn swap<S>(&mut self, hw: &mut Hardware, source: S) -> String
+    pub fn swap<S>(&mut self, hw: &mut Hardware, source: S)
     where
         S: Read8 + Write8 + std::fmt::Display + Copy,
     {
@@ -809,32 +707,26 @@ impl Cpu {
         self.update_flag(Flags::Z, result == 0);
 
         source.write8(self, hw, result);
-
-        format!("SWAP {}", source)
     }
 }
 
 impl Cpu {
-    pub fn load8<T, S>(&mut self, hw: &mut Hardware, target: T, source: S) -> String
+    pub fn load8<T, S>(&mut self, hw: &mut Hardware, target: T, source: S)
     where
         T: Write8 + std::fmt::Display + Copy,
         S: Read8 + std::fmt::Display + Copy,
     {
         let value = source.read8(self, hw);
         target.write8(self, hw, value);
-
-        format!("LD {},{}", target, source)
     }
 
-    pub fn load16<T, S>(&mut self, hw: &mut Hardware, target: T, source: S) -> String
+    pub fn load16<T, S>(&mut self, hw: &mut Hardware, target: T, source: S)
     where
         T: Write16 + std::fmt::Display + Copy,
         S: Read16 + std::fmt::Display + Copy,
     {
         let value = source.read16(self, hw);
         target.write16(self, hw, value);
-
-        format!("LD {},{}", target, source)
     }
 }
 

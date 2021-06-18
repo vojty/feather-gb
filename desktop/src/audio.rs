@@ -29,7 +29,7 @@ impl Audio {
 
 impl AudioDevice for Audio {
     fn queue(&mut self, buffer: &[f32]) {
-        println!("buffering, prev size={}", self.queue.size());
+        // println!("buffering, prev size={}", self.queue.size());
         // TODO handle buffer overflow & underflow
 
         // if queue.size() > 20 * 1024 {
