@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use constants::DISPLAY_WIDTH;
 use parse_display::Display;
 
@@ -111,7 +109,7 @@ pub struct Ppu {
 
     screen_buffer: ScreenBuffer,
 
-    line_tiles: HashMap<u8, (u8, BgToOamPriority)>, // key = x, value = (color index,priority)
+    line_tiles: [Option<(u8, BgToOamPriority)>; DISPLAY_WIDTH], // index = x, value = (color index,priority)
     fetcher: Fetcher,
 
     is_cgb: bool,
@@ -161,7 +159,7 @@ impl Ppu {
 
             screen_buffer: ScreenBuffer::new(),
             fetcher: Fetcher::new(is_cgb),
-            line_tiles: HashMap::new(),
+            line_tiles: [None; DISPLAY_WIDTH],
 
             is_cgb,
 
@@ -400,7 +398,10 @@ impl Ppu {
         self.window_x = (self.wx as i32) - 7;
         self.dropped_pixels = 0;
 
-        self.line_tiles.clear();
+        // Reset
+        for x in self.line_tiles.iter_mut() {
+            *x = None;
+        }
 
         // TODO check this
         self.sampled_scx = self.scx;
@@ -466,8 +467,9 @@ impl Ppu {
 
                     let color = palette.colors[fifo_item.color_number as usize];
                     let priority = self.get_bg_tile_priority(&fifo_item);
-                    self.line_tiles
-                        .insert(self.x, (fifo_item.color_number, priority));
+                    self.line_tiles[self.x as usize] = Some((fifo_item.color_number, priority));
+                    // self.line_tiles
+                    //     .insert(self.x, (fifo_item.color_number, priority));
 
                     self.render_pixel(&color);
                 }
@@ -537,13 +539,9 @@ impl Ppu {
         for (x, y, pixel, is_above_bg) in pixels {
             if self.is_cgb {
                 let obj_on_top = self.lcdc.bits() & 1 == 0;
-                let bg_is_zero = self
-                    .line_tiles
-                    .get(&(x as u8))
-                    .map_or(false, |pair| pair.0 == 0);
-                let bg_has_priority = self
-                    .line_tiles
-                    .get(&(x as u8))
+                let line_tile_attributes = self.line_tiles[x as usize];
+                let bg_is_zero = line_tile_attributes.map_or(false, |pair| pair.0 == 0);
+                let bg_has_priority = line_tile_attributes
                     .map_or(false, |pair| pair.1 == BgToOamPriority::BgPriority);
 
                 if obj_on_top || bg_is_zero || (is_above_bg && !bg_has_priority) {
