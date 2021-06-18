@@ -1,6 +1,6 @@
 {
-  "name": "gb-emu",
-  "short_name": "gb-emu",
+  "name": "feather-gb",
+  "short_name": "feather-gb",
   "dir": "auto",
   "lang": "en-US",
   "display": "standalone",
