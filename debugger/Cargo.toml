@@ -1,7 +1,7 @@
 [package]
 name = "debugger"
 version = "0.1.0"
-authors = ["Tomáš Vojtášek <tomas.vojtasek@tipsport.cz>"]
+authors = ["Tomáš Vojtášek <vojtasek.tomas@seznam.cz>"]
 repository = "https://github.com/vojty/feather-gb"
 description = "Just another GameBoy emulator written in Rust 🦀"
 license = "UNLICENSED"
