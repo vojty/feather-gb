@@ -18,6 +18,7 @@ import { memory } from '../../../gb-web/pkg/index_bg.wasm'
 import { WebEmulator } from '../../../gb-web/pkg'
 import { InputContextProvider } from '../../context/InputContext'
 import { FpsCounter } from '../play/FpsCounter'
+import { warmupAudio } from '../../utils/audio'
 
 const DEFAULT_ZOOM = 1.5
 
@@ -171,6 +172,7 @@ export function Play() {
   const wasmModule = useWasmModule()
 
   const onRunningToggle = () => {
+    warmupAudio(audioContext)
     setRunning((wasRunning) => {
       // on -> off
       if (wasRunning) {
