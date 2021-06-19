@@ -40,7 +40,11 @@ pub async fn main() {
         .collect::<Vec<String>>();
 
     let output_file = format!("{}/results.md", OUTPUT_DIR);
-    let generated_at = format!("Generated at: {}", chrono::offset::Utc::now());
+    let generated_at = format!(
+        "Generated at: {}, took {}s",
+        chrono::offset::Utc::now(),
+        now.elapsed().as_secs()
+    );
 
     content.push(generated_at);
 
