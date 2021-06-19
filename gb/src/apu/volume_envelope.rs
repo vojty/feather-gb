@@ -33,7 +33,6 @@ pub struct VolumeEnvelope {
 
     timer: u8,
     current_volume: u8, // from 0-15
-    is_active: bool,
 }
 
 impl VolumeEnvelope {
@@ -44,16 +43,27 @@ impl VolumeEnvelope {
             periods: 0,
             timer: 0,
             current_volume: 0,
-
-            is_active: false,
         }
     }
 
     pub fn reset(&mut self) {
-        // TODO verify
         self.current_volume = self.initial_volume;
         self.timer = self.periods;
-        self.is_active = true;
+    }
+
+    fn adjust_volume(&mut self) {
+        match self.direction {
+            EnvelopeDirection::Increase => {
+                if self.current_volume < 0xf {
+                    self.current_volume += 1;
+                }
+            }
+            EnvelopeDirection::Decrease => {
+                if self.current_volume > 0 {
+                    self.current_volume -= 1;
+                }
+            }
+        }
     }
 
     pub fn tick(&mut self) {
@@ -70,21 +80,7 @@ impl VolumeEnvelope {
         // Reset counter
         if self.timer == 0 {
             self.timer = self.periods;
-
-            if (self.current_volume < 0xf && self.direction == EnvelopeDirection::Increase)
-                || (self.current_volume > 0 && self.direction == EnvelopeDirection::Decrease)
-            {
-                match self.direction {
-                    EnvelopeDirection::Increase => {
-                        self.current_volume = self.current_volume.wrapping_sub(1)
-                    }
-                    EnvelopeDirection::Decrease => {
-                        self.current_volume = self.current_volume.wrapping_add(1)
-                    }
-                }
-            } else {
-                self.is_active = false;
-            }
+            self.adjust_volume();
         }
     }
 
