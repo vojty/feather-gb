@@ -1,8 +1,9 @@
+use arrayvec::ArrayVec;
 use constants::DISPLAY_WIDTH;
 use parse_display::Display;
 
 use crate::{
-    constants::{self, TILE_SIZE},
+    constants::{self, SPRITES_PER_LINE, TILE_SIZE},
     events::Events,
     interrupts::{InterruptBits, InterruptController},
     ppu::vram::BgToOamPriority,
@@ -502,11 +503,11 @@ impl Ppu {
         )
     }
 
-    fn get_visible_sprites(&self) -> Vec<&Sprite> {
+    fn get_visible_sprites(&self) -> ArrayVec<&Sprite, 40> {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
 
         let current_line = self.ly as isize;
-        let mut possible_sprites: Vec<&Sprite> = self
+        let mut possible_sprites: ArrayVec<&Sprite, 40> = self
             .oam
             .sprites
             .iter()
@@ -517,10 +518,7 @@ impl Ppu {
             possible_sprites.sort_by(|&a, &b| a.x.cmp(&b.x));
         }
 
-        let mut visible_sprites: Vec<&Sprite> = possible_sprites.into_iter().take(10).collect();
-        visible_sprites.reverse();
-
-        visible_sprites
+        possible_sprites
     }
 
     fn render_sprites(&mut self) {
@@ -530,10 +528,14 @@ impl Ppu {
 
         let sprites = self.get_visible_sprites();
 
-        let pixels: Vec<(usize, usize, Rgb, bool)> = sprites
-            .iter()
+        // 10 pixels per max 8 pixels = 80
+        let pixels: ArrayVec<(usize, usize, Rgb, bool), 80> = sprites
+            .into_iter()
+            .take(SPRITES_PER_LINE)
+            .rev()
             .flat_map(|sprite| self.render_sprite(sprite))
             .collect();
+        let screen_buffer = self.screen_buffer.get_write_buffer_mut();
 
         // TODO refactor this sh**
         for (x, y, pixel, is_above_bg) in pixels {
@@ -545,25 +547,21 @@ impl Ppu {
                     .map_or(false, |pair| pair.1 == BgToOamPriority::BgPriority);
 
                 if obj_on_top || bg_is_zero || (is_above_bg && !bg_has_priority) {
-                    self.screen_buffer
-                        .get_write_buffer_mut()
-                        .set_pixel(x, y, &pixel);
+                    screen_buffer.set_pixel(x, y, &pixel);
                 }
             } else {
                 if !is_above_bg {
-                    let current_pixel = self.screen_buffer.get_write_buffer_mut().get_pixel(x, y);
+                    let current_pixel = screen_buffer.get_pixel(x, y);
                     if current_pixel != self.bgp_pal.colors[0] {
                         continue;
                     }
                 }
-                self.screen_buffer
-                    .get_write_buffer_mut()
-                    .set_pixel(x, y, &pixel);
+                screen_buffer.set_pixel(x, y, &pixel);
             }
         }
     }
 
-    fn render_sprite(&self, sprite: &Sprite) -> Vec<(usize, usize, Rgb, bool)> {
+    fn render_sprite(&self, sprite: &Sprite) -> ArrayVec<(usize, usize, Rgb, bool), 8> {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
         let palette = if sprite.palette == 0 {
             &self.obp0_pal
@@ -578,7 +576,7 @@ impl Ppu {
             current_line - sprite.y
         };
 
-        let mut pixels = vec![];
+        let mut pixels: ArrayVec<_, 8> = ArrayVec::new();
         for x in sprite.x..(sprite.x + 8) {
             if x < 0 || x >= DISPLAY_WIDTH as isize {
                 continue;

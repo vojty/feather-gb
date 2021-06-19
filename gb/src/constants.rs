@@ -11,6 +11,7 @@ pub const CPU_CLOCK_SPEED: usize = 4194304;
 pub const TILE_SIZE: usize = 8;
 pub const TILE_WIDTH: usize = 8;
 pub const SPRITES_COUNT: usize = 40;
+pub const SPRITES_PER_LINE: usize = 10;
 
 pub const AUDIO_BUFFER_SIZE: usize = 2048;
 
