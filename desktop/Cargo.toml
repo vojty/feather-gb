@@ -8,3 +8,4 @@ log = "0.4.14"
 gb = { path = "../gb" }
 sdl2 = { version = "0.34.3", features = [ "bundled", "static-link" ] }
 env_logger = "0.8.3"
+dasp = { version = "*", features = [ "all" ] }

@@ -94,7 +94,8 @@ pub struct Apu {
     right: Terminal, // SO1
     left: Terminal,  // SO2
 
-    pub buffer: Box<[f32; AUDIO_BUFFER_SIZE]>,
+    pub buffer_left: Box<[f32; AUDIO_BUFFER_SIZE]>,
+    pub buffer_right: Box<[f32; AUDIO_BUFFER_SIZE]>,
     buffer_position: usize,
 
     audio_device: Box<dyn AudioDevice>,
@@ -114,7 +115,8 @@ impl Apu {
             left: Terminal::default(),
 
             audio_device,
-            buffer: Box::new([0.0; AUDIO_BUFFER_SIZE]),
+            buffer_left: Box::new([0.0; AUDIO_BUFFER_SIZE]),
+            buffer_right: Box::new([0.0; AUDIO_BUFFER_SIZE]),
             buffer_position: 0,
         }
     }
@@ -210,15 +212,16 @@ impl Apu {
                 self.right
                     .mix_outputs(amp_channel1, amp_channel2, amp_channel3, amp_channel4);
 
-            self.buffer[self.buffer_position] = left_sample; // Left
-            self.buffer[self.buffer_position + 1] = right_sample; // Right
+            self.buffer_left[self.buffer_position] = left_sample;
+            self.buffer_right[self.buffer_position] = right_sample;
 
-            self.buffer_position += 2;
+            self.buffer_position += 1;
         }
 
         // Full buffer
         if self.buffer_position >= AUDIO_BUFFER_SIZE {
-            self.audio_device.queue(self.buffer.as_ref());
+            self.audio_device
+                .queue(self.buffer_left.as_ref(), self.buffer_right.as_ref());
             self.buffer_position = 0;
         }
     }
