@@ -273,4 +273,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-06-19 13:10:35.357558 UTC, took 7s
+Generated at: 2021-06-25 09:43:35.609297 UTC, took 7s

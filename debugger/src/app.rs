@@ -106,7 +106,7 @@ impl epi::App for Debugger {
             }
         }
 
-        egui::SidePanel::left("side_panel", 250.0).show(ctx, |ui| {
+        egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("GameBoy DMG Emulator");
             ui.label(format!("FPS: {:.1}", components.frame_history.fps()));
             if ui.button("Organize windows").clicked() {
@@ -169,15 +169,6 @@ impl epi::App for Debugger {
             });
         });
 
-        egui::TopPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-            egui::menu::bar(ui, |ui| {
-                egui::menu::menu(ui, "File", |ui| {
-                    ui.label("Nothing to see here");
-                });
-            });
-        });
-
         if *running {
             // Run frame
             for _ in 0..*speed {
@@ -232,13 +223,9 @@ impl epi::App for Debugger {
         ctx.request_repaint();
     }
 
-    fn setup(&mut self, _ctx: &egui::CtxRef) {}
-
     fn warm_up_enabled(&self) -> bool {
         false
     }
-
-    fn load(&mut self, _storage: &dyn epi::Storage) {}
 
     fn save(&mut self, _storage: &mut dyn epi::Storage) {}
 
