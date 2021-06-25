@@ -74,6 +74,8 @@ fn main() {
 
     let mut carry = Duration::new(0, 0);
 
+    let mut running = true;
+
     'running: loop {
         let time = Instant::now();
 
@@ -89,6 +91,10 @@ fn main() {
                     }
                 }
                 Event::KeyDown { keycode, .. } => {
+                    if let Some(Keycode::P) = keycode {
+                        running = !running;
+                    }
+
                     if let Some(key) = keycode.and_then(map_joypad_key) {
                         emulator.on_key_down(key)
                     }
@@ -97,23 +103,25 @@ fn main() {
             }
         }
 
-        emulator.run_frame();
-        let buffer = emulator.get_screen_buffer();
+        if running {
+            emulator.run_frame();
+            let buffer = emulator.get_screen_buffer();
 
-        canvas.clear();
-        canvas.set_draw_color(Color::WHITE);
-        for y in 0..DISPLAY_HEIGHT {
-            for x in 0..DISPLAY_WIDTH {
-                let pixel = buffer.get_pixel(x, y);
+            canvas.clear();
+            canvas.set_draw_color(Color::WHITE);
+            for y in 0..DISPLAY_HEIGHT {
+                for x in 0..DISPLAY_WIDTH {
+                    let pixel = buffer.get_pixel(x, y);
 
-                let color = Color::RGB(pixel.r, pixel.g, pixel.b);
-                canvas.set_draw_color(color);
+                    let color = Color::RGB(pixel.r, pixel.g, pixel.b);
+                    canvas.set_draw_color(color);
 
-                canvas.draw_point((x as i32, y as i32)).unwrap();
+                    canvas.draw_point((x as i32, y as i32)).unwrap();
+                }
             }
-        }
 
-        canvas.present();
+            canvas.present();
+        }
 
         let elapsed = time.elapsed() + carry;
         let sleep = Duration::new(0, 1_000_000_000 / 60);
