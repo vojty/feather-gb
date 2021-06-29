@@ -26,7 +26,7 @@ impl Channel2 {
             dac_enabled: false,
             volume_envelope: VolumeEnvelope::new(),
             length_counter: LengthCounter::new(MAX_LENGTH_TIMER),
-            frequency_timer: FrequencyTimer::new(FrequencyTimerType::Wave),
+            frequency_timer: FrequencyTimer::new(FrequencyTimerType::Square),
             wave: WaveDuty::new(),
         }
     }

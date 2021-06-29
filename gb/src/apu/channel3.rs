@@ -37,7 +37,7 @@ impl Channel3 {
             channel_enabled: false,
             dac_enabled: false,
             length_counter: LengthCounter::new(MAX_LENGTH_TIMER),
-            frequency_timer: FrequencyTimer::new(FrequencyTimerType::Channel3),
+            frequency_timer: FrequencyTimer::new(FrequencyTimerType::Wave),
             wave_ram: Box::new([0x00; WAVE_PATTERN_RAM_SIZE]),
             wave_position: 0,
             current_volume: 0,

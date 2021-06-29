@@ -1,6 +1,6 @@
 pub enum FrequencyTimerType {
+    Square,
     Wave,
-    Channel3,
     #[allow(dead_code)]
     Channel4,
 }
@@ -10,8 +10,8 @@ pub const MAX_FREQUENCY: u16 = 2047;
 impl FrequencyTimerType {
     fn calculate_initial_timer(&self, frequency: u16) -> u16 {
         match self {
-            FrequencyTimerType::Wave => ((MAX_FREQUENCY + 1) - frequency) * 4,
-            FrequencyTimerType::Channel3 => ((MAX_FREQUENCY + 1) - frequency) * 2,
+            FrequencyTimerType::Square => ((MAX_FREQUENCY + 1) - frequency) * 4,
+            FrequencyTimerType::Wave => ((MAX_FREQUENCY + 1) - frequency) * 2,
             FrequencyTimerType::Channel4 => todo!(),
         }
     }
