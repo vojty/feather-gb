@@ -100,7 +100,7 @@ impl epi::App for Debugger {
                 *file_receiver = None;
                 *emulator = Emulator::new(
                     false,
-                    Cartridge::from_bytes(result),
+                    Cartridge::from_bytes(&result),
                     Box::new(DummyAudio {}),
                 );
             }

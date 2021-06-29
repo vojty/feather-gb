@@ -12,7 +12,7 @@ use gb::{
     emulator::Emulator,
     joypad::JoypadKey,
 };
-use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
+use sdl2::{event::Event, keyboard::Keycode, pixels::Color, Sdl};
 
 mod audio;
 
@@ -37,6 +37,12 @@ fn map_joypad_key(key: Keycode) -> Option<JoypadKey> {
         Keycode::N => Some(JoypadKey::Select),
         _ => None,
     }
+}
+
+fn create_emulator(sdl_context: &Sdl, bytes: &[u8]) -> Emulator {
+    let audio_device = Box::new(Audio::new(&sdl_context));
+
+    Emulator::new(false, Cartridge::from_bytes(bytes), audio_device)
 }
 
 fn main() {
@@ -68,13 +74,13 @@ fn main() {
     // let bytes = get_file_as_byte_vec("roms/games/mario.gb");
     // let bytes = get_file_as_byte_vec("roms/games/pokemon-silver.gbc");
 
-    let audio_device = Box::new(Audio::new(sdl_context));
-
-    let mut emulator = Emulator::new(false, Cartridge::from_bytes(bytes), audio_device);
+    let mut emulator = create_emulator(&sdl_context, &bytes);
 
     let mut carry = Duration::new(0, 0);
 
-    let mut running = true;
+    let mut running = false;
+    let mut run_one_frame = false;
+    let mut restart = false;
 
     'running: loop {
         let time = Instant::now();
@@ -94,6 +100,12 @@ fn main() {
                     if let Some(Keycode::P) = keycode {
                         running = !running;
                     }
+                    if let Some(Keycode::O) = keycode {
+                        run_one_frame = true;
+                    }
+                    if let Some(Keycode::R) = keycode {
+                        restart = true;
+                    }
 
                     if let Some(key) = keycode.and_then(map_joypad_key) {
                         emulator.on_key_down(key)
@@ -103,7 +115,7 @@ fn main() {
             }
         }
 
-        if running {
+        if running || run_one_frame {
             emulator.run_frame();
             let buffer = emulator.get_screen_buffer();
 
@@ -122,6 +134,16 @@ fn main() {
 
             canvas.present();
         }
+
+        if restart {
+            emulator = create_emulator(&sdl_context, &bytes);
+            canvas.clear();
+            canvas.set_draw_color(Color::WHITE);
+            canvas.present();
+        }
+
+        restart = false;
+        run_one_frame = false;
 
         let elapsed = time.elapsed() + carry;
         let sleep = Duration::new(0, 1_000_000_000 / 60);

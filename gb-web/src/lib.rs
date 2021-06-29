@@ -20,7 +20,7 @@ impl WebCartridge {
     #[wasm_bindgen(constructor)]
     pub fn new(bytes: Vec<u8>) -> WebCartridge {
         WebCartridge {
-            cartridge: Cartridge::from_bytes(bytes),
+            cartridge: Cartridge::from_bytes(&bytes),
         }
     }
 }

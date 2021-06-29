@@ -58,7 +58,7 @@ impl AudioDevice for DummyAudio {
 
 pub fn create_emulator(path: &str) -> Emulator {
     let binary = get_file_as_byte_vec(path);
-    let cartridge = Cartridge::from_bytes(binary);
+    let cartridge = Cartridge::from_bytes(&binary);
     Emulator::new(false, cartridge, Box::new(DummyAudio {}))
 }
 

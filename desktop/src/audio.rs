@@ -12,7 +12,7 @@ pub struct Audio {
 }
 
 impl Audio {
-    pub fn new(sdl_context: Sdl) -> Self {
+    pub fn new(sdl_context: &Sdl) -> Self {
         let audio_subsystem = sdl_context.audio().unwrap();
         let audio_spec = AudioSpecDesired {
             freq: Some(AUDIO_SAMPLE_RATE as i32),

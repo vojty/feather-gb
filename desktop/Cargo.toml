@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-log = "0.4.14"
 gb = { path = "../gb" }
+
+log = "0.4.14"
 sdl2 = { version = "0.34.3", features = [ "bundled", "static-link" ] }
 env_logger = "0.8.3"
