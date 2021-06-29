@@ -52,6 +52,7 @@ impl LengthCounter {
         self.counter = self.max_length - counter as u16;
     }
 
+    // https://gbdev.io/pandocs/Sound_Controller.html#ff14---nr14---channel-1-frequency-hi-rw
     pub fn write_control(&mut self, bits: u8, next_step_is_length: bool) -> (bool, bool) {
         let control_bits = ControlBits::from_bits_truncate(bits);
         let was_enabled = self.enabled;

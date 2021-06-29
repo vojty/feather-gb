@@ -8,13 +8,17 @@ pub struct Channel4 {
     pub volume_envelope: VolumeEnvelope,
     dac_enabled: bool,
     pub channel_enabled: bool,
-    nr43: u8, // TODO
+    clock_shift: u8,
+    polynomial_counter_width: u8,
+    dividing_ratio: u8,
 }
 
 impl Channel4 {
     pub fn new() -> Self {
         Self {
-            nr43: 0,
+            clock_shift: 0,
+            polynomial_counter_width: 0,
+            dividing_ratio: 0,
             channel_enabled: false,
             dac_enabled: false,
             length_counter: LengthCounter::new(MAX_LENGTH_TIMER),
@@ -39,7 +43,9 @@ impl Channel4 {
         match address {
             R_NR41 => 0xff,
             R_NR42 => self.volume_envelope.read_byte(),
-            R_NR43 => self.nr43,
+            R_NR43 => {
+                self.clock_shift << 4 | self.polynomial_counter_width << 3 | self.dividing_ratio
+            }
             R_NR44 => 0b1011_1111 | (self.length_counter.get_enabled() as u8) << 6,
             _ => panic!(get_invalid_address("APU Channel 4 (read)", address)),
         }
@@ -62,7 +68,9 @@ impl Channel4 {
                 }
             }
             R_NR43 => {
-                self.nr43 = value;
+                self.clock_shift = value & 0b1111_0000;
+                self.polynomial_counter_width = value & 0b0000_1000;
+                self.dividing_ratio = value & 0b0000_0111;
             }
             R_NR44 => {
                 let (should_disable_channel, restart_triggered) = self
