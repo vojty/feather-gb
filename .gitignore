@@ -9,3 +9,4 @@ browser/romsList.ts
 roms/games
 
 *.sav
+.vscode

@@ -6,7 +6,7 @@
     clippy::clippy::module_inception,
     clippy::clippy::single_match,
     clippy::clippy::many_single_char_names,
-    non_fmt_panic
+    non_fmt_panics
 )]
 
 mod apu;

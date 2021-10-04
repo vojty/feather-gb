@@ -1,7 +1,7 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+// const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const webpack = require('webpack')
@@ -27,7 +27,7 @@ function getPlugins(isProduction) {
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css'
     }),
-    new ForkTsCheckerWebpackPlugin(),
+    // new ForkTsCheckerWebpackPlugin(),
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, './debugger-web'),
       forceMode: 'production' // greatly reduces CPU usage and memcpy calls

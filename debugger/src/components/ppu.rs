@@ -173,6 +173,6 @@ impl Ppu {
                 ui.mono_label(format_interval(line_stats.h_blank, 456));
                 ui.end_row();
             });
-        })
+        });
     }
 }
