@@ -138,11 +138,7 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.(otf|ttf)$/,
-          use: [
-            {
-              loader: 'file-loader'
-            }
-          ]
+          type: 'asset/resource'
         }
       ]
     },
