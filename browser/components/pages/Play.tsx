@@ -275,18 +275,19 @@ export function Play() {
           <div className="mt-2 flex text-center justify-center text-xs">
             <div>
               <p>
-                Select one of available demos or upload your custom *.gb file
-                and press Run
+                Select one of the available demos or upload your custom *.gb
+                file and press Run
               </p>
               <p>
-                Test ROMs are available in{' '}
+                The test ROMs are available in{' '}
                 <Link className="underline" to="/debug">
                   debug mode
                 </Link>{' '}
-                or see{' '}
+                or you can see the test results
                 <Link className="underline" to="/test-results">
-                  the test results
+                  here
                 </Link>
+                .
               </p>
             </div>
           </div>

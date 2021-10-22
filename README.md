@@ -17,7 +17,7 @@ This is my first project in Rust, so many patterns might not be ideal. I also wa
 
 ## Status
 
-The emulator is somehow accurate - the CPU is cycle accurate and the emulator passes many tests, although the PPU's accuracy needs to be improved a lot. For more info see tests results below.
+The emulator is somehow accurate - the CPU is cycle-accurate and the emulator passes many tests, although the PPU's accuracy needs to be improved a lot. For more info see tests results below.
 
 ## Test results
 
