@@ -2,9 +2,9 @@ import { createGlobalStyle } from 'styled-components'
 import html from '../../../docs/results/results.md'
 
 const GlobalStyles = createGlobalStyle`
-body {
-  margin: 20px;
-}
+  body {
+    margin: 20px;
+  }
   h1 {
     font-size: 20px;
     font-weight: 500;
