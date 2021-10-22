@@ -1,4 +1,4 @@
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 
 use super::{
     frequency_timer::{FrequencyTimer, FrequencyTimerType, MAX_FREQUENCY},
@@ -92,7 +92,7 @@ impl Channel1 {
             R_NR12 => self.volume_envelope.read_byte(),
             R_NR13 => 0xff,
             R_NR14 => 0b1011_1111 | (self.length_counter.get_enabled() as u8) << 6,
-            _ => panic!(get_invalid_address("APU Channel 1 (read)", address)),
+            _ => invalid_address("APU Channel 1 (read)", address),
         }
     }
 
@@ -156,7 +156,7 @@ impl Channel1 {
                     }
                 }
             }
-            _ => panic!(get_invalid_address("APU Channel 1 (write)", address)),
+            _ => invalid_address("APU Channel 1 (write)", address),
         }
     }
 }

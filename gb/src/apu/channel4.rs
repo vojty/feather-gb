@@ -1,4 +1,4 @@
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 
 use super::{length_counter::LengthCounter, registers::*, volume_envelope::VolumeEnvelope};
 
@@ -47,7 +47,7 @@ impl Channel4 {
                 self.clock_shift << 4 | self.polynomial_counter_width << 3 | self.dividing_ratio
             }
             R_NR44 => 0b1011_1111 | (self.length_counter.get_enabled() as u8) << 6,
-            _ => panic!(get_invalid_address("APU Channel 4 (read)", address)),
+            _ => invalid_address("APU Channel 4 (read)", address),
         }
     }
 
@@ -89,7 +89,7 @@ impl Channel4 {
                     }
                 }
             }
-            _ => panic!(get_invalid_address("APU Channel 4 (write)", address)),
+            _ => invalid_address("APU Channel 4 (write)", address),
         }
     }
 }

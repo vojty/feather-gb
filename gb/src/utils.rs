@@ -27,6 +27,6 @@ impl DisplayHex for u8 {
     }
 }
 
-pub fn get_invalid_address(section: &str, address: u16) -> String {
-    format!("Unmapped address 0x{} at {}", address.to_hex(), section)
+pub fn invalid_address(section: &str, address: u16) -> ! {
+    panic!("Unmapped address 0x{} at {}", address.to_hex(), section)
 }

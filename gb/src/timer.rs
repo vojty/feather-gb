@@ -3,7 +3,7 @@ use bitflags::bitflags;
 use crate::{
     constants::CPU_CLOCK_SPEED,
     interrupts::{InterruptBits, InterruptController},
-    utils::get_invalid_address,
+    utils::invalid_address,
 };
 
 /**
@@ -145,7 +145,7 @@ impl Timer {
             R_TIMA => self.tima,
             R_TMA => self.tma,
             R_TAC => self.tac.bits() | TAC_UNUSED_MASK,
-            _ => panic!(get_invalid_address("Timer (read)", address)),
+            _ => invalid_address("Timer (read)", address),
         }
     }
     pub fn write_byte(&mut self, address: u16, value: u8, ic: &mut InterruptController) {
@@ -177,7 +177,7 @@ impl Timer {
                     self.increment_tima(ic);
                 }
             }
-            _ => panic!(get_invalid_address("Timer (write)", address)),
+            _ => invalid_address("Timer (write)", address),
         }
     }
 }

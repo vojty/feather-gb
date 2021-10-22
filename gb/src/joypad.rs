@@ -1,6 +1,6 @@
 use crate::{
     interrupts::{InterruptBits, InterruptController},
-    utils::get_invalid_address,
+    utils::invalid_address,
 };
 
 const R_JOYP: u16 = 0xff00;
@@ -82,7 +82,7 @@ impl Joypad {
 
     pub fn read_byte(&self, address: u16) -> u8 {
         if address != R_JOYP {
-            panic!(get_invalid_address("Joypad", address));
+            invalid_address("Joypad", address);
         }
 
         if self.selected_column & 0b01 > 0 {
@@ -98,7 +98,7 @@ impl Joypad {
 
     pub fn write_byte(&mut self, address: u16, value: u8) {
         if address != R_JOYP {
-            panic!(get_invalid_address("Joypad", address));
+            invalid_address("Joypad", address);
         }
 
         self.selected_column = (value & 0b0011_0000) >> 4

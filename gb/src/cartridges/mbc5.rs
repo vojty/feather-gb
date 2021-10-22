@@ -1,5 +1,5 @@
 use super::{Controller, Data};
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 pub struct Mbc5 {
     data: Data,
     romb0: u8,
@@ -39,7 +39,7 @@ impl Controller for Mbc5 {
                 let addr = self.data.get_ram_address(address, self.ramb as usize);
                 self.data.read_ram(addr)
             }
-            _ => panic!(get_invalid_address("MBC5 (read)", address)),
+            _ => invalid_address("MBC5 (read)", address),
         }
     }
 
@@ -67,7 +67,7 @@ impl Controller for Mbc5 {
                 let addr = self.data.get_ram_address(address, self.ramb as usize);
                 self.data.write_ram(addr, value);
             }
-            _ => panic!(get_invalid_address("MBC5 (write)", address)),
+            _ => invalid_address("MBC5 (write)", address),
         }
     }
 }

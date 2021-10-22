@@ -1,6 +1,6 @@
 use std::cmp::max;
 
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 
 const WRAM_START: u16 = 0xc000;
 const WRAM_END: u16 = 0xdfff;
@@ -33,7 +33,7 @@ impl Wram {
         match address {
             0xC000..=0xCFFF => base,
             0xD000..=0xDFFF => base + (self.bank as usize) * BANK_SIZE,
-            _ => panic!(get_invalid_address("WRAM ", address)),
+            _ => invalid_address("WRAM ", address),
         }
     }
 
@@ -41,7 +41,7 @@ impl Wram {
         match address {
             R_SVBK => self.bank | 0b1111_1100,
             WRAM_START..=WRAM_END => self.data[self.get_offset(address)],
-            _ => panic!(get_invalid_address("WRAM (read)", address)),
+            _ => invalid_address("WRAM (read)", address),
         }
     }
 
@@ -52,7 +52,7 @@ impl Wram {
                 self.bank = max(bank, 1);
             }
             WRAM_START..=WRAM_END => self.data[self.get_offset(address)] = value,
-            _ => panic!(get_invalid_address("WRAM (read)", address)),
+            _ => invalid_address("WRAM (read)", address),
         }
     }
 }

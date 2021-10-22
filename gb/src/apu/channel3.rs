@@ -1,4 +1,4 @@
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 
 use super::{
     frequency_timer::{FrequencyTimer, FrequencyTimerType},
@@ -105,7 +105,7 @@ impl Channel3 {
             WAVE_PATTERN_RAM_START..=WAVE_PATTERN_RAM_END => {
                 self.wave_ram[self.get_rw_wave_ram_index(address)]
             }
-            _ => panic!(get_invalid_address("APU Channel 3 (read)", address)),
+            _ => invalid_address("APU Channel 3 (read)", address),
         }
     }
 
@@ -142,7 +142,7 @@ impl Channel3 {
             WAVE_PATTERN_RAM_START..=WAVE_PATTERN_RAM_END => {
                 self.wave_ram[self.get_rw_wave_ram_index(address)] = value;
             }
-            _ => panic!(get_invalid_address("APU Channel 3 (write)", address)),
+            _ => invalid_address("APU Channel 3 (write)", address),
         }
     }
 }

@@ -1,6 +1,6 @@
 use std::usize;
 
-use crate::{constants::SPRITES_COUNT, traits::MemoryAccess, utils::get_invalid_address};
+use crate::{constants::SPRITES_COUNT, traits::MemoryAccess, utils::invalid_address};
 pub const OAM_START: u16 = 0xfe00;
 pub const OAM_END: u16 = 0xfe9f;
 
@@ -53,7 +53,7 @@ impl Oam {
     fn update_sprite(&mut self, address: usize, value: u8) {
         let index = address >> 2; // 4 bytes per sprite
         if index >= SPRITES_COUNT {
-            panic!(get_invalid_address("OAM (write)", address as u16));
+            invalid_address("OAM (write)", address as u16);
         }
 
         let value = value as usize;
@@ -72,7 +72,7 @@ impl Oam {
                 sprite.is_above_bg = value & 0x80 == 0;
                 sprite.tile_vram_bank = ((value & 0b0000_1000) >> 3) as u8;
             }
-            _ => panic!(get_invalid_address("OAM (write)", address as u16)),
+            _ => invalid_address("OAM (write)", address as u16),
         }
     }
 }

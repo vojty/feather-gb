@@ -1,4 +1,4 @@
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 
 pub const R_HDMA1: u16 = 0xff51;
 pub const R_HDMA2: u16 = 0xff52;
@@ -43,7 +43,7 @@ impl Hdma {
     pub fn read_byte(&self, address: u16) -> u8 {
         match address {
             R_HDMA1 | R_HDMA2 | R_HDMA3 | R_HDMA4 | R_HDMA5 => 0xff,
-            _ => panic!(get_invalid_address("HDMA (write)", address)),
+            _ => invalid_address("HDMA (write)", address),
         }
     }
 
@@ -58,7 +58,7 @@ impl Hdma {
 
                 self.mode = mode;
             }
-            _ => panic!(get_invalid_address("HDMA (write)", address)),
+            _ => invalid_address("HDMA (write)", address),
         }
     }
 }

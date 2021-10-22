@@ -1,6 +1,6 @@
 use bitflags::bitflags;
 
-use crate::{traits::MemoryAccess, utils::get_invalid_address};
+use crate::{traits::MemoryAccess, utils::invalid_address};
 
 bitflags! {
     pub struct InterruptBits: u8 {
@@ -116,7 +116,7 @@ impl MemoryAccess for InterruptController {
         match address {
             R_IE => self.interrupt_enable.bits(),
             R_IF => self.interrupt_flag.bits() | 0b1110_0000,
-            _ => panic!(get_invalid_address("Interrupts (read)", address)),
+            _ => invalid_address("Interrupts (read)", address),
         }
     }
 
@@ -124,7 +124,7 @@ impl MemoryAccess for InterruptController {
         match address {
             R_IE => self.interrupt_enable = InterruptBits::from_bits_truncate(value),
             R_IF => self.interrupt_flag = InterruptBits::from_bits_truncate(value),
-            _ => panic!(get_invalid_address("Interrupts (write)", address)),
+            _ => invalid_address("Interrupts (write)", address),
         }
     }
 }

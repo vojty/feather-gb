@@ -5,7 +5,7 @@ authors = ["Tomáš Vojtášek <vojtasek.tomas@seznam.cz>"]
 repository = "https://github.com/vojty/feather-gb"
 description = "Just another GameBoy emulator written in Rust 🦀"
 license = "UNLICENSED"
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type =["cdylib"]

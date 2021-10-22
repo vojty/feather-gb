@@ -1,5 +1,5 @@
 use super::{Controller, Data};
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 pub struct Mbc3 {
     data: Data,
     romb: u8,
@@ -42,7 +42,7 @@ impl Controller for Mbc3 {
                     _ => 0xff,
                 }
             }
-            _ => panic!(get_invalid_address("MBC3 (read)", address)),
+            _ => invalid_address("MBC3 (read)", address),
         }
     }
 
@@ -79,7 +79,7 @@ impl Controller for Mbc3 {
                     _ => (),
                 }
             }
-            _ => panic!(get_invalid_address("MBC3 (write)", address)),
+            _ => invalid_address("MBC3 (write)", address),
         }
     }
 }

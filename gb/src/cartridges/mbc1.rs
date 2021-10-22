@@ -1,5 +1,5 @@
 use super::{cartridge::Data, Controller};
-use crate::utils::get_invalid_address;
+use crate::utils::invalid_address;
 enum Mode {
     RomBanking,
     RamBanking,
@@ -67,7 +67,7 @@ impl Controller for Mbc1 {
                 let addr = self.data.get_ram_address(address, bank);
                 self.data.read_ram(addr)
             }
-            _ => panic!(get_invalid_address("MBC1 (read)", address)),
+            _ => invalid_address("MBC1 (read)", address),
         }
     }
 
@@ -103,7 +103,7 @@ impl Controller for Mbc1 {
                 let addr = self.data.get_ram_address(address, bank);
                 self.data.write_ram(addr, value);
             }
-            _ => panic!(get_invalid_address("MBC1 (write)", address)),
+            _ => invalid_address("MBC1 (write)", address),
         }
     }
 }

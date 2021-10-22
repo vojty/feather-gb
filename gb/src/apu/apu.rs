@@ -8,12 +8,7 @@ use super::{
     frame_sequencer::FrameSequencer,
     registers::*,
 };
-use crate::{
-    audio::AudioDevice,
-    constants::{AUDIO_BUFFER_SIZE, AUDIO_CYCLES_PER_SAMPLE},
-    traits::MemoryAccess,
-    utils::get_invalid_address,
-};
+use crate::{audio::AudioDevice, constants::{AUDIO_BUFFER_SIZE, AUDIO_CYCLES_PER_SAMPLE}, traits::MemoryAccess, utils::invalid_address};
 
 bitflags!(
   #[derive(Default)]
@@ -265,7 +260,7 @@ impl MemoryAccess for Apu {
                 self.channel3.read_byte(address)
             }
             R_NR41..=R_NR44 => self.channel4.read_byte(address),
-            _ => panic!(get_invalid_address("APU (read)", address)),
+            _ => invalid_address("APU (read)", address),
         }
     }
 
@@ -335,7 +330,7 @@ impl MemoryAccess for Apu {
                 self.channel4
                     .write_byte(address, value, next_step_is_length)
             }
-            _ => panic!(get_invalid_address("APU (write)", address)),
+            _ => invalid_address("APU (write)", address),
         }
     }
 }

@@ -8,7 +8,7 @@ use crate::{
     interrupts::{InterruptBits, InterruptController},
     ppu::vram::BgToOamPriority,
     traits::MemoryAccess,
-    utils::get_invalid_address,
+    utils::invalid_address,
 };
 
 use super::{
@@ -692,13 +692,13 @@ impl Ppu {
                         R_OBPD => self.obj_color_palettes.read_data(),
                         R_OPRI => self.opri | 0b1111_1110,
                         R_VBK => self.vram.read_byte(address),
-                        _ => panic!(get_invalid_address("PPU (read)", address)),
+                        _ => invalid_address("PPU (read)", address),
                     };
                 }
                 if CGB_REGISTERS.contains(&address) {
                     return 0xff;
                 }
-                panic!(get_invalid_address("PPU (read)", address))
+                invalid_address("PPU (read)", address)
             }
         }
     }
@@ -789,13 +789,13 @@ impl Ppu {
                         R_OBPD => self.obj_color_palettes.write_data(value),
                         R_OPRI => self.opri = value & 1,
                         R_VBK => self.vram.write_byte(address, value),
-                        _ => panic!(get_invalid_address("PPU (write)", address)),
+                        _ => invalid_address("PPU (write)", address),
                     };
                 }
                 if CGB_REGISTERS.contains(&address) {
                     return;
                 }
-                panic!(get_invalid_address("PPU (write)", address))
+                invalid_address("PPU (write)", address)
             }
         }
     }
