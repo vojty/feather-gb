@@ -1,11 +1,12 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![allow(
     clippy::let_and_return,
-    clippy::clippy::new_without_default,
-    clippy::clippy::len_zero,
-    clippy::clippy::module_inception,
-    clippy::clippy::single_match,
-    clippy::clippy::many_single_char_names,
+    clippy::new_without_default,
+    clippy::len_zero,
+    clippy::module_inception,
+    clippy::collapsible_match,
+    clippy::single_match,
+    clippy::many_single_char_names,
     non_fmt_panics
 )]
 

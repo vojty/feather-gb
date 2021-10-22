@@ -3,8 +3,8 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![allow(
     clippy::let_and_return,
-    clippy::clippy::new_without_default,
-    clippy::clippy::trivial_regex
+    clippy::new_without_default,
+    clippy::trivial_regex
 )]
 
 pub mod app;

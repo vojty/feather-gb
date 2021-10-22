@@ -19,11 +19,11 @@ bitflags!(
 
 impl std::fmt::Display for Flags {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let z = if self.contains(Flags::Z) { "Z" } else { "_" };
-        let n = if self.contains(Flags::N) { "N" } else { "_" };
-        let h = if self.contains(Flags::H) { "H" } else { "_" };
-        let c = if self.contains(Flags::C) { "C" } else { "_" };
-        write!(f, "{}{}{}{}", z, n, h, c)
+        let flag_z = if self.contains(Flags::Z) { "Z" } else { "_" };
+        let flag_n = if self.contains(Flags::N) { "N" } else { "_" };
+        let flag_h = if self.contains(Flags::H) { "H" } else { "_" };
+        let flag_c = if self.contains(Flags::C) { "C" } else { "_" };
+        write!(f, "{}{}{}{}", flag_z, flag_n, flag_h, flag_c)
     }
 }
 
@@ -48,7 +48,7 @@ pub enum Reg8 {
 }
 
 #[derive(Clone, Copy, Display, FromStr)]
-#[allow(clippy::clippy::upper_case_acronyms)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Reg16 {
     AF,
     BC,

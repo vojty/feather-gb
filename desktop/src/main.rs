@@ -40,7 +40,7 @@ fn map_joypad_key(key: Keycode) -> Option<JoypadKey> {
 }
 
 fn create_emulator(sdl_context: &Sdl, bytes: &[u8]) -> Emulator {
-    let audio_device = Box::new(Audio::new(&sdl_context));
+    let audio_device = Box::new(Audio::new(sdl_context));
 
     Emulator::new(false, Cartridge::from_bytes(bytes), audio_device)
 }

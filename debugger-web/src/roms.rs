@@ -22,7 +22,7 @@ async fn load_data(url: &str) -> Result<Vec<u8>, JsValue> {
     let mut opts = RequestInit::new();
     opts.method("GET");
 
-    let request = Request::new_with_str_and_init(&url, &opts)?;
+    let request = Request::new_with_str_and_init(url, &opts)?;
 
     let window = web_sys::window().unwrap();
     let response = JsFuture::from(window.fetch_with_request(&request)).await?;

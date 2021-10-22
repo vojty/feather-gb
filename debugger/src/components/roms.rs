@@ -59,7 +59,7 @@ impl Roms {
             .iter()
             // collect results with score
             .filter_map(
-                |rom| match self.matcher.fuzzy_indices(&rom.get_name(), &self.search) {
+                |rom| match self.matcher.fuzzy_indices(rom.get_name(), &self.search) {
                     Some((score, _)) => Some((score, rom)),
                     _ => None,
                 },

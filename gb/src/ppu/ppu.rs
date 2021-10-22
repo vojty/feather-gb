@@ -655,7 +655,7 @@ impl Ppu {
 
 impl Ppu {
     pub fn get_screen_buffer(&self) -> &Buffer {
-        &self.screen_buffer.get_read_buffer()
+        self.screen_buffer.get_read_buffer()
     }
 
     pub fn read_byte(&self, address: u16) -> u8 {

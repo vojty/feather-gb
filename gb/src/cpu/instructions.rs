@@ -8,7 +8,7 @@ use crate::emulator::Hardware;
 use super::cpu;
 
 #[derive(Display, FromStr, Copy, Clone, PartialEq)]
-#[allow(clippy::clippy::upper_case_acronyms)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum JumpConditions {
     NZ,
     Z,
@@ -19,7 +19,7 @@ pub enum JumpConditions {
 }
 
 #[derive(Display, FromStr, Copy, Clone)]
-#[allow(clippy::clippy::upper_case_acronyms)]
+#[allow(clippy::upper_case_acronyms)]
 #[display("({})")]
 pub enum Addr {
     BC,
@@ -468,11 +468,10 @@ impl Cpu {
     pub fn halt(&mut self, hw: &mut Hardware) {
         self.halted = true;
         if hw.interrupts.has_available_interrupts() {
+            self.halted = false;
             if self.ime {
-                self.halted = false;
                 self.increment_pc();
             } else {
-                self.halted = false;
                 self.halt_bug = true;
             }
         }

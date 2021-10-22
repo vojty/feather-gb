@@ -186,15 +186,15 @@ impl epi::App for Debugger {
         // ------------------ TILES ----------------------
         components
             .tiles
-            .show(ctx, &mut true, &emulator, tex_allocator);
+            .show(ctx, &mut true, emulator, tex_allocator);
 
         // ------------------ MEMORY ----------------------
-        components.memory_viewer.show(ctx, &emulator, &mut true);
+        components.memory_viewer.show(ctx, emulator, &mut true);
 
         // ------------------ MAPS ----------------------
         components
             .maps
-            .show(ctx, &mut true, &emulator, tex_allocator);
+            .show(ctx, &mut true, emulator, tex_allocator);
 
         // ------------------ FPS ----------------------
         components
@@ -211,13 +211,13 @@ impl epi::App for Debugger {
         });
 
         // ------------------ CPU ----------------------
-        components.cpu.show(ctx, &mut true, &emulator);
+        components.cpu.show(ctx, &mut true, emulator);
 
         // ------------------ PPU ----------------------
-        components.ppu.show(ctx, &mut true, &emulator);
+        components.ppu.show(ctx, &mut true, emulator);
 
         // ------------------ DISASSEMBLY ----------------------
-        components.disassembly.show(ctx, &mut true, &emulator);
+        components.disassembly.show(ctx, &mut true, emulator);
 
         // Continuous mode
         ctx.request_repaint();
