@@ -8,9 +8,10 @@ pub struct FrameHistory {
 
 impl FrameHistory {
     pub fn new() -> Self {
-        let max_age: f64 = 1.0;
+        let max_age: f32 = 1.0;
+        let max_len = (max_age * 300.0).round() as usize;
         Self {
-            frame_times: History::from_max_len_age((max_age * 300.0).round() as usize, max_age),
+            frame_times: History::new(0..max_len, max_age),
         }
     }
 

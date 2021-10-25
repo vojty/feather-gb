@@ -34,7 +34,7 @@ impl Roms {
                     }
                 });
 
-                ScrollArea::from_max_height(200.0).show(ui, |ui| {
+                ScrollArea::vertical().max_height(200.0).show(ui, |ui| {
                     ui.vertical(|ui| {
                         self.get_roms().iter().for_each(|&rom| {
                             ui.horizontal(|ui| {

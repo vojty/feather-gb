@@ -112,7 +112,7 @@ impl MemoryViewer {
         ui.end_row();
 
         let visible_height = 200.0;
-        let scroll_area = ScrollArea::from_max_height(visible_height);
+        let scroll_area = ScrollArea::vertical().max_height(visible_height);
 
         ui.separator();
         scroll_area.show(ui, |ui| {
