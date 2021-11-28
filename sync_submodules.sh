@@ -42,10 +42,10 @@ git submodule update --init --recursive
     make all
 )
 
-# Update BullyGB
-# (
-#     echo "[ Make BullyGB ]"
-#     cd roms/BullyGB
-#     make clean
-#     make
-# )
+# Update striketrough.gb
+(
+    echo "[ Make striketrough ]"
+    cd roms/strikethrough
+    make clean
+    make
+)

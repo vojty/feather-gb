@@ -22,3 +22,6 @@
 [submodule "roms/dmg-acid2"]
 	path = roms/dmg-acid2
 	url = https://github.com/mattcurrie/dmg-acid2.git
+[submodule "roms/strikethrough"]
+	path = roms/strikethrough
+	url = https://github.com/Hacktix/strikethrough.gb.git

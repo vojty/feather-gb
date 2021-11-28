@@ -10,3 +10,4 @@ roms/games
 
 *.sav
 .vscode
+.DS_Store
