@@ -18,11 +18,13 @@ const R_SVBK: u16 = 0xff70;
 pub struct Wram {
     data: Box<[u8; WRAM_SIZE]>,
     bank: u8,
+    is_cgb: bool,
 }
 
 impl Wram {
-    pub fn new() -> Self {
+    pub fn new(is_cgb: bool) -> Self {
         Self {
+            is_cgb,
             bank: 1,
             data: Box::new([0xff; WRAM_SIZE]),
         }
@@ -33,13 +35,18 @@ impl Wram {
         match address {
             0xC000..=0xCFFF => base,
             0xD000..=0xDFFF => base + (self.bank as usize) * BANK_SIZE,
-            _ => invalid_address("WRAM ", address),
+            _ => invalid_address("WRAM", address),
         }
     }
 
     pub fn read_byte(&self, address: u16) -> u8 {
         match address {
-            R_SVBK => self.bank | 0b1111_1100,
+            R_SVBK => {
+                if self.is_cgb {
+                    return self.bank | 0b1111_1100;
+                }
+                0xff
+            }
             WRAM_START..=WRAM_END => self.data[self.get_offset(address)],
             _ => invalid_address("WRAM (read)", address),
         }
@@ -48,11 +55,13 @@ impl Wram {
     pub fn write_byte(&mut self, address: u16, value: u8) {
         match address {
             R_SVBK => {
-                let bank = value & 0b11;
-                self.bank = max(bank, 1);
+                if self.is_cgb {
+                    let bank = value & 0b11;
+                    self.bank = max(bank, 1);
+                }
             }
             WRAM_START..=WRAM_END => self.data[self.get_offset(address)] = value,
-            _ => invalid_address("WRAM (read)", address),
+            _ => invalid_address("WRAM (write)", address),
         }
     }
 }

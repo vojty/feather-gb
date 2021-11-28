@@ -35,6 +35,7 @@ const HRAM_END: u16 = 0xfffe;
 const HRAM_SIZE: usize = HRAM_END as usize - HRAM_START as usize + 1;
 
 pub struct Hardware {
+    is_cgb: bool,
     bios_enabled: bool,
     pub cartridge: Cartridge,
     pub ppu: Ppu,
@@ -104,14 +105,62 @@ impl MemoryAccess for Hardware {
                 0xff40..=0xff45 => self.ppu.read_byte(address),   // PPU
                 0xff46 => self.oam_dma.read_byte(),               // DMA
                 0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
-                0xff4f => self.ppu.read_byte(address),            // CGB VRAM bank switch
-                0xff51..=0xff55 => self.hdma.read_byte(address),  // CGB HDMA
-                0xff68 => self.ppu.read_byte(address),            // CGB Background Palette Index
-                0xff69 => self.ppu.read_byte(address),            // CGB Background Palette Data
-                0xff6a => self.ppu.read_byte(address),            // CGB Object Palette Index
-                0xff6b => self.ppu.read_byte(address),            // CGB Object Palette Data
-                0xff6c => self.ppu.read_byte(address),            // CGB Object Priority Mode
-                0xff70 => self.wram.read_byte(address),           // CGB WRAM bank switch
+                0xff4f => {
+                    if self.is_cgb {
+                        self.ppu.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB VRAM bank switch
+                0xff51..=0xff55 => {
+                    if self.is_cgb {
+                        self.hdma.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB HDMA
+                0xff68 => {
+                    if self.is_cgb {
+                        self.ppu.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB Background Palette Index
+                0xff69 => {
+                    if self.is_cgb {
+                        self.ppu.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB Background Palette Data
+                0xff6a => {
+                    if self.is_cgb {
+                        self.ppu.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB Object Palette Index
+                0xff6b => {
+                    if self.is_cgb {
+                        self.ppu.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB Object Palette Data
+                0xff6c => {
+                    if self.is_cgb {
+                        self.ppu.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB Object Priority Mode
+                0xff70 => {
+                    if self.is_cgb {
+                        self.wram.read_byte(address)
+                    } else {
+                        0xff
+                    }
+                } // CGB WRAM bank switch
                 _ => 0xff,                                        // unused
             },
 
@@ -219,6 +268,7 @@ impl Emulator {
             frames: 0,
             executed_instructions: 0,
             hw: Hardware {
+                is_cgb,
                 bios_enabled,
                 ppu,
                 apu,
@@ -227,7 +277,7 @@ impl Emulator {
                 cartridge,
                 capture_serial: false,
                 serial_output: Vec::new(),
-                wram: Wram::new(),
+                wram: Wram::new(is_cgb),
                 hram: Box::new([0xff; HRAM_SIZE]),
                 oam_dma: OamDma::new(),
                 hdma: Hdma::new(),
@@ -333,6 +383,7 @@ impl Emulator {
             self.cpu.tick(&mut self.hw);
         }
 
+        // self.create_peach_log_line();
         let pending_interrupts = self.hw.interrupts.has_available_interrupts();
 
         self.cpu.just_halted = false;

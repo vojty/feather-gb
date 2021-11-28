@@ -134,10 +134,6 @@ impl epi::App for Debugger {
                 emulator.run_instruction();
             }
 
-            if ui.button("Step").clicked() {
-                emulator.run_instruction();
-            }
-
             if ui.button("Next frame").clicked() {
                 emulator.run_frame();
             }

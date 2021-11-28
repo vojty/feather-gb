@@ -9,6 +9,8 @@ bitflags! {
         const TIMER =     0b0000_0100;
         const SERIAL =    0b0000_1000;
         const JOYPAD =    0b0001_0000;
+
+        const UNUSED =    0b1110_0000;
     }
 }
 

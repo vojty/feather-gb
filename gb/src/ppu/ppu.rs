@@ -112,6 +112,7 @@ pub struct Ppu {
 
     line_tiles: [Option<(u8, BgToOamPriority)>; DISPLAY_WIDTH], // index = x, value = (color index,priority)
     fetcher: Fetcher,
+    possible_sprites: ArrayVec<Sprite, 40>,
 
     is_cgb: bool,
 
@@ -149,6 +150,8 @@ impl Ppu {
             pending_mode: None,
             skip_frames: 0,
             system_palette,
+
+            possible_sprites: ArrayVec::new(),
 
             bg_color_palettes: ColorPaletteMemory::new(),
             obj_color_palettes: ColorPaletteMemory::new(),
@@ -503,22 +506,21 @@ impl Ppu {
         )
     }
 
-    fn get_visible_sprites(&self) -> ArrayVec<&Sprite, 40> {
+    fn collect_sprites(&mut self) {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
 
         let current_line = self.ly as isize;
-        let mut possible_sprites: ArrayVec<&Sprite, 40> = self
+
+        self.possible_sprites = self
             .oam
             .sprites
-            .iter()
+            .into_iter()
             .filter(|sprite| sprite.y <= current_line && current_line < sprite.y + sprite_height)
             .collect();
 
         if !self.is_cgb || get_oam_priority(self.opri) == OamPriority::XPosition {
-            possible_sprites.sort_by(|&a, &b| a.x.cmp(&b.x));
+            self.possible_sprites.sort_by(|&a, &b| a.x.cmp(&b.x));
         }
-
-        possible_sprites
     }
 
     fn render_sprites(&mut self) {
@@ -526,11 +528,12 @@ impl Ppu {
             return;
         }
 
-        let sprites = self.get_visible_sprites();
+        self.collect_sprites();
 
         // 10 pixels per max 8 pixels = 80
-        let pixels: ArrayVec<(usize, usize, Rgb, bool), 80> = sprites
-            .into_iter()
+        let pixels: ArrayVec<(usize, usize, Rgb, bool), 80> = self
+            .possible_sprites
+            .iter()
             .take(SPRITES_PER_LINE)
             .rev()
             .flat_map(|sprite| self.render_sprite(sprite))
