@@ -30,7 +30,7 @@ https://github.com/retrio/gb-test-roms
 
 | Name                     | Expected                                   | Result                                   | Diff                                   | Status        |
 | ------------------------ | ------------------------------------------ | ---------------------------------------- | -------------------------------------- | ------------- |
-| 01-registers             | ![](01-registers/expected.png)             | ![](01-registers/result.png)             | ![](01-registers/diff.png)             | ❌ Diff: 919  |
+| 01-registers             | ![](01-registers/expected.png)             | ![](01-registers/result.png)             | ![](01-registers/diff.png)             | ✅ Diff: 0    |
 | 02-len_ctr               | ![](02-len_ctr/expected.png)               | ![](02-len_ctr/result.png)               | ![](02-len_ctr/diff.png)               | ✅ Diff: 0    |
 | 03-trigger               | ![](03-trigger/expected.png)               | ![](03-trigger/result.png)               | ![](03-trigger/diff.png)               | ✅ Diff: 0    |
 | 04-sweep                 | ![](04-sweep/expected.png)                 | ![](04-sweep/result.png)                 | ![](04-sweep/diff.png)                 | ✅ Diff: 0    |
@@ -234,6 +234,14 @@ https://github.com/Powerlated/TurtleTests
 | window_y_trigger              | ![](window_y_trigger/expected.png)              | ![](window_y_trigger/result.png)              | ![](window_y_trigger/diff.png)              | ✅ Diff: 0 |
 | window_y_trigger_wx_offscreen | ![](window_y_trigger_wx_offscreen/expected.png) | ![](window_y_trigger_wx_offscreen/result.png) | ![](window_y_trigger_wx_offscreen/diff.png) | ✅ Diff: 0 |
 
+## MBC3-Tester
+
+https://github.com/EricKirschenmann/MBC3-Tester-gb
+
+| Name        | Expected                      | Result                      | Diff                      | Status     |
+| ----------- | ----------------------------- | --------------------------- | ------------------------- | ---------- |
+| MBC3-Tester | ![](MBC3-Tester/expected.png) | ![](MBC3-Tester/result.png) | ![](MBC3-Tester/diff.png) | ✅ Diff: 0 |
+
 ## Mealybug Tearoom Tests
 
 https://github.com/mattcurrie/mealybug-tearoom-tests
@@ -265,4 +273,4 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2021-11-28 07:52:21.187503 UTC, took 3s
+Generated at: 2021-11-28 17:43:07.916958 UTC, took 3s

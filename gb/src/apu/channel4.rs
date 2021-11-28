@@ -68,8 +68,8 @@ impl Channel4 {
                 }
             }
             R_NR43 => {
-                self.clock_shift = value & 0b1111_0000;
-                self.polynomial_counter_width = value & 0b0000_1000;
+                self.clock_shift = (value & 0b1111_0000) >> 4;
+                self.polynomial_counter_width = (value & 0b0000_1000) >> 3;
                 self.dividing_ratio = value & 0b0000_0111;
             }
             R_NR44 => {
