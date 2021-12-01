@@ -74,7 +74,8 @@ impl Timer {
     }
 
     pub fn init_without_bios(&mut self) {
-        self.divider_counter = 0x1833;
+        // self.divider_counter = 0x1833; // for dmg0
+        self.divider_counter = 0xabcf; // for dmgABC
         self.tac = TacBits::from_bits_truncate(0x00);
         self.tima = 0x00;
         self.tma = 0x00;

@@ -36,6 +36,7 @@ pub struct Debugger {
     emulator: Emulator,
     running: bool,
     speed: u8,
+    run_until: String,
 
     file_receiver: Option<Receiver<RomData>>,
 
@@ -56,6 +57,7 @@ impl Debugger {
         Self {
             file_receiver: None,
             speed: 1,
+            run_until: String::new(),
             emulator: Emulator::new(true, cartridge, Box::new(DummyAudio {})),
             running: false,
             components: Components {
@@ -87,6 +89,7 @@ impl epi::App for Debugger {
             components,
             speed,
             file_receiver,
+            run_until,
         } = self;
         let cpu_usage = frame.info().cpu_usage;
         let tex_allocator = frame.tex_allocator();
@@ -130,13 +133,33 @@ impl epi::App for Debugger {
             });
             ui.end_row();
 
-            if ui.button("Next instruction").clicked() {
-                emulator.run_instruction();
-            }
+            ui.horizontal(|ui| {
+                if ui.button("Next instruction").clicked() {
+                    emulator.run_instruction();
+                }
 
-            if ui.button("Next frame").clicked() {
-                emulator.run_frame();
-            }
+                if ui.button("Next frame").clicked() {
+                    emulator.run_frame();
+                }
+            });
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                ui.add(
+                    egui::TextEdit::singleline(run_until)
+                        .desired_width(80.0)
+                        .hint_text("Run until"),
+                );
+                if ui.button("Run until").clicked() {
+                    let until: u32 = run_until.parse().unwrap();
+
+                    while emulator.cpu.total_cycles <= until {
+                        emulator.run_instruction();
+                    }
+                }
+            });
+
             ui.separator();
 
             // ------------------ CARTRIDGE INFO ----------------------

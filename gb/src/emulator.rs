@@ -14,6 +14,7 @@ use crate::{
     interrupts::InterruptController,
     joypad::{Joypad, JoypadKey},
     ppu::{palettes::DmgPalettes, ppu::Ppu, screen_buffer::Buffer},
+    serial::Serial,
     timer::Timer,
     traits::MemoryAccess,
     wram::Wram,
@@ -45,6 +46,7 @@ pub struct Hardware {
     capture_serial: bool,
     pub serial_output: Vec<char>,
     pub interrupts: InterruptController,
+    serial: Serial,
     pub timer: Timer,
     pub oam_dma: OamDma,
     pub hdma: Hdma,
@@ -91,20 +93,20 @@ impl MemoryAccess for Hardware {
 
             // I/O Registers
             0xff00..=0xff7f => match address {
-                0xff00 => self.joypad.read_byte(address),         // Joypad
-                0xff01..=0xff02 => 0xff,                          // Serial
-                0xff03 => 0xff,                                   // unused
-                0xff04..=0xff07 => self.timer.read_byte(address), // Timer
-                0xff0f => self.interrupts.read_byte(address),     // Interrupt controller
-                0xff10..=0xff14 => self.apu.read_byte(address),   // APU Channel 1
-                0xff16..=0xff19 => self.apu.read_byte(address),   // APU Channel 2
-                0xff1a..=0xff1e => self.apu.read_byte(address),   // APU Channel 3
-                0xff20..=0xff23 => self.apu.read_byte(address),   // APU Channel 4
-                0xff24..=0xff26 => self.apu.read_byte(address),   // APU Sound controls
-                0xff30..=0xff3f => self.apu.read_byte(address),   // APU Channel 3 Wave RAM
-                0xff40..=0xff45 => self.ppu.read_byte(address),   // PPU
-                0xff46 => self.oam_dma.read_byte(),               // DMA
-                0xff47..=0xff4b => self.ppu.read_byte(address),   // PPU
+                0xff00 => self.joypad.read_byte(address),          // Joypad
+                0xff01..=0xff02 => self.serial.read_byte(address), // Serial
+                0xff03 => 0xff,                                    // unused
+                0xff04..=0xff07 => self.timer.read_byte(address),  // Timer
+                0xff0f => self.interrupts.read_byte(address),      // Interrupt controller
+                0xff10..=0xff14 => self.apu.read_byte(address),    // APU Channel 1
+                0xff16..=0xff19 => self.apu.read_byte(address),    // APU Channel 2
+                0xff1a..=0xff1e => self.apu.read_byte(address),    // APU Channel 3
+                0xff20..=0xff23 => self.apu.read_byte(address),    // APU Channel 4
+                0xff24..=0xff26 => self.apu.read_byte(address),    // APU Sound controls
+                0xff30..=0xff3f => self.apu.read_byte(address),    // APU Channel 3 Wave RAM
+                0xff40..=0xff45 => self.ppu.read_byte(address),    // PPU
+                0xff46 => self.oam_dma.read_byte(),                // DMA
+                0xff47..=0xff4b => self.ppu.read_byte(address),    // PPU
                 0xff4f => {
                     if self.is_cgb {
                         self.ppu.read_byte(address)
@@ -161,7 +163,7 @@ impl MemoryAccess for Hardware {
                         0xff
                     }
                 } // CGB WRAM bank switch
-                _ => 0xff,                                        // unused
+                _ => 0xff,                                         // unused
             },
 
             // High RAM (HRAM)
@@ -211,6 +213,7 @@ impl MemoryAccess for Hardware {
                     if self.capture_serial && address == 0xff01 {
                         self.serial_output.push(value as char);
                     }
+                    self.serial.write_byte(address, value)
                 } // Serial
                 0xff04..=0xff07 => self.timer.write_byte(address, value, ic), // Timer
                 0xff0f => self.interrupts.write_byte(address, value), // Interrupt controller
@@ -272,6 +275,7 @@ impl Emulator {
                 bios_enabled,
                 ppu,
                 apu,
+                serial: Serial::new(),
                 timer: Timer::new(),
                 interrupts: interrupt_controller,
                 cartridge,
@@ -291,16 +295,16 @@ impl Emulator {
             let a = if e.is_cgb { 0x11 } else { 0x01 };
             e.cpu
                 .write_reg8(Reg8::A, a)
-                .write_reg8(Reg8::B, 0xff)
+                .write_reg8(Reg8::B, 0x00)
                 .write_reg8(Reg8::C, 0x13)
                 .write_reg8(Reg8::D, 0x00)
-                .write_reg8(Reg8::E, 0xc1)
-                .write_reg8(Reg8::H, 0x84)
-                .write_reg8(Reg8::L, 0x03)
-                .update_flag(Flags::Z, false)
+                .write_reg8(Reg8::E, 0xd8)
+                .write_reg8(Reg8::H, 0x01)
+                .write_reg8(Reg8::L, 0x4d)
+                .update_flag(Flags::Z, true)
                 .update_flag(Flags::N, false)
-                .update_flag(Flags::H, false)
-                .update_flag(Flags::C, false);
+                .update_flag(Flags::H, true)
+                .update_flag(Flags::C, true);
             e.cpu.sp = 0xfffe;
             e.cpu.pc = 0x0100;
 

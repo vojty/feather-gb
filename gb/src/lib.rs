@@ -23,6 +23,7 @@ mod hdma;
 pub mod interrupts;
 pub mod joypad;
 pub mod ppu;
+mod serial;
 mod timer;
 pub mod traits;
 mod utils;

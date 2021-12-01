@@ -34,9 +34,8 @@ fn should_collect(basename: String) -> bool {
     let captures = re.captures(&basename).unwrap();
     let group = captures["group"].to_string();
 
-    // TODO test dmgABC as well?
-    // test only dmg0 + G groups
-    group.contains('G') || group.contains("dmg0")
+    // test only dmg + dmgABC
+    group.contains('G') || group.contains("dmgABC")
 }
 
 fn get_tests() -> Vec<String> {
