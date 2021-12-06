@@ -12,8 +12,8 @@ git submodule update --init --recursive
 
 # Update mooneye-gb
 (
-    echo "[ Make mooneye-gb ]"
-    cd roms/mooneye-gb/tests
+    echo "[ Make mooneye-test-suite ]"
+    cd roms/mooneye-test-suite
     make clean
     make all
 )

@@ -40,7 +40,7 @@ fn should_collect(basename: String) -> bool {
 
 fn get_tests() -> Vec<String> {
     let mut files = vec![];
-    for entry in glob("./roms/mooneye-gb/**/*.gb").expect("Failed to read glob pattern") {
+    for entry in glob("./roms/mooneye-test-suite/**/*.gb").expect("Failed to read glob pattern") {
         match entry {
             Ok(path) => {
                 let path = path.into_os_string().into_string().unwrap();
@@ -97,8 +97,8 @@ fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
     let result = markdown::table(&headings, &data);
 
     markdown::test_report(
-        "Mooneye's tests",
-        "https://github.com/Gekkio/mooneye-gb\n\nOnly DMG compatible tests used.",
+        "Mooneye Test Suite",
+        "https://github.com/Gekkio/mooneye-test-suite\n\nOnly DMG compatible tests used.",
         &result,
     )
 }

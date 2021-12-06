@@ -21,7 +21,7 @@ The emulator is somehow accurate - the CPU is cycle-accurate and the emulator pa
 
 ## Test results
 
-The emulator is tested against popular test suites such as [blargg's test](https://github.com/retrio/gb-test-roms), [mooneye's tests](https://github.com/Gekkio/mooneye-gb/) etc.
+The emulator is tested against popular test suites such as [blargg's test](https://github.com/retrio/gb-test-roms), [mooneye test suite](https://github.com/Gekkio/mooneye-test-suite) etc.
 These test suites are linked as git submodules (see `.gitmodules` file for details).
 
 Generated test report is [here](./docs/results/results.md)
@@ -85,7 +85,7 @@ No specific priority here
 
 ### Test Roms
 
-- The famous Mooneye tests https://github.com/Gekkio/mooneye-gb/
+- The famous Mooneye test suite https://github.com/Gekkio/mooneye-test-suite
 - Wilbertpol's tests https://github.com/Amjad50/mooneye-gb
 - Mealybug Tearoom Tests (aka PPU torture tests) https://github.com/mattcurrie/mealybug-tearoom-tests
 - DMG ACID2 test https://github.com/mattcurrie/dmg-acid2

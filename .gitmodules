@@ -1,9 +1,10 @@
-[submodule "roms/mooneye-gb"]
-	path = roms/mooneye-gb
-	url = https://github.com/Gekkio/mooneye-gb.git
+[submodule "roms/mooneye-test-suite"]
+	path = roms/mooneye-test-suite
+	url = https://github.com/Gekkio/mooneye-test-suite.git
 [submodule "roms/MBC3-Tester-gb"]
 	path = roms/MBC3-Tester-gb
 	url = https://github.com/EricKirschenmann/MBC3-Tester-gb.git
+	ignore = untracked
 [submodule "roms/gb-test-roms"]
 	path = roms/gb-test-roms
 	url = https://github.com/retrio/gb-test-roms
