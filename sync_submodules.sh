@@ -49,3 +49,11 @@ git submodule update --init --recursive
     make clean
     make
 )
+
+# Update BullyGB
+(
+    echo "[ Make BullyGB ]"
+    cd roms/BullyGB
+    make clean
+    make
+)
