@@ -1,5 +1,5 @@
 #!/bin/bash
-# git submodule foreach git pull --rebase origin master
+git submodule foreach git pull --rebase
 git submodule update --init --recursive
 
 # Update TurtleTests
@@ -54,6 +54,14 @@ git submodule update --init --recursive
 (
     echo "[ Make BullyGB ]"
     cd roms/BullyGB
+    make clean
+    make
+)
+
+# Update wilbertpol-test-suite
+(
+    echo "[ Make Wilbert Pol's test suite ]"
+    cd roms/wilbertpol-test-suite
     make clean
     make
 )

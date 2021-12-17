@@ -26,3 +26,9 @@
 [submodule "roms/strikethrough"]
 	path = roms/strikethrough
 	url = https://github.com/Hacktix/strikethrough.gb.git
+[submodule "roms/wilbertpol-test-suite"]
+	path = roms/wilbertpol-test-suite
+	url = https://github.com/vojty/wilbertpol-test-suite.git
+[submodule "roms/BullyGB"]
+	path = roms/BullyGB
+	url = https://github.com/Hacktix/BullyGB.git

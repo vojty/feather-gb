@@ -41,7 +41,8 @@ fn should_collect(basename: String) -> bool {
 
 fn get_tests() -> Vec<String> {
     let mut files = vec![];
-    for entry in glob("./roms/wilbertpol-tests/**/*.gb").expect("Failed to read glob pattern") {
+    for entry in glob("./roms/wilbertpol-test-suite/**/*.gb").expect("Failed to read glob pattern")
+    {
         match entry {
             Ok(path) => {
                 let path = path.into_os_string().into_string().unwrap();
@@ -98,7 +99,7 @@ fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
 
     markdown::test_report(
         "Wilbertpol's tests",
-        "From https://github.com/Amjad50/mooneye-gb",
+        "From https://github.com/vojty/wilbertpol-test-suite",
         &result,
     )
 }
