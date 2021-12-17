@@ -286,8 +286,8 @@ export function Play() {
                 The test ROMs are available in{' '}
                 <Link className="underline" to="/debug">
                   debug mode
-                </Link>{' '}
-                or you can see the test results
+                </Link>
+                . You can see the test results{' '}
                 <Link className="underline" to="/test-results">
                   here
                 </Link>
