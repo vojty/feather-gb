@@ -24,20 +24,22 @@ jobs:
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v1
 
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v1
+      # https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
         with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-
 
       - name: Installing Dependencies
-        run: yarn install --frozen-lockfile
+        uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6
+          run_install:
+            - recursive: true
+              args: [--frozen-lockfile]
 
       - name: Building App
         run: |
