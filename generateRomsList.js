@@ -1,9 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable @typescript-eslint/no-var-requires */
 const fg = require('fast-glob')
 const fs = require('fs')
 const prettier = require('prettier')
-const config = require('./.prettierrc.js')
+const config = require('./.prettierrc')
 
 const entries = fg.sync(['roms/**/*.{gb,gbc}'])
 
@@ -22,9 +21,7 @@ function generateOutput(items) {
   })
   const importStatements = imports.map((item) => item.import).join('\n')
   const exportObj = imports
-    .map((item) => {
-      return `{ name: '${item.name}', url: ${item.key} }`
-    })
+    .map((item) => `{ name: '${item.name}', url: ${item.key} }`)
     .join(',')
   const exportStatement = `export const roms = [${exportObj}]`
 
@@ -36,4 +33,4 @@ const out = prettier.format(generateOutput(roms), {
   parser: 'typescript'
 })
 
-fs.writeFileSync(__dirname + '/browser/romsList.ts', out)
+fs.writeFileSync(`${__dirname}/browser/romsList.ts`, out)

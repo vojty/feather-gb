@@ -31,19 +31,13 @@ export function Zoom(props: Props) {
   return (
     <Styled.Wrapper>
       <Styled.Icon>
-        <button
-          type="button"
-          style={{ fontSize: FONT_SIZE }}
-          onClick={() => onChange(Math.max(1, zoom - 0.5))}>
+        <button type="button" onClick={() => onChange(Math.max(1, zoom - 0.5))}>
           -
         </button>
       </Styled.Icon>
       <Styled.Value>Zoom: {zoom.toFixed(1)}</Styled.Value>
       <Styled.Icon>
-        <button
-          type="button"
-          style={{ fontSize: FONT_SIZE }}
-          onClick={() => onChange(Math.min(zoom + 0.5, 5))}>
+        <button type="button" onClick={() => onChange(Math.min(zoom + 0.5, 5))}>
           +
         </button>
       </Styled.Icon>
