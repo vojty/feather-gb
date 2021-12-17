@@ -69,6 +69,10 @@ No specific priority here
 - `/browser` - frontend SPA
 - `/integration-tests` - ROM tests
 
+## Development requirements
+
+- wasm-pack - `cargo install wasm-pack`
+
 ## Resources
 
 ### Links
