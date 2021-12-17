@@ -63,12 +63,10 @@ const Loader = styled.div`
 
 export function FullscreenLoader() {
   return (
-    <>
-      <Overlay>
-        <Content>
-          <Loader />
-        </Content>
-      </Overlay>
-    </>
+    <Overlay>
+      <Content>
+        <Loader />
+      </Content>
+    </Overlay>
   )
 }

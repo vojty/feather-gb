@@ -41,6 +41,7 @@ export function Debugger() {
       .then((app) => {
         app.start(CANVAS_ID, roms)
       })
+      // eslint-disable-next-line no-console
       .catch(console.error)
   }, [])
 

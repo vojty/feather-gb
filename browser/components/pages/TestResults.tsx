@@ -39,6 +39,7 @@ function TestResults() {
     <>
       <GlobalStyles />
       <h1>Test results</h1>
+      {/* eslint-disable-next-line react/no-danger */}
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </>
   )

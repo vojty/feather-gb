@@ -12,6 +12,7 @@ export function useWasmModule() {
         wasm.init()
         setWasmModule(wasm)
       })
+      // eslint-disable-next-line no-console
       .catch(console.error)
   }, [])
 

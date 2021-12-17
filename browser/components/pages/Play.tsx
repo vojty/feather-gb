@@ -48,13 +48,13 @@ function renderFrame(emulator: WebEmulator, ctx: CanvasRenderingContext2D) {
 
   range(0, DISPLAY_HEIGHT).forEach((y) => {
     range(0, DISPLAY_WIDTH).forEach((x) => {
-      const source_offset = (y * DISPLAY_WIDTH + x) * 3
-      const target_offset = (y * DISPLAY_WIDTH + x) * 4
+      const sourceOffset = (y * DISPLAY_WIDTH + x) * 3
+      const targetOffset = (y * DISPLAY_WIDTH + x) * 4
 
-      imageData.data[target_offset] = canvasData[source_offset]
-      imageData.data[target_offset + 1] = canvasData[source_offset + 1]
-      imageData.data[target_offset + 2] = canvasData[source_offset + 2]
-      imageData.data[target_offset + 3] = 255 // alpha
+      imageData.data[targetOffset] = canvasData[sourceOffset]
+      imageData.data[targetOffset + 1] = canvasData[sourceOffset + 1]
+      imageData.data[targetOffset + 2] = canvasData[sourceOffset + 2]
+      imageData.data[targetOffset + 3] = 255 // alpha
     })
   })
   ctx.putImageData(imageData, 0, 0)
@@ -91,9 +91,9 @@ function DeviceHandler(props: Props) {
       frameCount,
       audioContext.sampleRate
     )
-    for (let channel = 0; channel < CHANNELS_COUNT; channel++) {
-      let nowBuffering = audioBuffer.getChannelData(channel)
-      for (let i = 0; i < frameCount; i++) {
+    for (let channel = 0; channel < CHANNELS_COUNT; channel += 1) {
+      const nowBuffering = audioBuffer.getChannelData(channel)
+      for (let i = 0; i < frameCount; i += 1) {
         // audio data frames are interleaved
         nowBuffering[i] = audioData[i * CHANNELS_COUNT + channel]
       }
@@ -192,7 +192,7 @@ export function Play() {
   // Just another null check
   const setRef = useCallback((ref: HTMLCanvasElement | null) => {
     if (!ref) {
-      return null
+      return
     }
     setCtx((prevCtx) => {
       if (prevCtx) {
@@ -206,9 +206,9 @@ export function Play() {
     })
   }, [])
 
-  const onCartridgeLoad = (rom: Rom) => {
+  const onCartridgeLoad = (loadedRom: Rom) => {
     setRunning(false)
-    setRom(rom)
+    setRom(loadedRom)
   }
 
   if (!wasmModule) {
@@ -240,6 +240,7 @@ export function Play() {
           <div className="mt-2 flex justify-center items-center text-xs">
             <button
               className="mx-2 border rounded px-1 py-1"
+              type="button"
               onClick={onRunningToggle}>
               {running ? 'Stop' : 'Run'}
             </button>
@@ -250,8 +251,11 @@ export function Play() {
               Upload ROM
             </OpenButton>
 
-            <label className="flex justify-center items-center">
+            <label
+              className="flex justify-center items-center"
+              htmlFor="soundEnableCheckbox">
               <input
+                id="soundEnableCheckbox"
                 className="mr-1"
                 type="checkbox"
                 checked={soundEnabled}

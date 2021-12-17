@@ -30,7 +30,7 @@ const initial = options.find((rom) => rom.name === 'demos/oh.gb') || null
 export function Cartridges(props: Props) {
   const onChange = useCallback((newSelected: Option | null) => {
     if (!newSelected) {
-      return null
+      return
     }
     fetchBytes(newSelected.url).then((bytes) =>
       props.onCartridgeLoad({ name: newSelected.name, bytes })
@@ -53,7 +53,9 @@ export function Cartridges(props: Props) {
             key={option.url}>
             <td className="px-1">{option.name}</td>
             <td className="px-1">
-              <button onClick={() => onChange(option)}>Load</button>
+              <button type="button" onClick={() => onChange(option)}>
+                Load
+              </button>
             </td>
           </tr>
         ))}

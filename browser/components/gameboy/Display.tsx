@@ -1,7 +1,8 @@
+import { ReactNode } from 'react'
 import { Styled } from './GameBoy.styled'
 
 type Props = {
-  children: React.ReactNode
+  children: ReactNode
   enabled?: boolean
 }
 

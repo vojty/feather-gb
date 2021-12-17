@@ -11,8 +11,8 @@ export function warmupAudio(audioContext: AudioContext) {
   // Warmup audio on RUN button click
 
   // Create empty buffer
-  var buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate)
-  var source = audioContext.createBufferSource()
+  const buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate)
+  const source = audioContext.createBufferSource()
   source.buffer = buffer
   // Connect to output (speakers)
   source.connect(audioContext.destination)
