@@ -38,6 +38,7 @@ pub struct Debugger {
     speed: u8,
     run_until: String,
 
+    rom_data: Option<RomData>,
     file_receiver: Option<Receiver<RomData>>,
 
     components: Components,
@@ -56,6 +57,7 @@ impl Debugger {
         let cartridge = Cartridge::empty();
         Self {
             file_receiver: None,
+            rom_data: None,
             speed: 1,
             run_until: String::new(),
             emulator: Emulator::new(true, cartridge, Box::new(DummyAudio {})),
@@ -89,6 +91,7 @@ impl epi::App for Debugger {
             components,
             speed,
             file_receiver,
+            rom_data,
             run_until,
         } = self;
         let cpu_usage = frame.info().cpu_usage;
@@ -106,6 +109,7 @@ impl epi::App for Debugger {
                     Cartridge::from_bytes(&result),
                     Box::new(DummyAudio {}),
                 );
+                *rom_data = Some(result);
             }
         }
 
@@ -153,6 +157,16 @@ impl epi::App for Debugger {
                 );
                 if ui.button("Run until").clicked() {
                     let until: u32 = run_until.parse().unwrap();
+
+                    // Restart & fast-forward if requested cycles are in the past
+                    if emulator.cpu.total_cycles > until {
+                        let cart = if let Some(binary) = rom_data {
+                            Cartridge::from_bytes(binary)
+                        } else {
+                            Cartridge::empty()
+                        };
+                        *emulator = Emulator::new(false, cart, Box::new(DummyAudio {}));
+                    }
 
                     while emulator.cpu.total_cycles <= until {
                         emulator.run_instruction();
