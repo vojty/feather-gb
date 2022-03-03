@@ -33,7 +33,7 @@ fn get_tests() -> Vec<VisualTestCase> {
         .iter()
         .map(|name| {
             let reference_path = get_image_path(name, ImageResultTypes::Expected);
-            let rom_base = format!("{}.gb", name.replace("_", " "));
+            let rom_base = format!("{}.gb", name.replace('_', " "));
             let rom_path = create_path(&[TESTS_PATH, &rom_base]);
             VisualTestCaseBuilder::new(*name, rom_path, reference_path)
                 .copy_reference(false)

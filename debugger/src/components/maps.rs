@@ -159,7 +159,7 @@ impl Maps {
             self.canvas.set_pixel(x, y_line.start, BORDER);
             self.canvas.set_pixel(x, y_line.end, BORDER);
         }
-        for y in y_line.clone() {
+        for y in y_line {
             self.canvas.set_pixel(x_line.start, y, BORDER);
             self.canvas.set_pixel(x_line.end, y, BORDER);
         }
