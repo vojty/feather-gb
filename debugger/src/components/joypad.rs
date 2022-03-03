@@ -15,7 +15,7 @@ fn get_joypad_key(key: &Key) -> Option<JoypadKey> {
     }
 }
 
-pub fn handle_inputs(e: &mut Emulator, ctx: &egui::CtxRef) {
+pub fn handle_inputs(e: &mut Emulator, ctx: &egui::Context) {
     let input = ctx.input();
     KEYS.iter()
         .filter_map(|key| match input.key_down(*key) {

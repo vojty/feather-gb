@@ -1,13 +1,15 @@
 use std::collections::VecDeque;
 
-use eframe::egui::{CtxRef, Window};
+use eframe::{
+    egui,
+    egui::{RichText, Window},
+};
 use gb::{
     emulator::Emulator,
     traits::{DisplayHex, MemoryAccess},
 };
 
 use crate::opcodes::{OPCODES, OPCODES_CB};
-use crate::ui_extensions::mono_label;
 
 pub struct Disassembly;
 
@@ -65,10 +67,10 @@ impl Disassembly {
         Self {}
     }
 
-    pub fn show(&mut self, ctx: &CtxRef, open: &mut bool, e: &Emulator) {
+    pub fn show(&mut self, ctx: &egui::Context, open: &mut bool, e: &Emulator) {
         Window::new("Disassembly")
             .resizable(true)
-            .default_width(250.0)
+            .default_width(268.0)
             .open(open)
             .show(ctx, |ui| {
                 let pc = e.cpu.pc;
@@ -78,18 +80,26 @@ impl Disassembly {
                     let (definition, args) = get_definition(offset, e);
                     let (name, length) = definition;
 
-                    let a = args
+                    let formatted_args = args
                         .into_iter()
                         .map(|arg| arg.to_hex())
                         .collect::<Vec<String>>()
                         .join(" ");
 
-                    let mut label =
-                        mono_label(format!("0x{} | {:<8} | {:<15}", offset.to_hex(), a, name));
+                    let prefix = if pc == offset { ">" } else { " " };
+
+                    let mut text = RichText::new(format!(
+                        "{} 0x{} | {:<8} | {:<15}",
+                        prefix,
+                        offset.to_hex(),
+                        formatted_args,
+                        name
+                    ))
+                    .monospace();
                     if pc == offset {
-                        label = label.strong();
+                        text = text.strong();
                     }
-                    ui.add(label);
+                    ui.label(text);
 
                     offset += length as u16;
                 }

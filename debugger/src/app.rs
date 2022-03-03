@@ -1,8 +1,8 @@
 use eframe::{
-    egui::{self},
+    egui::{self, TextStyle},
+    epaint::{Color32, FontFamily, Vec2},
     epi,
 };
-use egui::{Color32, TextStyle, Vec2};
 use gb::{
     audio::AudioDevice, cartridges::cartridge::Cartridge, emulator::Emulator, traits::DisplayHex,
 };
@@ -84,7 +84,7 @@ impl epi::App for Debugger {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
+    fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
         let Debugger {
             running,
             emulator,
@@ -95,7 +95,6 @@ impl epi::App for Debugger {
             run_until,
         } = self;
         let cpu_usage = frame.info().cpu_usage;
-        let tex_allocator = frame.tex_allocator();
 
         // ------------------ INPUTS ----------------------
         handle_inputs(emulator, ctx);
@@ -195,10 +194,11 @@ impl epi::App for Debugger {
 
             // ------------------ SERIAL ----------------------
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                ui.style_mut().body_text_style = TextStyle::Monospace;
-                ui.add(
-                    egui::Hyperlink::new("https://github.com/emilk/egui/").text("powered by egui"),
-                );
+                ui.style_mut()
+                    .text_styles
+                    .get_mut(&TextStyle::Body)
+                    .unwrap()
+                    .family = FontFamily::Monospace;
             });
         });
 
@@ -210,24 +210,20 @@ impl epi::App for Debugger {
         }
 
         // ------------------ GB DISPLAY ----------------------
-        components.display.show(ctx, emulator, tex_allocator);
+        components.display.show(ctx, emulator);
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::warn_if_debug_build(ui);
         });
 
         // ------------------ TILES ----------------------
-        components
-            .tiles
-            .show(ctx, &mut true, emulator, tex_allocator);
+        components.tiles.show(ctx, &mut true, emulator);
 
         // ------------------ MEMORY ----------------------
         components.memory_viewer.show(ctx, emulator, &mut true);
 
         // ------------------ MAPS ----------------------
-        components
-            .maps
-            .show(ctx, &mut true, emulator, tex_allocator);
+        components.maps.show(ctx, &mut true, emulator);
 
         // ------------------ FPS ----------------------
         components

@@ -1,4 +1,7 @@
-use eframe::egui::{self, Align, ScrollArea, TextStyle};
+use eframe::{
+    egui::{self, Align, ScrollArea, TextStyle},
+    epaint::FontFamily,
+};
 use egui::Ui;
 use gb::{
     emulator::Emulator,
@@ -66,7 +69,7 @@ impl Default for MemoryViewer {
 }
 
 impl MemoryViewer {
-    pub fn show(&mut self, ctx: &egui::CtxRef, e: &Emulator, open: &mut bool) {
+    pub fn show(&mut self, ctx: &egui::Context, e: &Emulator, open: &mut bool) {
         egui::Window::new("Memory")
             .default_width(420.0)
             .open(open)
@@ -117,18 +120,22 @@ impl MemoryViewer {
         ui.separator();
         scroll_area.show(ui, |ui| {
             if scroll_top {
-                ui.scroll_to_cursor(Align::TOP);
+                ui.scroll_to_cursor(Some(Align::TOP));
             }
 
             if scroll_bottom {
-                ui.scroll_to_cursor(Align::BOTTOM);
+                ui.scroll_to_cursor(Some(Align::BOTTOM));
             }
 
             let step = 16;
             let range = self.memory_area.get_range();
 
             ui.vertical(|ui| {
-                ui.style_mut().body_text_style = TextStyle::Monospace;
+                ui.style_mut()
+                    .text_styles
+                    .get_mut(&TextStyle::Body)
+                    .unwrap()
+                    .family = FontFamily::Monospace;
                 for base_addr in range.step_by(step) {
                     let mut line = String::new();
 

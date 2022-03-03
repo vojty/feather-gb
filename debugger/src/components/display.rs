@@ -1,7 +1,4 @@
-use eframe::{
-    egui::{self, Color32, TextureId, Vec2},
-    epi,
-};
+use eframe::egui::{self, Color32};
 use gb::{
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
     emulator::Emulator,
@@ -12,7 +9,6 @@ use crate::canvas::Canvas;
 use super::scale::render_scale;
 pub struct Display {
     scale: usize,
-    display_texture: TextureId,
     canvas: Canvas,
 }
 
@@ -21,32 +17,16 @@ impl Display {
         let scale = 2;
         Self {
             scale,
-            display_texture: TextureId::default(),
             canvas: Canvas::new(DISPLAY_WIDTH, DISPLAY_HEIGHT, scale),
         }
     }
 
-    pub fn show(
-        &mut self,
-        ctx: &egui::CtxRef,
-        e: &Emulator,
-        tex_allocator: &mut dyn epi::TextureAllocator,
-    ) {
+    pub fn show(&mut self, ctx: &egui::Context, e: &Emulator) {
         egui::Window::new("GameBoy")
             .open(&mut true)
             .resizable(false)
             .collapsible(false)
             .show(ctx, |ui| {
-                let scale = self.scale;
-
-                // Clean texture from previous frame
-                tex_allocator.free(self.display_texture);
-
-                let size = Vec2::new(
-                    (DISPLAY_WIDTH * scale) as f32,
-                    (DISPLAY_HEIGHT * scale) as f32,
-                );
-
                 let buffer = e.get_screen_buffer();
                 for y in 0..DISPLAY_HEIGHT {
                     for x in 0..DISPLAY_WIDTH {
@@ -57,16 +37,11 @@ impl Display {
                     }
                 }
 
-                self.display_texture = tex_allocator.alloc_srgba_premultiplied(
-                    (size.x as usize, size.y as usize),
-                    self.canvas.get_pixels(),
-                );
+                let image = self.canvas.create_image();
+                let texture = ctx.load_texture("display", image);
+                ui.image(&texture, self.canvas.get_scaled_size_vec2());
 
                 render_scale(ui, &mut self.scale);
-
-                // Gameboy
-                ui.image(self.display_texture, size);
-
                 if self.canvas.get_scale() != self.scale {
                     // Create new resized canvas
                     self.canvas.resize_scale(self.scale);
