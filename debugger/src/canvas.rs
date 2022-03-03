@@ -1,14 +1,17 @@
-use eframe::egui::{Color32, Vec2};
+use eframe::{
+    egui::Color32,
+    epaint::{ColorImage, Vec2},
+};
 
 pub struct Canvas {
     width: usize,
     height: usize,
     scale: usize,
-    pixels: Box<[Color32]>,
+    pixels: Vec<Color32>,
 }
 
-fn create_pixels(size: usize) -> Box<[Color32]> {
-    vec![Color32::default(); size].into_boxed_slice()
+fn create_pixels(size: usize) -> Vec<Color32> {
+    vec![Color32::default(); size]
 }
 
 fn get_size(width: usize, height: usize, scale: usize) -> usize {
@@ -63,10 +66,6 @@ impl Canvas {
         self.scale
     }
 
-    pub fn get_pixels(&self) -> &[Color32] {
-        &self.pixels
-    }
-
     pub fn get_height(&self) -> usize {
         self.height
     }
@@ -75,10 +74,20 @@ impl Canvas {
         self.width
     }
 
-    pub fn get_scaled_size(&self) -> Vec2 {
-        Vec2::new(
-            (self.width * self.scale) as f32,
-            (self.height * self.scale) as f32,
-        )
+    pub fn get_scaled_size(&self) -> [usize; 2] {
+        [self.width * self.scale, self.height * self.scale]
+    }
+    pub fn get_scaled_size_vec2(&self) -> Vec2 {
+        Vec2 {
+            x: (self.width * self.scale) as f32,
+            y: (self.height * self.scale) as f32,
+        }
+    }
+
+    pub fn create_image(&self) -> ColorImage {
+        ColorImage {
+            size: self.get_scaled_size(),
+            pixels: self.pixels.clone(),
+        }
     }
 }

@@ -20,7 +20,7 @@ impl Cpu {
         Self {}
     }
 
-    pub fn show(&mut self, ctx: &egui::CtxRef, open: &mut bool, e: &Emulator) {
+    pub fn show(&mut self, ctx: &egui::Context, open: &mut bool, e: &Emulator) {
         egui::Window::new("CPU").open(open).show(ctx, |ui| {
             ui.label("Registers");
             ui.horizontal(|ui| {

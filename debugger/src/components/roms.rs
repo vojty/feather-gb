@@ -19,7 +19,7 @@ impl Roms {
         }
     }
 
-    pub fn show<F>(&mut self, ctx: &egui::CtxRef, open: &mut bool, mut open_callback: F)
+    pub fn show<F>(&mut self, ctx: &egui::Context, open: &mut bool, mut open_callback: F)
     where
         F: FnMut(&Box<dyn BinarySource>),
     {

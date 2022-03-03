@@ -1,5 +1,5 @@
 use eframe::egui::{
-    show_tooltip_at_pointer, Color32, CtxRef, Grid, Id, Pos2, Sense, Stroke, Ui, Vec2, Window,
+    self, show_tooltip_at_pointer, Color32, Grid, Id, Pos2, Sense, Stroke, Ui, Vec2, Window,
 };
 use gb::{
     constants::DISPLAY_HEIGHT,
@@ -29,7 +29,7 @@ impl Ppu {
         Self {}
     }
 
-    pub fn show(&mut self, ctx: &CtxRef, open: &mut bool, e: &Emulator) {
+    pub fn show(&mut self, ctx: &egui::Context, open: &mut bool, e: &Emulator) {
         Window::new("PPU").open(open).show(ctx, |ui| {
             ui.heading("Internals");
 

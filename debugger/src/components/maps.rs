@@ -1,7 +1,4 @@
-use eframe::{
-    egui::{Color32, CtxRef, TextureId, Vec2, Window},
-    epi::TextureAllocator,
-};
+use eframe::egui::{self, Color32, Window};
 use gb::{
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH, TILE_SIZE},
     emulator::Emulator,
@@ -15,7 +12,6 @@ use super::scale::render_scale;
 pub struct Maps {
     scale: usize,
     canvas: Canvas,
-    texture_id: TextureId,
     layer: MapLayer,
     show_visible_area: bool,
 }
@@ -32,28 +28,14 @@ impl Maps {
         let scale = 1;
         Self {
             scale,
-            texture_id: TextureId::default(),
             canvas: Canvas::new(MAP_WIDTH, MAP_HEIGHT, scale),
             layer: MapLayer::Background,
             show_visible_area: true,
         }
     }
 
-    pub fn show(
-        &mut self,
-        ctx: &CtxRef,
-        open: &mut bool,
-        e: &Emulator,
-        tex_allocator: &mut dyn TextureAllocator,
-    ) {
+    pub fn show(&mut self, ctx: &egui::Context, open: &mut bool, e: &Emulator) {
         Window::new("Maps").open(open).show(ctx, |ui| {
-            let size = Vec2::new(
-                (MAP_WIDTH * self.scale) as f32,
-                (MAP_HEIGHT * self.scale) as f32,
-            );
-
-            tex_allocator.free(self.texture_id);
-
             let palette = e.hw.ppu.get_backround_palette();
 
             for y in 0..TILES_PER_ROW {
@@ -81,10 +63,9 @@ impl Maps {
                 self.draw_visible_area(e);
             }
 
-            self.texture_id = tex_allocator.alloc_srgba_premultiplied(
-                (size.x as usize, size.y as usize),
-                self.canvas.get_pixels(),
-            );
+            let image = self.canvas.create_image();
+            let texture = ctx.load_texture("maps", image);
+            ui.image(&texture, self.canvas.get_scaled_size_vec2());
 
             ui.horizontal(|ui| {
                 ui.label("Layer");
@@ -95,8 +76,6 @@ impl Maps {
             ui.horizontal(|ui| ui.checkbox(&mut self.show_visible_area, "Show visible area"));
 
             render_scale(ui, &mut self.scale);
-
-            ui.image(self.texture_id, size);
 
             if self.canvas.get_scale() != self.scale {
                 // create new resized canvas
