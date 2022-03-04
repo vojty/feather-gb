@@ -1,4 +1,4 @@
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 const Back = styled.div`
@@ -6,6 +6,6 @@ const Back = styled.div`
 `
 
 export function Backbutton() {
-  const history = useHistory()
-  return <Back onClick={() => history.goBack()}>←</Back>
+  const navigate = useNavigate()
+  return <Back onClick={() => navigate(-1)}>←</Back>
 }

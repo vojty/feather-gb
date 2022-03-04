@@ -8,17 +8,12 @@ import './assets/styles/main.css'
 
 const root = document.getElementById('root')
 
-const Router = ({ children }: { children: React.ReactNode }) => {
-  // needed for gitlab pages, there is no way to use custom paths :/
-  if (USE_HASH_ROUTER) {
-    return <HashRouter>{children}</HashRouter>
-  }
-  return <BrowserRouter>{children}</BrowserRouter>
-}
+// HashRouter is needed for gitlab pages, there is no way to use custom paths :/
+const RouterComponent = USE_HASH_ROUTER ? HashRouter : BrowserRouter
 
 ReactDOM.render(
-  <Router>
+  <RouterComponent>
     <Root />
-  </Router>,
+  </RouterComponent>,
   root
 )

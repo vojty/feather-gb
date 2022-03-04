@@ -13,8 +13,8 @@ const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-p
 function getPlugins(isProduction) {
   const basePlugins = [
     new HtmlWebpackPlugin({
-      filename: __dirname + '/public/index.html',
-      template: __dirname + '/index.html'
+      filename: `${__dirname}/public/index.html`,
+      template: `${__dirname}/index.html`
     }),
     new HtmlWebpackInjectPreload({
       files: [
@@ -36,7 +36,7 @@ function getPlugins(isProduction) {
       crateDirectory: path.resolve(__dirname, './gb-web'),
       forceMode: 'production' // greatly reduces CPU usage and memcpy calls
     }),
-    new FaviconsWebpackPlugin(__dirname + '/browser/assets/images/feather.svg'),
+    new FaviconsWebpackPlugin(`${__dirname}/browser/assets/images/feather.svg`),
     new webpack.DefinePlugin({
       USE_HASH_ROUTER: JSON.stringify(process.env.USE_HASH_ROUTER)
     })

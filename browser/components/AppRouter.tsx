@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Route, Switch } from 'react-router'
+import { Route, Routes } from 'react-router-dom'
 import { FullscreenLoader } from './common/FullscreenLoader'
 
 import { Landing } from './pages/Landing'
@@ -11,20 +11,12 @@ const TestResults = lazy(() => import('./pages/TestResults'))
 export function AppRouter() {
   return (
     <Suspense fallback={<FullscreenLoader />}>
-      <Switch>
-        <Route path="/debug">
-          <Debugger />
-        </Route>
-        <Route path="/test-results">
-          <TestResults />
-        </Route>
-        <Route path="/play">
-          <Play />
-        </Route>
-        <Route path="/">
-          <Landing />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route path="/debug" element={<Debugger />} />
+        <Route path="/test-results" element={<TestResults />} />
+        <Route path="/play" element={<Play />} />
+        <Route path="/" element={<Landing />} />
+      </Routes>
     </Suspense>
   )
 }
