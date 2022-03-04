@@ -5,6 +5,7 @@ target
 pkg
 
 yarn-error.log
+.pnpm-debug.log
 browser/romsList.ts
 roms/games
 
