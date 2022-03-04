@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::all, rust_2018_idioms)]
+#![allow(clippy::unused_unit)]
 
 use debugger::app::Debugger;
 use roms::collect_files;

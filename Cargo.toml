@@ -1,5 +1,6 @@
 [workspace]
 members = ["desktop", "debugger", "debugger-web" , "gb", "integration-tests", "gb-web"]
+resolver = "2"
 
 [profile.release]
 lto = true

@@ -1,3 +1,5 @@
+#![allow(clippy::unused_unit)]
+
 use audio::WebAudio;
 use wasm_bindgen::prelude::*;
 
