@@ -1,7 +1,7 @@
 use eframe::{
     egui::{self, TextStyle},
-    epaint::{Color32, FontFamily, Vec2},
-    epi,
+    epaint::{FontFamily, Vec2},
+    App, Frame, Storage,
 };
 use gb::{
     audio::AudioDevice, cartridges::cartridge::Cartridge, emulator::Emulator, traits::DisplayHex,
@@ -53,7 +53,7 @@ impl AudioDevice for DummyAudio {
 }
 
 impl Debugger {
-    pub fn new(roms: Vec<Box<dyn BinarySource>>) -> Self {
+    pub fn new(_cc: &eframe::CreationContext<'_>, roms: Vec<Box<dyn BinarySource>>) -> Self {
         let cartridge = Cartridge::empty();
         Self {
             file_receiver: None,
@@ -77,14 +77,8 @@ impl Debugger {
     }
 }
 
-impl epi::App for Debugger {
-    fn name(&self) -> &str {
-        "GameBoy emulator - Debugger"
-    }
-
-    /// Called each time the UI needs repainting, which may be many times per second.
-    /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
+impl App for Debugger {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
         let Debugger {
             running,
             emulator,
@@ -256,9 +250,7 @@ impl epi::App for Debugger {
         false
     }
 
-    fn save(&mut self, _storage: &mut dyn epi::Storage) {}
-
-    fn on_exit(&mut self) {}
+    fn save(&mut self, _storage: &mut dyn Storage) {}
 
     fn auto_save_interval(&self) -> std::time::Duration {
         std::time::Duration::from_secs(30)
@@ -266,10 +258,5 @@ impl epi::App for Debugger {
 
     fn max_size_points(&self) -> egui::Vec2 {
         Vec2::new(2000.0, 2000.0)
-    }
-
-    fn clear_color(&self) -> egui::Rgba {
-        // NOTE: a bright gray makes the shadows of the windows look weird.
-        Color32::from_rgb(12, 12, 12).into()
     }
 }

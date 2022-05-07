@@ -15,7 +15,6 @@ use debugger::utils::{load_roms, BinarySource};
 
 fn main() {
     let roms: Vec<Box<dyn BinarySource>> = load_roms();
-    let app = Debugger::new(roms);
 
     env_logger::Builder::from_env(Env::default().default_filter_or("debug"))
         .format_timestamp(None)
@@ -30,5 +29,9 @@ fn main() {
         ..NativeOptions::default()
     };
 
-    eframe::run_native(Box::new(app), options);
+    eframe::run_native(
+        "GameBoy emulator Debugger",
+        options,
+        Box::new(|cc| Box::new(Debugger::new(cc, roms))),
+    );
 }

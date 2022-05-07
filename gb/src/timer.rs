@@ -97,7 +97,7 @@ impl Timer {
         cycles as u16
     }
 
-    fn is_enabled(&mut self) -> bool {
+    fn is_enabled(&self) -> bool {
         self.tac.contains(TacBits::ENABLED)
     }
 

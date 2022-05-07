@@ -1,5 +1,4 @@
 use debugger::utils::{sanitize_name, BinarySource};
-use egui_web::spawn_future;
 use serde::Deserialize;
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
@@ -15,6 +14,14 @@ impl WebRom {
     fn sanitize_name(&mut self) {
         self.name = sanitize_name(&self.name);
     }
+}
+
+// https://github.com/emilk/egui/blob/0.17.0/egui_web/src/lib.rs#L238-L243
+pub fn spawn_future<F>(future: F)
+where
+    F: std::future::Future<Output = ()> + 'static,
+{
+    wasm_bindgen_futures::spawn_local(future);
 }
 
 // Creates window.fetch request and returns binary data as Vec<u8>
