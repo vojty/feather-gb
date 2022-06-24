@@ -1,26 +1,36 @@
 #!/bin/bash
-git submodule foreach git pull --rebase
 git submodule update --init --recursive
+git submodule update --remote
+
+check_status() {
+    if [ $? -eq 0 ]; then
+        printf " ✅ OK\n"
+    else
+        printf " ❌ ERROR\n"
+    fi
+}
 
 # Update TurtleTests
 (
-    echo "[ Make TurtleTests ]"
+    printf "\n[ Make TurtleTests ]\n"
     cd roms/TurtleTests
     make clean
     make all
+    check_status
 )
 
 # Update mooneye-gb
 (
-    echo "[ Make mooneye-test-suite ]"
+    printf "\n[ Make mooneye-test-suite ]\n"
     cd roms/mooneye-test-suite
     make clean
     make all
+    check_status
 )
 
 # Update mealybug-tearoom-tests
 (
-    echo "[ Make mealybug-tearoom-tests ]"
+    printf "\n[ Make mealybug-tearoom-tests ]\n"
     cd roms/mealybug-tearoom-tests
     make clean
     make all
@@ -28,10 +38,11 @@ git submodule update --init --recursive
 
 # Update dmg-acid2
 (
-    echo "[ Make dmg-acid2 ]"
+    printf "\n[ Make dmg-acid2 ]\n"
     cd roms/dmg-acid2
     make clean
     make all
+    check_status
 )
 
 # Update cgb-acid2
@@ -40,6 +51,7 @@ git submodule update --init --recursive
     cd roms/cgb-acid2
     make clean
     make all
+    check_status
 )
 
 # Update striketrough.gb
@@ -56,6 +68,7 @@ git submodule update --init --recursive
     cd roms/BullyGB
     make clean
     make
+    check_status
 )
 
 # Update wilbertpol-test-suite
@@ -64,4 +77,5 @@ git submodule update --init --recursive
     cd roms/wilbertpol-test-suite
     make clean
     make
+    check_status
 )
