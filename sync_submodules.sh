@@ -71,6 +71,16 @@ check_status() {
     check_status
 )
 
+# Update MBC3 Tester
+(
+    echo "[ Make MBC3 Tester ]"
+    cd roms/MBC3-Tester-gb/disassembly
+    make clean
+    make all
+    check_status
+)
+
+
 # Update wilbertpol-test-suite
 (
     echo "[ Make Wilbert Pol's test suite ]"
