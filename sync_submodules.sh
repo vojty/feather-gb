@@ -80,11 +80,19 @@ check_status() {
     check_status
 )
 
-
 # Update wilbertpol-test-suite
 (
     echo "[ Make Wilbert Pol's test suite ]"
     cd roms/wilbertpol-test-suite
+    make clean
+    make
+    check_status
+)
+
+# Update AGE test roms
+(
+    echo "[ Make AGE test roms ]"
+    cd roms/age-test-roms
     make clean
     make
     check_status

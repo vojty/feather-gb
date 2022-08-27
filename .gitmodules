@@ -32,3 +32,6 @@
 [submodule "roms/BullyGB"]
 	path = roms/BullyGB
 	url = https://github.com/Hacktix/BullyGB.git
+[submodule "roms/age-test-roms"]
+	path = roms/age-test-roms
+	url = https://github.com/c-sp/age-test-roms.git
