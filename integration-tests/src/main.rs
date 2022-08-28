@@ -5,8 +5,8 @@ use std::{
 
 use futures::future::join_all;
 use suites::{
-    acid2_tests, blarggs_sound_tests, blarggs_tests, mbc3_tester, mealybug_tearoom_tests,
-    scribbl_tests, wilbertpol_tests,
+    acid2_tests, age_tests, blarggs_sound_tests, blarggs_tests, mbc3_tester,
+    mealybug_tearoom_tests, scribbl_tests, wilbertpol_tests,
 };
 use suites::{mooneye_tests, turtle_tests};
 use tokio::time::Instant;
@@ -31,6 +31,7 @@ pub async fn main() {
         tokio::spawn(turtle_tests::run_tests()),
         tokio::spawn(mbc3_tester::run_tests()),
         tokio::spawn(mealybug_tearoom_tests::run_tests()),
+        tokio::spawn(age_tests::run_tests()),
     ];
 
     let results = join_all(suites).await;

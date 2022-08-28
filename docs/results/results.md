@@ -266,4 +266,22 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
 | m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
-Generated at: 2022-08-27 20:37:12.366732 UTC, took 2s
+## AGE test suite
+
+From https://github.com/c-sp/age-test-roms
+
+| Test                                                                        | Result | Screenshot                                                 |
+| --------------------------------------------------------------------------- | ------ | ---------------------------------------------------------- |
+| roms/age-test-roms/build/halt/ei-halt-dmgC-cgbBCE.gb                        | ❌     | ![](age-tests/ei-halt-dmgC-cgbBCE.gb/result.png)           |
+| roms/age-test-roms/build/halt/halt-m0-interrupt-dmgC-cgbBCE.gb              | ❌     | ![](age-tests/halt-m0-interrupt-dmgC-cgbBCE.gb/result.png) |
+| roms/age-test-roms/build/halt/halt-prefetch-dmgC-cgbBCE.gb                  | ✅     | ![](age-tests/halt-prefetch-dmgC-cgbBCE.gb/result.png)     |
+| roms/age-test-roms/build/ly/ly-dmgC-cgbBC.gb                                | ❌     | ![](age-tests/ly-dmgC-cgbBC.gb/result.png)                 |
+| roms/age-test-roms/build/oam/oam-read-dmgC-cgbBC.gb                         | ❌     | ![](age-tests/oam-read-dmgC-cgbBC.gb/result.png)           |
+| roms/age-test-roms/build/oam/oam-write-dmgC.gb                              | ❌     | ![](age-tests/oam-write-dmgC.gb/result.png)                |
+| roms/age-test-roms/build/stat-interrupt/stat-int-dmgC-cgbBCE.gb             | ❌     | ![](age-tests/stat-int-dmgC-cgbBCE.gb/result.png)          |
+| roms/age-test-roms/build/stat-mode/stat-mode-dmgC-cgbBC.gb                  | ❌     | ![](age-tests/stat-mode-dmgC-cgbBC.gb/result.png)          |
+| roms/age-test-roms/build/stat-mode-sprites/stat-mode-sprites-dmgC-cgbBCE.gb | ❌     | ![](age-tests/stat-mode-sprites-dmgC-cgbBCE.gb/result.png) |
+| roms/age-test-roms/build/stat-mode-window/stat-mode-window-dmgC.gb          | ❌     | ![](age-tests/stat-mode-window-dmgC.gb/result.png)         |
+| roms/age-test-roms/build/vram/vram-read-dmgC.gb                             | ❌     | ![](age-tests/vram-read-dmgC.gb/result.png)                |
+
+Generated at: 2022-08-28 19:38:16.035986 UTC, took 3s

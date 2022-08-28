@@ -1,4 +1,5 @@
 pub mod acid2_tests;
+pub mod age_tests;
 pub mod blarggs_sound_tests;
 pub mod blarggs_tests;
 pub mod mbc3_tester;
