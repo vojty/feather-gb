@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, Ui};
+use eframe::egui::{self, Color32, TextureFilter, Ui};
 use gb::{constants::TILE_SIZE, emulator::Emulator};
 
 use crate::canvas::Canvas;
@@ -75,7 +75,7 @@ impl Tiles {
         }
 
         let image = self.canvas.create_image();
-        let texture = ctx.load_texture("tiles", image);
+        let texture = ctx.load_texture("tiles", image, TextureFilter::Linear);
         ui.image(&texture, self.canvas.get_scaled_size_vec2());
 
         render_scale(ui, &mut self.scale);

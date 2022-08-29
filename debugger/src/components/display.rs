@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32};
+use eframe::egui::{self, Color32, TextureFilter};
 use gb::{
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
     emulator::Emulator,
@@ -38,7 +38,7 @@ impl Display {
                 }
 
                 let image = self.canvas.create_image();
-                let texture = ctx.load_texture("display", image);
+                let texture = ctx.load_texture("display", image, TextureFilter::Linear);
                 ui.image(&texture, self.canvas.get_scaled_size_vec2());
 
                 render_scale(ui, &mut self.scale);

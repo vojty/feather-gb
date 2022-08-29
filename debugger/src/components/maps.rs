@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, Window};
+use eframe::egui::{self, Color32, TextureFilter, Window};
 use gb::{
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH, TILE_SIZE},
     emulator::Emulator,
@@ -64,7 +64,7 @@ impl Maps {
             }
 
             let image = self.canvas.create_image();
-            let texture = ctx.load_texture("maps", image);
+            let texture = ctx.load_texture("maps", image, TextureFilter::Linear);
             ui.image(&texture, self.canvas.get_scaled_size_vec2());
 
             ui.horizontal(|ui| {
