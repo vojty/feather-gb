@@ -1,3 +1,4 @@
+import faviconsPlugin from '@darkobits/vite-plugin-favicons'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
@@ -64,6 +65,16 @@ const markdownLoader = () => {
 export default defineConfig((configEnv) => {
   const config: UserConfig = {
     plugins: [
+      // works only for production build
+      faviconsPlugin({
+        inject: true,
+        icons: {
+          // this plugin is opt-in, meaning only the icon types you declare here will be rendered
+          favicons: {
+            source: './browser/assets/images/feather.svg'
+          }
+        }
+      }),
       wasm(), // adds wasm support
       wasmPack('./gb-web'), // loads wasm module
       wasmPack('./debugger-web'), // loads wasm module
