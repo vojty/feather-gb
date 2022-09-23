@@ -8,7 +8,7 @@ import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { unified } from 'unified'
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import wasm from 'vite-plugin-wasm'
 import wasmPack from 'vite-plugin-wasm-pack'
@@ -61,23 +61,29 @@ const markdownLoader = () => {
   }
 }
 
-export default defineConfig({
-  // pass your local crate path to the plugin
-  plugins: [
-    wasm(), // adds wasm support
-    wasmPack('./gb-web'), // loads wasm module
-    wasmPack('./debugger-web'), // loads wasm module
-    svgr(), // adds support for SVG -> React components
-    react(), // adds react support
-    markdownLoader() // adds support for markdown -> html
-  ],
-  build: {
-    outDir: 'public',
-    assetsDir: 'feather-gb/assets',
-    target: 'esnext'
-  },
-  assetsInclude: ['**/*.gb', '**/*.gbc', '**/*.png'],
-  define: {
-    USE_HASH_ROUTER: process.env.USE_HASH_ROUTER
+export default defineConfig((configEnv) => {
+  const config: UserConfig = {
+    plugins: [
+      wasm(), // adds wasm support
+      wasmPack('./gb-web'), // loads wasm module
+      wasmPack('./debugger-web'), // loads wasm module
+      svgr(), // adds support for SVG -> React components
+      react(), // adds react support
+      markdownLoader() // adds support for markdown -> html
+    ],
+    build: {
+      outDir: 'public',
+      target: 'esnext'
+    },
+    assetsInclude: ['**/*.gb', '**/*.gbc', '**/*.png'],
+    define: {
+      USE_HASH_ROUTER: process.env.USE_HASH_ROUTER
+    }
   }
+
+  if (configEnv.command === 'build') {
+    config.base = '/feather-gb/'
+  }
+
+  return config
 })
