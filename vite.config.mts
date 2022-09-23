@@ -73,6 +73,7 @@ export default defineConfig({
   ],
   build: {
     outDir: 'public',
+    assetsDir: 'feather-gb/assets',
     target: 'esnext'
   },
   assetsInclude: ['**/*.gb', '**/*.gbc', '**/*.png'],
