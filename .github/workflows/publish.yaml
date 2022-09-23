@@ -41,6 +41,11 @@ jobs:
             - recursive: true
               args: [--frozen-lockfile]
 
+      - name: Build WASM
+        run: |
+          pnpm run build:gb 
+          pnpm run build:debugger
+
       - name: Validate frontend
         run: pnpm run validate
 
