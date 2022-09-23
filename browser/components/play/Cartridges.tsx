@@ -47,9 +47,7 @@ export function Cartridges(props: Props) {
       <tbody>
         {options.map((option) => (
           <tr
-            className={
-              props.selectedName === option.name ? 'font-medium underline' : ''
-            }
+            className={props.selectedName === option.name ? 'font-medium underline' : ''}
             key={option.url}>
             <td className="px-1">{option.name}</td>
             <td className="px-1">

@@ -37,7 +37,7 @@ const GlobalStyle = createGlobalStyle`
 
 export function Debugger() {
   useEffect(() => {
-    import('../../../debugger-web/pkg/index')
+    import('../../../debugger-web/pkg')
       .then((app) => {
         app.start(CANVAS_ID, roms)
       })

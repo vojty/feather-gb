@@ -1,4 +1,5 @@
 import { ChangeEvent, ReactNode } from 'react'
+
 import { Rom } from '../../types'
 
 type Props = {
@@ -18,9 +19,7 @@ export function OpenButton(props: Props) {
     file
       .arrayBuffer()
       .then((data) => new Uint8Array(data))
-      .then((bytes) =>
-        onLoad({ name: `Custom: ${file.name}`, bytes, custom: true })
-      )
+      .then((bytes) => onLoad({ name: `Custom: ${file.name}`, bytes, custom: true }))
   }
 
   return (

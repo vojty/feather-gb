@@ -45,3 +45,10 @@
 .font-gills-sans {
   font-family: 'GillSans';
 }
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}

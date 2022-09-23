@@ -41,10 +41,13 @@ jobs:
             - recursive: true
               args: [--frozen-lockfile]
 
+      - name: Validate frontend
+        run: pnpm run validate
+
       - name: Building App
         run: |
           node generateRomsList.js
-          USE_HASH_ROUTER=true yarn build
+          USE_HASH_ROUTER=true pnpm run build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

@@ -1,10 +1,13 @@
+import './assets/styles/main.css'
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 
 import { Root } from './components/Root'
 
-import './assets/styles/main.css'
+// @ts-ignore
+window.global ||= window
 
 const root = document.getElementById('root')
 

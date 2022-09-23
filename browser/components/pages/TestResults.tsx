@@ -1,4 +1,5 @@
 import { createGlobalStyle } from 'styled-components'
+
 import html from '../../../docs/results/results.md'
 
 const GlobalStyles = createGlobalStyle`

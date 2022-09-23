@@ -13,10 +13,16 @@ module.exports = {
     ecmaFeatures: {
       jsx: true
     },
-    ecmaVersion: 13,
     sourceType: 'module'
   },
-  plugins: ['@typescript-eslint', 'react', 'react-hooks', 'import', 'prettier'],
+  plugins: [
+    '@typescript-eslint',
+    'react',
+    'react-hooks',
+    'import',
+    'simple-import-sort',
+    'prettier'
+  ],
   settings: {
     'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
     'import/resolver': {
@@ -48,6 +54,17 @@ module.exports = {
     ], // don't require extension for these
     'import/prefer-default-export': 'off', // named exports are "better"
     'import/no-relative-packages': 'off', // there are no workspaces
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: true,
+        optionalDependencies: true,
+        peerDependencies: true
+      }
+    ],
+
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
 
     'react/destructuring-assignment': 'off', // too strict
     'react/react-in-jsx-scope': 'off', // not needed anymore
@@ -58,10 +75,7 @@ module.exports = {
     // TypeScript
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'], // use "type" instead of "interface"
-    '@typescript-eslint/array-type': [
-      'error',
-      { default: 'array', readOnly: 'array' }
-    ], // use T[] instead of Array<T>
+    '@typescript-eslint/array-type': ['error', { default: 'array', readOnly: 'array' }], // use T[] instead of Array<T>
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     'no-shadow': 'off',

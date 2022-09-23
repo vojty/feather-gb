@@ -1,24 +1,17 @@
 {
-    "compilerOptions": {
-      "strict": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "removeComments": false,
-      "lib": [
-        "es6",
-        "es2015.promise",
-        "dom",
-        "es2016.array.include",
-        "es2017.object",
-        "ESNext.Array"
-      ],
-      "target": "ES5",
-      "noEmit": true,
-      "jsx": "preserve",
-      "sourceMap": true,
-      "esModuleInterop": true,
-      "moduleResolution": "node",
-      "module": "esnext"
-    },
-    "include": ["browser/**/*", "debugger-web/pkg/**/*", "gb-web/pkg/**/*"]
-  }
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": false,
+    "module": "esnext",
+    "target": "esnext",
+    "lib": ["esnext", "dom"],
+    "noEmit": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node"
+  },
+  "include": ["browser/**/*", "debugger-web/pkg/**/*", "gb-web/pkg/**/*"]
+}

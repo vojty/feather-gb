@@ -1,38 +1,28 @@
 <!DOCTYPE html>
 <html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-<!-- Disable zooming: -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
-<head>
+    <!-- Disable zooming: -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>FeatherGB</title>
-    <style>
-        html {
-            height: 100%;
-        }
-        body {
-            min-height: 100%;
-        }
-        #root {
-            min-height: 100%;
-        }
-    </style>
-</head>
+    <style></style>
+  </head>
 
-<body>
+  <body>
     <script>
-        // The `--no-modules`-generated JS from `wasm-bindgen` attempts to use
-        // `WebAssembly.instantiateStreaming` to instantiate the wasm module,
-        // but this doesn't work with `file://` urls. This example is frequently
-        // viewed by simply opening `index.html` in a browser (with a `file://`
-        // url), so it would fail if we were to call this function!
-        //
-        // Work around this for now by deleting the function to ensure that the
-        // `no_modules.js` script doesn't have access to it. You won't need this
-        // hack when deploying over HTTP.
-        delete WebAssembly.instantiateStreaming;
+      // The `--no-modules`-generated JS from `wasm-bindgen` attempts to use
+      // `WebAssembly.instantiateStreaming` to instantiate the wasm module,
+      // but this doesn't work with `file://` urls. This example is frequently
+      // viewed by simply opening `index.html` in a browser (with a `file://`
+      // url), so it would fail if we were to call this function!
+      //
+      // Work around this for now by deleting the function to ensure that the
+      // `no_modules.js` script doesn't have access to it. You won't need this
+      // hack when deploying over HTTP.
+      delete WebAssembly.instantiateStreaming
     </script>
     <div id="root"></div>
-</body>
+    <script type="module" src="/browser/main.tsx" type="text/javascript"></script>
+  </body>
 </html>

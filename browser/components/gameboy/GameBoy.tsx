@@ -1,9 +1,10 @@
-import { forwardRef, ForwardedRef } from 'react'
-import { useTheme } from '../../hooks/useTheme'
-import { useInput } from '../../hooks/useInput'
-import { Display } from './Display'
-import { Styled, ArrowOrientation } from './GameBoy.styled'
+import { ForwardedRef, forwardRef } from 'react'
+
 import { JsKeys } from '../../../gb-web/pkg'
+import { useInput } from '../../hooks/useInput'
+import { useTheme } from '../../hooks/useTheme'
+import { Display } from './Display'
+import { ArrowOrientation, Styled } from './GameBoy.styled'
 
 export const DISPLAY_WIDTH = 160
 export const DISPLAY_HEIGHT = 144
@@ -42,9 +43,7 @@ function GameBoyComponent(
         </Display>
 
         <div className="flex items-baseline">
-          <Styled.NintendoText className="font-pretendo">
-            Nintendo
-          </Styled.NintendoText>
+          <Styled.NintendoText className="font-pretendo">Nintendo</Styled.NintendoText>
           <Styled.GameBoyText className="font-gills-sans font-medium italic">
             GAME&nbsp;BOY
           </Styled.GameBoyText>

@@ -1,11 +1,8 @@
-module.exports = (config) => {
+// Vite build doesn't work without this file
+module.exports = () => {
   const plugins = {
     tailwindcss: {},
     autoprefixer: {}
-  }
-
-  if (config.mode === 'production') {
-    plugins.cssnano = {}
   }
 
   return {

@@ -1,24 +1,23 @@
-import { ThemeProvider } from 'styled-components'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ThemeProvider } from 'styled-components'
 
-import { GameBoy, DISPLAY_HEIGHT, DISPLAY_WIDTH } from '../gameboy/GameBoy'
-import { Zoom } from '../gameboy/Zoom'
-
+import { WebEmulator } from '../../../gb-web/pkg'
+import { memory } from '../../../gb-web/pkg/gb_web_bg.wasm'
+import { InputContextProvider } from '../../context/InputContext'
+import { useInputHandler } from '../../hooks/useInputHandler'
+import { useWasmModule, WasmModule } from '../../hooks/useWasmModule'
 import { Rom, Theme } from '../../types'
+import { warmupAudio } from '../../utils/audio'
+import { range } from '../../utils/std'
+import { FullscreenLoader } from '../common/FullscreenLoader'
+import { DISPLAY_HEIGHT, DISPLAY_WIDTH, GameBoy } from '../gameboy/GameBoy'
+import { Zoom } from '../gameboy/Zoom'
 import { Backbutton } from '../play/BackButton'
 import { Cartridges } from '../play/Cartridges'
-import { OpenButton } from '../play/UploadButton'
-import { useWasmModule, WasmModule } from '../../hooks/useWasmModule'
-import { useInputHandler } from '../../hooks/useInputHandler'
-import { FullscreenLoader } from '../common/FullscreenLoader'
-import { range } from '../../utils/std'
-import { memory } from '../../../gb-web/pkg/index_bg.wasm'
-import { WebEmulator } from '../../../gb-web/pkg'
-import { InputContextProvider } from '../../context/InputContext'
 import { FpsCounter } from '../play/FpsCounter'
-import { warmupAudio } from '../../utils/audio'
+import { OpenButton } from '../play/UploadButton'
 
 const DEFAULT_ZOOM = 1.5
 
@@ -109,8 +108,7 @@ function DeviceHandler(props: Props) {
       currentAudioSeconds.current = audioContext.currentTime + 0.06
     }
     audioSource.start(currentAudioSeconds.current)
-    currentAudioSeconds.current +=
-      BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
+    currentAudioSeconds.current += BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
   }, [])
 
   // Create emulator on cartridge load
@@ -160,10 +158,7 @@ function DeviceHandler(props: Props) {
 
 export function Play() {
   const [zoom, setZoom] = useLocalStorage('zoom', DEFAULT_ZOOM)
-  const [soundEnabled, setSoundEnabled] = useLocalStorage(
-    'sound_enabled',
-    false
-  )
+  const [soundEnabled, setSoundEnabled] = useLocalStorage('sound_enabled', false)
   const [running, setRunning] = useState(false)
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
   const [rom, setRom] = useState<Rom | null>(null)
@@ -245,15 +240,11 @@ export function Play() {
               {running ? 'Stop' : 'Run'}
             </button>
 
-            <OpenButton
-              className="mx-2 border rounded px-1 py-1"
-              onLoad={onCartridgeLoad}>
+            <OpenButton className="mx-2 border rounded px-1 py-1" onLoad={onCartridgeLoad}>
               Upload ROM
             </OpenButton>
 
-            <label
-              className="flex justify-center items-center"
-              htmlFor="soundEnableCheckbox">
+            <label className="flex justify-center items-center" htmlFor="soundEnableCheckbox">
               <input
                 id="soundEnableCheckbox"
                 className="mr-1"
@@ -265,23 +256,15 @@ export function Play() {
             </label>
           </div>
 
-          {rom?.custom && (
-            <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
-          )}
+          {rom?.custom && <div className="mt-2 flex justify-center text-xs">{rom.name}</div>}
 
           <div className="mt-2 flex justify-center text-xs">
-            <Cartridges
-              selectedName={rom?.name}
-              onCartridgeLoad={onCartridgeLoad}
-            />
+            <Cartridges selectedName={rom?.name} onCartridgeLoad={onCartridgeLoad} />
           </div>
 
           <div className="mt-2 flex text-center justify-center text-xs">
             <div>
-              <p>
-                Select one of the available demos or upload your custom *.gb
-                file and press Run
-              </p>
+              <p>Select one of the available demos or upload your custom *.gb file and press Run</p>
               <p>
                 The test ROMs are available in{' '}
                 <Link className="underline" to="/debug">

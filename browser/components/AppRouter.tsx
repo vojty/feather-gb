@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { FullscreenLoader } from './common/FullscreenLoader'
 
+import { FullscreenLoader } from './common/FullscreenLoader'
 import { Landing } from './pages/Landing'
 
 const Play = lazy(() => import('./pages/Play'))

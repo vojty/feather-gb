@@ -1,3 +1,5 @@
+/// <reference types="vite-plugin-svgr/client" />
+
 // returns URL with file-loader
 declare module '*.gb' {
   const _: string
@@ -9,17 +11,8 @@ declare module '*.gbc' {
   export = _
 }
 
-// remark
 declare module '*.md' {
   const _: string
-  export = _
-}
-
-// SVGR loader
-declare module '*.svg' {
-  import { FunctionComponent, SVGProps } from 'react'
-
-  const _: FunctionComponent<SVGProps<HTMLOrSVGElement>>
   export = _
 }
 
