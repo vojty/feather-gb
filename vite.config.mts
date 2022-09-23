@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { unified } from 'unified'
 import { defineConfig, UserConfig } from 'vite'
+import { VitePluginFonts } from 'vite-plugin-fonts'
 import svgr from 'vite-plugin-svgr'
 import wasm from 'vite-plugin-wasm'
 import wasmPack from 'vite-plugin-wasm-pack'
@@ -73,6 +74,25 @@ export default defineConfig((configEnv) => {
           favicons: {
             source: './browser/assets/images/feather.svg'
           }
+        }
+      }),
+      VitePluginFonts({
+        custom: {
+          preload: true,
+          families: [
+            {
+              name: 'GillSans',
+              src: './browser/assets/fonts/*.otf'
+            },
+            {
+              name: 'Pretendo',
+              src: './browser/assets/fonts/Pretendo.ttf'
+            },
+            {
+              name: 'NESController',
+              src: './browser/assets/fonts/NES_Controller.ttf'
+            }
+          ]
         }
       }),
       wasm(), // adds wasm support
