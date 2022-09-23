@@ -39,25 +39,24 @@ jobs:
             ${{ runner.os }}-
 
       - name: Installing Dependencies
-        uses: pnpm/action-setup@v2.0.1
+        uses: pnpm/action-setup@v2.2.2
         with:
-          version: 6
+          version: 7
           run_install: |
             - recursive: true
               args: [--frozen-lockfile]
 
-      - name: Build WASM
+      - name: Build WASM + list of ROMs
         run: |
           pnpm run build:gb 
           pnpm run build:debugger
+          node generateRomsList.js
 
       - name: Validate frontend
         run: pnpm run validate
 
       - name: Building App
-        run: |
-          node generateRomsList.js
-          USE_HASH_ROUTER=true pnpm run build
+        run: USE_HASH_ROUTER=true pnpm run build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
