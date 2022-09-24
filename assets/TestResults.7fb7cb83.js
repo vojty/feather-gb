@@ -1,4 +1,4 @@
-import{W as t,a as g,F as c,j as A}from"./index.9d6f11d1.js";const w=`<h2>Blargg's tests</h2>
+import{W as t,a as g,F as c,j as A}from"./index.e8529e31.js";const w=`<h2>Blargg's tests</h2>
 <p><a href="https://github.com/retrio/gb-test-roms">https://github.com/retrio/gb-test-roms</a></p>
 <p>Some of those tests are skipped, see <code>blarggs_tests.rs</code> why.</p>
 <table>
