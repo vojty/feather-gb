@@ -7,6 +7,7 @@ use gb::{
     emulator::Emulator,
     traits::{DisplayHex, MemoryAccess},
 };
+use std::fmt::Write;
 
 #[derive(PartialEq, Copy, Clone)]
 enum MemoryArea {
@@ -139,12 +140,12 @@ impl MemoryViewer {
                 for base_addr in range.step_by(step) {
                     let mut line = String::new();
 
-                    line.push_str(&format!("0x{} |", (base_addr as u16).to_hex()));
+                    write!(line, "0x{} |", (base_addr as u16).to_hex()).unwrap();
                     for i in 0..step {
                         let addr = base_addr + i;
                         let byte = e.hw.read_byte(addr as u16);
 
-                        line.push_str(&format!(" {}", byte.to_hex()));
+                        write!(line, " {}", byte.to_hex()).unwrap();
                     }
 
                     ui.label(line);

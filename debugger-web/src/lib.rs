@@ -20,9 +20,7 @@ impl WebHandle {
     #[cfg(target_arch = "wasm32")]
     pub fn stop_web(&self) -> Result<(), wasm_bindgen::JsValue> {
         let mut app = self.handle.lock();
-        let res = app.destroy();
-
-        res
+        app.destroy()
     }
 }
 
@@ -40,12 +38,10 @@ pub fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bindgen::
     let roms = collect_files(data);
     let web_options = eframe::WebOptions::default();
 
-    let handle = eframe::start_web(
+    eframe::start_web(
         canvas_id,
         web_options,
         Box::new(|cc| Box::new(Debugger::new(cc, roms))),
     )
-    .map(|handle| WebHandle { handle });
-
-    handle
+    .map(|handle| WebHandle { handle })
 }

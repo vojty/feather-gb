@@ -36,13 +36,13 @@ enum Access {
     Write,
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum MapLayer {
     Background,
     Window,
 }
 
-#[derive(Clone, Copy, PartialEq, Debug, Display)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Display)]
 pub enum Mode {
     HBlank,        // m0
     VBlank,        // m1

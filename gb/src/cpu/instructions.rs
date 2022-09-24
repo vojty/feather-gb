@@ -7,7 +7,7 @@ use crate::emulator::Hardware;
 
 use super::cpu;
 
-#[derive(Display, FromStr, Copy, Clone, PartialEq)]
+#[derive(Display, FromStr, Copy, Clone, PartialEq, Eq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum JumpConditions {
     NZ,
