@@ -33,7 +33,7 @@ pub fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bindgen::
     console_error_panic_hook::set_once();
 
     // Redirect tracing to console.log and friends:
-    tracing_wasm::set_as_global_default();
+    tracing_wasm::try_set_as_global_default().ok(); // ignore errors, might be already set
 
     let roms = collect_files(data);
     let web_options = eframe::WebOptions::default();

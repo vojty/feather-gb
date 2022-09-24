@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 
+import { WebHandle } from '../../../debugger-web/pkg'
 import { roms } from '../../romsList'
 
 const CANVAS_ID = 'debugger'
@@ -37,12 +38,23 @@ const GlobalStyle = createGlobalStyle`
 
 export function Debugger() {
   useEffect(() => {
-    import('../../../debugger-web/pkg')
-      .then((app) => {
-        app.start(CANVAS_ID, roms)
-      })
-      // eslint-disable-next-line no-console
-      .catch(console.error)
+    let appHandler: WebHandle | null = null
+    const loadDebugger = async () => {
+      try {
+        const app = await import('../../../debugger-web/pkg')
+        appHandler = app.start(CANVAS_ID, roms)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error)
+      }
+    }
+
+    loadDebugger()
+
+    return () => {
+      appHandler?.stop_web()
+      appHandler?.free()
+    }
   }, [])
 
   return (
