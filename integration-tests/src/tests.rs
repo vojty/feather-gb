@@ -1,6 +1,10 @@
 use futures::{future::join_all, TryFutureExt};
 
-use gb::{emulator::Emulator, events::Events, ppu::palettes::DmgPalettes};
+use gb::{
+    emulator::{Device, Emulator},
+    events::Events,
+    ppu::palettes::DmgPalettes,
+};
 
 use crate::{
     markdown,
@@ -21,6 +25,7 @@ impl VisualTestCaseBuilder {
         name: impl Into<String>,
         rom_path: impl Into<String>,
         reference_path: impl Into<String>,
+        device: Device,
     ) -> Self {
         let test = VisualTestCase {
             name: name.into(),
@@ -31,6 +36,7 @@ impl VisualTestCaseBuilder {
             max_frames: 10,
             palette: DmgPalettes::Gray,
             end_callback: |_| false,
+            device,
         };
         Self { test }
     }
@@ -70,6 +76,7 @@ pub struct VisualTestCase {
 
     rom_path: String,
     reference_path: String,
+    device: Device,
 
     copy_reference: bool,
     max_frames: u32,
@@ -110,7 +117,7 @@ impl VisualTestCase {
     }
 
     pub fn create_result(&self) -> TestResult {
-        let mut e = create_emulator(self.get_rom_path());
+        let mut e = create_emulator(self.get_rom_path(), self.device);
         e.set_system_palette(&self.palette);
 
         // Copy original expected

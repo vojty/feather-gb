@@ -268,14 +268,14 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 
 ## AGE test suite
 
-From https://github.com/c-sp/age-test-roms
+Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms
 
 | Test                                                                        | Result | Screenshot                                                 |
 | --------------------------------------------------------------------------- | ------ | ---------------------------------------------------------- |
 | roms/age-test-roms/build/halt/ei-halt-dmgC-cgbBCE.gb                        | ❌     | ![](age-tests/ei-halt-dmgC-cgbBCE.gb/result.png)           |
 | roms/age-test-roms/build/halt/halt-m0-interrupt-dmgC-cgbBCE.gb              | ❌     | ![](age-tests/halt-m0-interrupt-dmgC-cgbBCE.gb/result.png) |
 | roms/age-test-roms/build/halt/halt-prefetch-dmgC-cgbBCE.gb                  | ✅     | ![](age-tests/halt-prefetch-dmgC-cgbBCE.gb/result.png)     |
-| roms/age-test-roms/build/ly/ly-dmgC-cgbBC.gb                                | ❌     | ![](age-tests/ly-dmgC-cgbBC.gb/result.png)                 |
+| roms/age-test-roms/build/ly/ly-dmgC-cgbBC.gb                                | ✅     | ![](age-tests/ly-dmgC-cgbBC.gb/result.png)                 |
 | roms/age-test-roms/build/oam/oam-read-dmgC-cgbBC.gb                         | ❌     | ![](age-tests/oam-read-dmgC-cgbBC.gb/result.png)           |
 | roms/age-test-roms/build/oam/oam-write-dmgC.gb                              | ❌     | ![](age-tests/oam-write-dmgC.gb/result.png)                |
 | roms/age-test-roms/build/stat-interrupt/stat-int-dmgC-cgbBCE.gb             | ❌     | ![](age-tests/stat-int-dmgC-cgbBCE.gb/result.png)          |
@@ -284,4 +284,4 @@ From https://github.com/c-sp/age-test-roms
 | roms/age-test-roms/build/stat-mode-window/stat-mode-window-dmgC.gb          | ❌     | ![](age-tests/stat-mode-window-dmgC.gb/result.png)         |
 | roms/age-test-roms/build/vram/vram-read-dmgC.gb                             | ❌     | ![](age-tests/vram-read-dmgC.gb/result.png)                |
 
-Generated at: 2022-08-28 19:38:16.035986 UTC, took 3s
+Generated at: 2022-10-02 19:17:46.658740 UTC, took 2s

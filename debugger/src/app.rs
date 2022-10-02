@@ -4,7 +4,10 @@ use eframe::{
     App, Frame, Storage,
 };
 use gb::{
-    audio::AudioDevice, cartridges::cartridge::Cartridge, emulator::Emulator, traits::DisplayHex,
+    audio::AudioDevice,
+    cartridges::cartridge::Cartridge,
+    emulator::{Device, Emulator},
+    traits::DisplayHex,
 };
 use size_format::SizeFormatterBinary;
 use std::sync::mpsc::Receiver;
@@ -34,6 +37,7 @@ type RomData = Vec<u8>;
 
 pub struct Debugger {
     emulator: Emulator,
+    device: Device,
     running: bool,
     speed: u8,
     run_until: String,
@@ -55,12 +59,14 @@ impl AudioDevice for DummyAudio {
 impl Debugger {
     pub fn new(_cc: &eframe::CreationContext<'_>, roms: Vec<Box<dyn BinarySource>>) -> Self {
         let cartridge = Cartridge::empty();
+        let device = Device::AutoDetect;
         Self {
             file_receiver: None,
             rom_data: None,
             speed: 1,
             run_until: String::new(),
-            emulator: Emulator::new(true, cartridge, Box::new(DummyAudio {})),
+            device,
+            emulator: Emulator::new(true, cartridge, Box::new(DummyAudio {}), device),
             running: false,
             components: Components {
                 disassembly: Disassembly::new(),
@@ -87,6 +93,7 @@ impl App for Debugger {
             file_receiver,
             rom_data,
             run_until,
+            device,
         } = self;
         let cpu_usage = frame.info().cpu_usage;
 
@@ -101,13 +108,14 @@ impl App for Debugger {
                     false,
                     Cartridge::from_bytes(&result),
                     Box::new(DummyAudio {}),
+                    *device,
                 );
                 *rom_data = Some(result);
             }
         }
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
-            ui.heading("GameBoy DMG Emulator");
+            ui.heading("GameBoy Emulator");
             ui.label(format!("FPS: {:.1}", components.frame_history.fps()));
             if ui.button("Organize windows").clicked() {
                 ui.ctx().memory().reset_areas();
@@ -121,6 +129,14 @@ impl App for Debugger {
             if ui.button(label).clicked() {
                 *running = !*running;
             }
+
+            ui.horizontal(|ui| {
+                ui.label("Device");
+                ui.selectable_value(device, Device::AutoDetect, "Auto detect");
+                ui.selectable_value(device, Device::DMG, "DMG");
+                ui.selectable_value(device, Device::CGB, "CGB");
+            });
+            ui.end_row();
 
             ui.horizontal(|ui| {
                 ui.label("Emulation speed");
@@ -158,7 +174,7 @@ impl App for Debugger {
                         } else {
                             Cartridge::empty()
                         };
-                        *emulator = Emulator::new(false, cart, Box::new(DummyAudio {}));
+                        *emulator = Emulator::new(false, cart, Box::new(DummyAudio {}), *device);
                     }
 
                     while emulator.cpu.total_cycles <= until {

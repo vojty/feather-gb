@@ -1,3 +1,5 @@
+use gb::emulator::Device;
+
 use crate::{
     tests::{
         execute_tests, get_image_path, ImageResultTypes, VisualTestCase, VisualTestCaseBuilder,
@@ -21,7 +23,7 @@ fn get_tests() -> Vec<VisualTestCase> {
         .map(|(name, rom_base)| {
             let reference_path = get_image_path(name, ImageResultTypes::Expected);
             let rom_path = create_path(&[TESTS_PATH, rom_base]);
-            VisualTestCaseBuilder::new(*name, rom_path, reference_path)
+            VisualTestCaseBuilder::new(*name, rom_path, reference_path, Device::DMG)
                 .copy_reference(false)
                 .build()
         })

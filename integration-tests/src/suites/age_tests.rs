@@ -1,6 +1,6 @@
 use futures::{future::join_all, TryFutureExt};
 
-use gb::emulator::Emulator;
+use gb::emulator::{Device, Emulator};
 use glob::glob;
 
 use crate::utils::{get_result_mark, path_to_basename, save_screen, OUTPUT_DIR};
@@ -39,7 +39,7 @@ fn is_valid(e: &Emulator) -> bool {
 type TestResult = (String, bool, String); // (pathname, valid, screenshot)
 
 fn execute_test(path: String) -> TestResult {
-    let mut e = create_emulator(&path);
+    let mut e = create_emulator(&path, Device::DMG); // TODO: use different devices
 
     let max_frames_to_run = 230;
 
@@ -73,7 +73,7 @@ fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
 
     markdown::test_report(
         "AGE test suite",
-        "From https://github.com/c-sp/age-test-roms",
+        "Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms",
         &result,
     )
 }

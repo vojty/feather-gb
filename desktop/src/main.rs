@@ -41,8 +41,12 @@ fn map_joypad_key(key: Keycode) -> Option<JoypadKey> {
 
 fn create_emulator(sdl_context: &Sdl, bytes: &[u8]) -> Emulator {
     let audio_device = Box::new(Audio::new(sdl_context));
-
-    Emulator::new(false, Cartridge::from_bytes(bytes), audio_device)
+    let cartridge = Cartridge::from_bytes(bytes);
+    let device = match cartridge.supports_cgb() {
+        true => gb::emulator::Device::CGB,
+        false => gb::emulator::Device::DMG,
+    };
+    Emulator::new(false, cartridge, audio_device, device)
 }
 
 fn main() {

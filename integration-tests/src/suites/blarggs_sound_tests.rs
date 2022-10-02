@@ -1,4 +1,4 @@
-use gb::traits::MemoryAccess;
+use gb::{emulator::Device, traits::MemoryAccess};
 
 use crate::{
     tests::{
@@ -35,7 +35,7 @@ fn get_tests() -> Vec<VisualTestCase> {
             let reference_path = get_image_path(name, ImageResultTypes::Expected);
             let rom_base = format!("{}.gb", name.replace('_', " "));
             let rom_path = create_path(&[TESTS_PATH, &rom_base]);
-            VisualTestCaseBuilder::new(*name, rom_path, reference_path)
+            VisualTestCaseBuilder::new(*name, rom_path, reference_path, Device::DMG)
                 .copy_reference(false)
                 .set_max_frames(2000)
                 .set_end_callback(|e| {

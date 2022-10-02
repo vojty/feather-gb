@@ -1,3 +1,5 @@
+use gb::emulator::Device;
+
 use crate::{
     markdown,
     tests::{get_image_path, ImageResultTypes, VisualTestCaseBuilder},
@@ -12,6 +14,7 @@ pub async fn run_tests() -> String {
         TEST_NAME,
         TEST_PATH,
         get_image_path(TEST_NAME, ImageResultTypes::Expected),
+        Device::DMG,
     )
     .copy_reference(false)
     .set_max_frames(50)

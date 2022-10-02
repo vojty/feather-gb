@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use gb::emulator::Device;
 use glob::glob;
 
 use crate::{
@@ -37,7 +38,7 @@ fn get_tests() -> Vec<VisualTestCase> {
         .into_iter()
         .map(|(name, rom_path)| {
             let reference_original = get_reference_image_path(&name);
-            VisualTestCaseBuilder::new(name, rom_path, reference_original).build()
+            VisualTestCaseBuilder::new(name, rom_path, reference_original, Device::DMG).build()
         })
         .collect()
 }

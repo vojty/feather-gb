@@ -1,5 +1,6 @@
 use futures::{future::join_all, TryFutureExt};
 
+use gb::emulator::Device;
 use glob::glob;
 
 use crate::utils::get_result_mark;
@@ -53,7 +54,7 @@ fn get_tests() -> Vec<String> {
 type TestResult = (String, bool); // (pathname, valid)
 
 fn execute_test(path: String) -> TestResult {
-    let mut e = create_emulator(&path);
+    let mut e = create_emulator(&path, Device::DMG);
 
     e.set_capture_serial(true);
     let max_frames_to_run = 3200; // cpu_instr takes long time

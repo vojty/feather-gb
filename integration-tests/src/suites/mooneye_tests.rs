@@ -1,6 +1,6 @@
 use futures::{future::join_all, TryFutureExt};
 
-use gb::emulator::Emulator;
+use gb::emulator::{Device, Emulator};
 use glob::glob;
 use regex::Regex;
 
@@ -67,7 +67,7 @@ fn is_valid(e: &Emulator) -> bool {
 type TestResult = (String, bool); // (pathname, valid)
 
 fn execute_test(path: String) -> TestResult {
-    let mut e = create_emulator(&path);
+    let mut e = create_emulator(&path, Device::AutoDetect);
 
     // mbc2/bits_ramg is the longest one
     let max_frames_to_run = 60 * 8;

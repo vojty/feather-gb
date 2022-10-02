@@ -6,8 +6,12 @@ use wasm_bindgen::prelude::*;
 use std::panic;
 
 use gb::{
-    audio::AudioDevice, cartridges::cartridge::Cartridge, constants::AUDIO_BUFFER_SIZE,
-    emulator::Emulator, joypad::JoypadKey, ppu::palettes::DmgPalettes,
+    audio::AudioDevice,
+    cartridges::cartridge::Cartridge,
+    constants::AUDIO_BUFFER_SIZE,
+    emulator::{Device, Emulator},
+    joypad::JoypadKey,
+    ppu::palettes::DmgPalettes,
 };
 
 mod audio;
@@ -78,6 +82,7 @@ impl WebEmulator {
             false,
             web_cartridge.cartridge,
             create_audio_device(audio_buffer_callback),
+            Device::AutoDetect,
         );
         e.set_system_palette(&DmgPalettes::GreenDmg);
         WebEmulator { e }

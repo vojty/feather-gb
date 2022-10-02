@@ -1,4 +1,4 @@
-use gb::ppu::palettes::DmgPalettes;
+use gb::{emulator::Device, ppu::palettes::DmgPalettes};
 
 use crate::{
     tests::{execute_tests, VisualTestCase, VisualTestCaseBuilder},
@@ -21,7 +21,7 @@ fn get_tests() -> Vec<VisualTestCase> {
         .map(|(name, rom_base, copy_reference_image)| {
             let rom_path = create_path(&[TESTS_PATH, rom_base]);
             let reference_image = create_path(&[TESTS_PATH, name, "screenshots", "expected.png"]);
-            VisualTestCaseBuilder::new(*name, rom_path, reference_image)
+            VisualTestCaseBuilder::new(*name, rom_path, reference_image, Device::DMG)
                 .copy_reference(*copy_reference_image)
                 .set_max_frames(250) // statcount-auto
                 .set_palette(DmgPalettes::Green)

@@ -8,7 +8,7 @@ use gb::{
     audio::AudioDevice,
     cartridges::cartridge::Cartridge,
     constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
-    emulator::Emulator,
+    emulator::{Device, Emulator},
 };
 use image::ImageBuffer;
 use pixelmatch::pixelmatch;
@@ -56,10 +56,10 @@ impl AudioDevice for DummyAudio {
     }
 }
 
-pub fn create_emulator(path: &str) -> Emulator {
+pub fn create_emulator(path: &str, device: Device) -> Emulator {
     let binary = get_file_as_byte_vec(path);
     let cartridge = Cartridge::from_bytes(&binary);
-    Emulator::new(false, cartridge, Box::new(DummyAudio {}))
+    Emulator::new(false, cartridge, Box::new(DummyAudio {}), device)
 }
 
 pub fn save_screen(e: &Emulator, path: impl Into<String>) {

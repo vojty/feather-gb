@@ -255,15 +255,26 @@ pub struct Emulator {
     is_cgb: bool,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Device {
+    AutoDetect, // will enable CGB mode if the cartridge is CGB compatible
+    DMG,
+    CGB,
+}
+
 impl Emulator {
     pub fn new(
         bios_enabled: bool,
-
         cartridge: Cartridge,
         audio_device: Box<dyn AudioDevice>,
+        device: Device,
     ) -> Emulator {
         let interrupt_controller = InterruptController::new();
-        let is_cgb = cartridge.supports_cgb();
+        let is_cgb = match device {
+            Device::AutoDetect => cartridge.supports_cgb(),
+            Device::DMG => false,
+            Device::CGB => true,
+        };
         let ppu = Ppu::new(is_cgb);
         let apu = Apu::new(audio_device);
         let mut e = Emulator {
