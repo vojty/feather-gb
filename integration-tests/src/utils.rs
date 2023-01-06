@@ -16,7 +16,7 @@ use pixelmatch::pixelmatch;
 pub const OUTPUT_DIR: &str = "docs/results";
 
 fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
-    let mut f = File::open(&filename).expect("no file found");
+    let mut f = File::open(filename).expect("no file found");
 
     let mut data = vec![];
     f.read_to_end(&mut data).unwrap();
@@ -86,7 +86,7 @@ pub fn copy_file(from: &str, to: &str) {
             to_directory.to_str().unwrap()
         )
     });
-    fs::copy(&from, &to)
+    fs::copy(from, to)
         .unwrap_or_else(|error| panic!("Can't copy [{}] -> [{}]. Error {}", from, to, error));
 }
 
@@ -108,7 +108,7 @@ pub fn save_diff_image(reference_image: &str, result_image: &str, diff_image: &s
     )
     .unwrap();
 
-    std::fs::write(&diff_image, diff_image_data).unwrap();
+    std::fs::write(diff_image, diff_image_data).unwrap();
 
     diff
 }

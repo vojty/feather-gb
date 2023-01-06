@@ -17,7 +17,7 @@ use sdl2::{event::Event, keyboard::Keycode, pixels::Color, Sdl};
 mod audio;
 
 fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
-    let mut f = File::open(&filename).expect("no file found");
+    let mut f = File::open(filename).expect("no file found");
 
     let mut data = vec![];
     f.read_to_end(&mut data).unwrap();

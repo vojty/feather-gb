@@ -66,7 +66,7 @@ impl Oam {
             2 => sprite.tile_number = value,
             3 => {
                 sprite.cgb_palette = value & 0b111;
-                sprite.palette = if value & 0x10 > 0 { 1 } else { 0 };
+                sprite.palette = usize::from(value & 0x10 > 0);
                 sprite.is_x_flipped = value & 0x20 > 0;
                 sprite.is_y_flipped = value & 0x40 > 0;
                 sprite.is_above_bg = value & 0x80 == 0;

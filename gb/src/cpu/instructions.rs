@@ -101,11 +101,7 @@ impl Cpu {
     fn base_sub(&mut self, value: u8, subtract_carry: bool) -> u8 {
         let a = self.read_reg8(Reg8::A);
 
-        let carry_value = if subtract_carry && self.f.contains(Flags::C) {
-            1
-        } else {
-            0
-        };
+        let carry_value = u8::from(subtract_carry && self.f.contains(Flags::C));
 
         let result = a.wrapping_sub(value).wrapping_sub(carry_value);
 
