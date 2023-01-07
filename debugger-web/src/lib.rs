@@ -28,7 +28,7 @@ impl WebHandle {
 /// This is called once from the HTML.
 /// It loads the app, installs some callbacks, then returns.
 #[wasm_bindgen]
-pub fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bindgen::JsValue> {
+pub async fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bindgen::JsValue> {
     // Make sure panics are logged using `console.error`
     console_error_panic_hook::set_once();
 
@@ -43,5 +43,6 @@ pub fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bindgen::
         web_options,
         Box::new(|cc| Box::new(Debugger::new(cc, roms))),
     )
+    .await
     .map(|handle| WebHandle { handle })
 }

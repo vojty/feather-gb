@@ -38,6 +38,6 @@ impl AudioDevice for Audio {
         // } else {
         // }
 
-        self.queue.queue(buffer);
+        self.queue.queue_audio(buffer).unwrap();
     }
 }

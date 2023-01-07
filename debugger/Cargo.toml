@@ -9,11 +9,11 @@ edition = "2021"
 
 
 [dependencies]
-log = "0.4.14"
+log = "0.4.17"
 gb = { path = "../gb" }
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 globwalk = "0.8.1"
 fuzzy-matcher = "0.3.7"
-eframe = "0.19.0"
-regex = "1.5.5"
+eframe = "0.20.1"
+regex = "1.7.0"
 size_format="1.0.2"
