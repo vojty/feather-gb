@@ -1,7 +1,8 @@
-import faviconsPlugin from '@darkobits/vite-plugin-favicons'
+import fs from 'node:fs'
+import path from 'node:path'
+
+import { faviconsPlugin } from '@darkobits/vite-plugin-favicons'
 import react from '@vitejs/plugin-react'
-import fs from 'fs'
-import path from 'path'
 import rehypeParse from 'rehype-parse'
 import rehypeRewrite from 'rehype-rewrite'
 import rehypeStringify from 'rehype-stringify'

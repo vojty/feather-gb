@@ -13,5 +13,5 @@
     "esModuleInterop": true,
     "moduleResolution": "node"
   },
-  "include": ["browser/**/*", "debugger-web/pkg/**/*", "gb-web/pkg/**/*"]
+  "include": ["vite.config.mts", "browser/**/*", "debugger-web/pkg/**/*", "gb-web/pkg/**/*"]
 }
