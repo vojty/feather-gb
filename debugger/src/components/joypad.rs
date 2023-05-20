@@ -16,15 +16,14 @@ fn get_joypad_key(key: &Key) -> Option<JoypadKey> {
 }
 
 pub fn handle_inputs(e: &mut Emulator, ctx: &egui::Context) {
-    let input = ctx.input();
     KEYS.iter()
-        .filter_map(|key| match input.key_down(*key) {
+        .filter_map(|key| match ctx.input(|i| i.key_down(*key)) {
             true => get_joypad_key(key),
             false => None,
         })
         .for_each(|joypad_key| e.on_key_down(joypad_key));
     KEYS.iter()
-        .filter_map(|key| match input.key_released(*key) {
+        .filter_map(|key| match ctx.input(|i| i.key_released(*key)) {
             true => get_joypad_key(key),
             false => None,
         })

@@ -16,6 +16,7 @@ bitflags! {
 
 // unused // 7.
 bitflags! {
+    #[derive(Copy, Clone)]
     pub struct StatBits: u8 {
         const LYC_EQUALS_LY_INTERRUPT   = 0b0100_0000; // 6.
         const OAM_INTERRUPT             = 0b0010_0000; // 5.

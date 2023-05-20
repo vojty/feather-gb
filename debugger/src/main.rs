@@ -13,7 +13,7 @@ use env_logger::Env;
 use debugger::app::Debugger;
 use debugger::utils::{load_roms, BinarySource};
 
-fn main() {
+fn main() -> Result<(), eframe::Error> {
     let roms: Vec<Box<dyn BinarySource>> = load_roms();
 
     env_logger::Builder::from_env(Env::default().default_filter_or("debug"))
@@ -33,5 +33,5 @@ fn main() {
         "GameBoy emulator Debugger",
         options,
         Box::new(|cc| Box::new(Debugger::new(cc, roms))),
-    );
+    )
 }

@@ -67,7 +67,7 @@ impl Ppu {
 
             if e.frames > 0 {
                 if response.hovered() {
-                    if let Some(screen_position) = ui.input().pointer.hover_pos() {
+                    if let Some(screen_position) = ui.input(|i| i.pointer.hover_pos()) {
                         let canvas_pos = screen_position - base;
                         let line = canvas_pos.y.round() as usize;
                         if line < DISPLAY_HEIGHT {

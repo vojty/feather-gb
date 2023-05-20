@@ -118,7 +118,7 @@ impl App for Debugger {
             ui.heading("GameBoy Emulator");
             ui.label(format!("FPS: {:.1}", components.frame_history.fps()));
             if ui.button("Organize windows").clicked() {
-                ui.ctx().memory().reset_areas();
+                ui.ctx().memory_mut(|m| m.reset_areas());
             }
 
             ui.separator();
@@ -238,7 +238,7 @@ impl App for Debugger {
         // ------------------ FPS ----------------------
         components
             .frame_history
-            .on_new_frame(ctx.input().time, cpu_usage);
+            .on_new_frame(ctx.input(|i| i.time), cpu_usage);
 
         // ------------------ ROMS ----------------------
         components.roms.show(ctx, &mut true, |rom| {

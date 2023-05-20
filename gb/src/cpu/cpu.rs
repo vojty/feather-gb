@@ -9,6 +9,7 @@ use crate::{
 };
 
 bitflags!(
+    #[derive(Copy, Clone)]
     pub struct Flags: u8 {
       const Z = 0b_1000_0000;
       const N = 0b_0100_0000;
@@ -29,7 +30,7 @@ impl std::fmt::Display for Flags {
 
 impl Flags {
     pub fn clear(&mut self) {
-        self.bits = 0;
+        *self.0.bits_mut() = 0;
     }
 }
 

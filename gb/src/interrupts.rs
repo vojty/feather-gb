@@ -3,6 +3,7 @@ use bitflags::bitflags;
 use crate::{traits::MemoryAccess, utils::invalid_address};
 
 bitflags! {
+    #[derive(PartialEq, Eq, Copy, Clone)]
     pub struct InterruptBits: u8 {
         const V_BLANK =   0b0000_0001;
         const LCD_STATS = 0b0000_0010;

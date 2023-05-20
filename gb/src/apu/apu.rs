@@ -8,10 +8,15 @@ use super::{
     frame_sequencer::FrameSequencer,
     registers::*,
 };
-use crate::{audio::AudioDevice, constants::{AUDIO_BUFFER_SIZE, AUDIO_CYCLES_PER_SAMPLE}, traits::MemoryAccess, utils::invalid_address};
+use crate::{
+    audio::AudioDevice,
+    constants::{AUDIO_BUFFER_SIZE, AUDIO_CYCLES_PER_SAMPLE},
+    traits::MemoryAccess,
+    utils::invalid_address,
+};
 
 bitflags!(
-  #[derive(Default)]
+  #[derive(Default, Debug)]
   struct EnabledChannels: u8 {
     const CHANNEL_1 = 0b0001;
     const CHANNEL_2 = 0b0010;
