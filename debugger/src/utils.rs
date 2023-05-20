@@ -48,7 +48,6 @@ pub fn load_roms() -> Vec<Box<dyn BinarySource>> {
     let iterator = GlobWalkerBuilder::from_patterns("roms", &[FILE_PATTERN])
         .build()
         .unwrap()
-        .into_iter()
         .filter_map(Result::ok);
 
     for entry in iterator {

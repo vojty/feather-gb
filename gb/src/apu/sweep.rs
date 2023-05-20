@@ -87,7 +87,7 @@ impl Sweep {
     }
 
     pub fn calculate_frequency(&mut self) -> u16 {
-        let diff = (self.frequency >> self.shift) as u16;
+        let diff = self.frequency >> self.shift;
         if self.direction == SweepDirection::Increase {
             return self.frequency + diff;
         }

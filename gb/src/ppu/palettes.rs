@@ -41,10 +41,10 @@ pub struct Palette {
 fn create_colors(bits: u8, system_palette: &DmgPalette) -> [Rgb; 4] {
     let bits = bits as usize;
     [
-        system_palette.colors[(bits & 0b11)],
-        system_palette.colors[(bits >> 2 & 0b11)],
-        system_palette.colors[(bits >> 4 & 0b11)],
-        system_palette.colors[(bits >> 6 & 0b11)],
+        system_palette.colors[bits & 0b11],
+        system_palette.colors[bits >> 2 & 0b11],
+        system_palette.colors[bits >> 4 & 0b11],
+        system_palette.colors[bits >> 6 & 0b11],
     ]
 }
 

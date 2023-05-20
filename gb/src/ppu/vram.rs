@@ -203,7 +203,7 @@ impl Vram {
         let index = (local_address >> 4) + (TILES_COUNT * self.bank as usize);
 
         // 2 bytes per line
-        let row = (local_address >> 1 & 7) as usize;
+        let row = local_address >> 1 & 7;
 
         // always recompute with odd line as the base line, ignore first bit
         let base_address = (local_address + (self.bank as usize) * VRAM_SIZE) & 0xfffe;
@@ -215,7 +215,7 @@ impl Vram {
             let low = get_bit(tile_data_low, x);
             let pixel = (high << 1) | low;
 
-            self.tiles[index].data[row][x as usize] = pixel;
+            self.tiles[index].data[row][x] = pixel;
         }
         self.tiles[index].data[row].reverse();
     }

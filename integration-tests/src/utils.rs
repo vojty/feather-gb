@@ -25,7 +25,7 @@ fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
 }
 
 pub fn path_to_basename(path: &str) -> String {
-    match path.split('/').into_iter().last() {
+    match path.split('/').last() {
         Some(last) => last.to_string(),
         None => panic!("Can't get basename from path {}", path),
     }

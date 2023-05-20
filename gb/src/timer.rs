@@ -105,7 +105,7 @@ impl Timer {
         if !self.is_enabled() {
             return false;
         }
-        (self.divider_counter & (self.get_frequency_edge() as u16)) > 0
+        (self.divider_counter & self.get_frequency_edge()) > 0
     }
 
     fn increment_tima(&mut self, ic: &mut InterruptController) {
