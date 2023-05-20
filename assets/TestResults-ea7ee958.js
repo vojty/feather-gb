@@ -1,4 +1,4 @@
-import{W as t,a as g,F as e,j as A}from"./index-95081162.js";const B=`<h2>Blargg's tests</h2>
+import{W as t,j as A}from"./index-61799490.js";const g=`<h2>Blargg's tests</h2>
 <p><a href="https://github.com/retrio/gb-test-roms">https://github.com/retrio/gb-test-roms</a></p>
 <p>Some of those tests are skipped, see <code>blarggs_tests.rs</code> why.</p>
 <table>
@@ -1136,7 +1136,7 @@ import{W as t,a as g,F as e,j as A}from"./index-95081162.js";const B=`<h2>Blargg
 </tbody>
 </table>
 <p>Generated at: 2023-05-20 18:53:42.497328 UTC, took 2s</p>
-`,w=t`
+`,e=t`
   body {
     margin: 20px;
   }
@@ -1167,4 +1167,4 @@ import{W as t,a as g,F as e,j as A}from"./index-95081162.js";const B=`<h2>Blargg
       padding: 5px 10px;
     }
   }
-`;function f(){return g(e,{children:[A(w,{}),A("h1",{children:"Test results"}),A("div",{dangerouslySetInnerHTML:{__html:B}})]})}export{f as default};
+`;function w(){return A.jsxs(A.Fragment,{children:[A.jsx(e,{}),A.jsx("h1",{children:"Test results"}),A.jsx("div",{dangerouslySetInnerHTML:{__html:g}})]})}export{w as default};
