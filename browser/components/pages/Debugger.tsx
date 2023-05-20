@@ -42,7 +42,7 @@ export function Debugger() {
     const loadDebugger = async () => {
       try {
         const app = await import('../../../debugger-web/pkg')
-        appHandler = app.start(CANVAS_ID, roms)
+        appHandler = await app.start(CANVAS_ID, roms)
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error)
