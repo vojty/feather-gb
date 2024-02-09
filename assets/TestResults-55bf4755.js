@@ -1,4 +1,4 @@
-import{W as t,j as A}from"./index-61799490.js";const g=`<h2>Blargg's tests</h2>
+import{W as t,j as A}from"./index-cae58451.js";const g=`<h2>Blargg's tests</h2>
 <p><a href="https://github.com/retrio/gb-test-roms">https://github.com/retrio/gb-test-roms</a></p>
 <p>Some of those tests are skipped, see <code>blarggs_tests.rs</code> why.</p>
 <table>
@@ -1135,7 +1135,7 @@ import{W as t,j as A}from"./index-61799490.js";const g=`<h2>Blargg's tests</h2>
 </tr>
 </tbody>
 </table>
-<p>Generated at: 2023-05-20 18:53:42.497328 UTC, took 2s</p>
+<p>Generated at: 2024-02-09 20:54:34.760468 UTC, took 2s</p>
 `,e=t`
   body {
     margin: 20px;
