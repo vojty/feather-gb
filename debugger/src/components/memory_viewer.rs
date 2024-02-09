@@ -72,7 +72,7 @@ impl Default for MemoryViewer {
 impl MemoryViewer {
     pub fn show(&mut self, ctx: &egui::Context, e: &Emulator, open: &mut bool) {
         egui::Window::new("Memory")
-            .default_width(420.0)
+            .default_width(470.0)
             .open(open)
             .show(ctx, |ui| {
                 self.ui(ui, e);

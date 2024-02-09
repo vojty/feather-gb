@@ -7,7 +7,8 @@
     clippy::trivial_regex
 )]
 
-use eframe::{egui::Vec2, NativeOptions};
+use eframe::egui::ViewportBuilder;
+use eframe::NativeOptions;
 use env_logger::Env;
 
 use debugger::app::Debugger;
@@ -23,15 +24,16 @@ fn main() -> Result<(), eframe::Error> {
         .target(env_logger::Target::Stdout)
         .init();
 
-    let options = NativeOptions {
-        resizable: true,
-        initial_window_size: Some(Vec2::new(1700.0, 1000.0)),
-        ..NativeOptions::default()
+    let native_options = NativeOptions {
+        viewport: ViewportBuilder::default()
+            .with_inner_size([1700.0, 1000.0])
+            .with_min_inner_size([1700.0, 1000.0]),
+        ..Default::default()
     };
 
     eframe::run_native(
         "GameBoy emulator Debugger",
-        options,
+        native_options,
         Box::new(|cc| Box::new(Debugger::new(cc, roms))),
     )
 }

@@ -96,6 +96,10 @@ No specific priority here
 - various tests from Optix https://github.com/Hacktix/scribbltests
 - various window tests from Expo https://github.com/Powerlated/TurtleTests/
 
+#### Note
+
+All external tests require `rgbds@0.4.2` to be installed. The only exception is `age-test-roms` which requires `rgbds0.5.1`. The versions can be switched using https://github.com/gbdev/rgbenv
+
 ### Fonts
 
 - Nintendo - Pretendo - https://fontmeme.com/fonts/pretendo-font/

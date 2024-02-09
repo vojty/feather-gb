@@ -76,7 +76,7 @@ impl Tiles {
 
         let image = self.canvas.create_image();
         let texture = ctx.load_texture("tiles", image, TextureOptions::LINEAR);
-        ui.image(&texture, self.canvas.get_scaled_size_vec2());
+        ui.image((texture.id(), self.canvas.get_scaled_size_vec2()));
 
         render_scale(ui, &mut self.scale);
 

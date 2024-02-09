@@ -1,6 +1,6 @@
 use eframe::{
     egui::{self, TextStyle},
-    epaint::{FontFamily, Vec2},
+    epaint::FontFamily,
     App, Frame, Storage,
 };
 use gb::{
@@ -262,17 +262,9 @@ impl App for Debugger {
         ctx.request_repaint();
     }
 
-    fn warm_up_enabled(&self) -> bool {
-        false
-    }
-
     fn save(&mut self, _storage: &mut dyn Storage) {}
 
     fn auto_save_interval(&self) -> std::time::Duration {
         std::time::Duration::from_secs(30)
-    }
-
-    fn max_size_points(&self) -> egui::Vec2 {
-        Vec2::new(2000.0, 2000.0)
     }
 }

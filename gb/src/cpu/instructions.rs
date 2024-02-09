@@ -272,7 +272,6 @@ impl Cpu {
             self.pc = self.pc.wrapping_add(offset as u16);
 
             self.tick(hw) // internal
-        } else {
         }
     }
 

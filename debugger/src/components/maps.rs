@@ -65,7 +65,7 @@ impl Maps {
 
             let image = self.canvas.create_image();
             let texture = ctx.load_texture("maps", image, TextureOptions::LINEAR);
-            ui.image(&texture, self.canvas.get_scaled_size_vec2());
+            ui.image((texture.id(), self.canvas.get_scaled_size_vec2()));
 
             ui.horizontal(|ui| {
                 ui.label("Layer");

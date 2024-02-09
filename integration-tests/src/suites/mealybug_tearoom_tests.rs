@@ -17,11 +17,11 @@ fn get_reference_image_path(test_name: &str) -> String {
 fn get_files() -> Vec<(String, String)> {
     glob(&format!("{}/build/ppu/*.gb", TESTS_PATH))
         .expect("Failed to read glob pattern")
-        .filter_map(|entry| match entry {
+        .map(|entry| match entry {
             Ok(path) => {
                 let path = path.into_os_string().into_string().unwrap();
                 let name = path_to_basename(&path).replace(".gb", "");
-                Some((name, path))
+                (name, path)
             }
             Err(e) => panic!("Glob file error, {:?}", e),
         })
