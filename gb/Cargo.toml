@@ -14,7 +14,7 @@ name = "gb"
 path = "src/lib.rs"
 
 [dependencies]
-arrayvec = "0.7.2"
-bitflags = "2.2.1"
-log = "0.4.17"
-parse-display = "0.8.0"
+arrayvec = "0.7.6"
+bitflags = "2.6.0"
+log = "0.4.22"
+parse-display = "0.10.0"

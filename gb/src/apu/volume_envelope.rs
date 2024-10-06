@@ -1,5 +1,3 @@
-use std::u8;
-
 #[derive(PartialEq)]
 enum EnvelopeDirection {
     Decrease,

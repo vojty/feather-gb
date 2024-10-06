@@ -3,15 +3,15 @@
 #![allow(clippy::unused_unit)]
 
 use debugger::app::Debugger;
-use eframe::WebRunner;
+use eframe::wasm_bindgen::{self, prelude::*};
 use roms::collect_files;
-use wasm_bindgen::prelude::*;
 
 mod roms;
 
+#[derive(Clone)]
 #[wasm_bindgen]
 pub struct WebHandle {
-    runner: WebRunner,
+    runner: eframe::WebRunner,
 }
 
 #[wasm_bindgen]
@@ -27,7 +27,10 @@ impl WebHandle {
 /// It loads the app, installs some callbacks, then returns.
 #[wasm_bindgen]
 #[cfg(target_arch = "wasm32")]
-pub async fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bindgen::JsValue> {
+pub async fn start(
+    canvas: web_sys::HtmlCanvasElement,
+    data: JsValue,
+) -> Result<WebHandle, wasm_bindgen::JsValue> {
     // Redirect tracing to console.log and friends:
     eframe::WebLogger::init(log::LevelFilter::Debug).ok();
 
@@ -38,9 +41,9 @@ pub async fn start(canvas_id: &str, data: JsValue) -> Result<WebHandle, wasm_bin
 
     runner
         .start(
-            canvas_id,
+            canvas,
             web_options,
-            Box::new(|cc| Box::new(Debugger::new(cc, roms))),
+            Box::new(|cc| Ok(Box::new(Debugger::new(cc, roms)))),
         )
         .await?;
 

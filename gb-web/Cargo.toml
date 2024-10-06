@@ -14,8 +14,7 @@ crate-type = ["cdylib"]
 gb = { path = "../gb" }
 
 console_error_panic_hook = "0.1.7"
-log = "0.4.20"
-js-sys = "0.3.68"
-wasm-bindgen = "0.2.91"
+log = "0.4.22"
+js-sys = "0.3.70"
+wasm-bindgen = "0.2.93"
 wasm-logger = "0.2.0"
-

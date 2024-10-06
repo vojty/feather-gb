@@ -1,5 +1,3 @@
-use std::u16;
-
 use cpu::{Cpu, Flags, Reg16, Reg8};
 use parse_display::{Display, FromStr};
 

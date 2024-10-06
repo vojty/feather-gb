@@ -1,7 +1,6 @@
 use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
-    usize,
 };
 
 use crate::constants::TILE_SIZE;

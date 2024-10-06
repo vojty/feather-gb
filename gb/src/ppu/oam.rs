@@ -1,5 +1,3 @@
-use std::usize;
-
 use crate::{constants::SPRITES_COUNT, traits::MemoryAccess, utils::invalid_address};
 pub const OAM_START: u16 = 0xfe00;
 pub const OAM_END: u16 = 0xfe9f;

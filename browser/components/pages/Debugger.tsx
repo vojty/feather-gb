@@ -11,9 +11,10 @@ const Canvas = styled.canvas`
   margin-left: auto;
   display: block;
   position: absolute;
-  top: 0%;
-  left: 50%;
-  transform: translate(-50%, 0%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 `
 
 /* Egui specific */
@@ -42,7 +43,11 @@ export function Debugger() {
     const loadDebugger = async () => {
       try {
         const app = await import('../../../debugger-web/pkg')
-        appHandler = await app.start(CANVAS_ID, roms)
+        const canvas = document.getElementById(CANVAS_ID)
+        if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+          throw new Error('Canvas not found')
+        }
+        appHandler = await app.start(canvas, roms)
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error)

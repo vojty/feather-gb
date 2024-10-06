@@ -151,28 +151,33 @@ impl Ppu {
     }
 
     fn render_line_tooltip(&self, ui: &Ui, line: usize, line_stats: &LineStats) {
-        show_tooltip_at_pointer(ui.ctx(), Id::new("PPU line timing tooltip"), |ui| {
-            ui.horizontal(|ui| {
-                ui.label("Line");
-                ui.mono_label(line);
-            });
+        show_tooltip_at_pointer(
+            ui.ctx(),
+            ui.layer_id(),
+            Id::new("PPU line timing tooltip"),
+            |ui| {
+                ui.horizontal(|ui| {
+                    ui.label("Line");
+                    ui.mono_label(line);
+                });
 
-            Grid::new("Line stats").show(ui, |ui| {
-                ui.label("OAM Search");
-                ui.mono_label(format_interval(0, line_stats.pixel_transfer - 1));
-                ui.end_row();
+                Grid::new("Line stats").show(ui, |ui| {
+                    ui.label("OAM Search");
+                    ui.mono_label(format_interval(0, line_stats.pixel_transfer - 1));
+                    ui.end_row();
 
-                ui.label("Pixel Transfer");
-                ui.mono_label(format_interval(
-                    line_stats.pixel_transfer,
-                    line_stats.h_blank - 1,
-                ));
-                ui.end_row();
+                    ui.label("Pixel Transfer");
+                    ui.mono_label(format_interval(
+                        line_stats.pixel_transfer,
+                        line_stats.h_blank - 1,
+                    ));
+                    ui.end_row();
 
-                ui.label("H-Blank");
-                ui.mono_label(format_interval(line_stats.h_blank, 456));
-                ui.end_row();
-            });
-        });
+                    ui.label("H-Blank");
+                    ui.mono_label(format_interval(line_stats.h_blank, 456));
+                    ui.end_row();
+                });
+            },
+        );
     }
 }

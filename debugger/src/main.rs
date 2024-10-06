@@ -34,6 +34,6 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "GameBoy emulator Debugger",
         native_options,
-        Box::new(|cc| Box::new(Debugger::new(cc, roms))),
+        Box::new(|cc| Ok(Box::new(Debugger::new(cc, roms)))),
     )
 }

@@ -160,7 +160,7 @@ impl MemoryViewer {
         ui.separator();
 
         ui.vertical_centered(|ui| {
-            egui::reset_button(ui, self);
+            egui::reset_button(ui, self, "Reset");
         });
     }
 }

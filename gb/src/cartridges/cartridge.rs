@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-
 use crate::traits::DisplayHex;
 use parse_display::Display;
 
@@ -104,7 +102,7 @@ impl Cartridge {
     }
 
     pub fn from_bytes(binary: &[u8]) -> Cartridge {
-        let rom: Box<[u8]> = binary.try_into().unwrap();
+        let rom: Box<[u8]> = binary.into();
 
         let cartridge_type_byte = rom[0x0147];
         let cartridge_type = get_cartridge_type(cartridge_type_byte);
