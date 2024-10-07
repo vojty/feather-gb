@@ -41,7 +41,7 @@ export function FpsCounter() {
         if (context) {
           context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
           context.textBaseline = 'middle'
-          context.font = `12px Arial`
+          context.font = '12px Arial'
           context.fillText(fps.toString(), 1, CANVAS_HEIGHT / 2 + 1)
         }
 
@@ -56,7 +56,8 @@ export function FpsCounter() {
 
   return (
     <Container className="flex items-center justify-end">
-      Average FPS: <Canvas width={CANVAS_WIDTH} height={CANVAS_HEIGHT} ref={canvasRef} />
+      Average FPS:{' '}
+      <Canvas width={CANVAS_WIDTH} height={CANVAS_HEIGHT} ref={canvasRef} />
     </Container>
   )
 }

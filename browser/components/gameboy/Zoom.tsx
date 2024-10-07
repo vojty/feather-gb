@@ -22,7 +22,7 @@ const Styled = {
   `,
   Value: styled.div`
     margin: 0 5px;
-  `
+  `,
 }
 
 export function Zoom(props: Props) {

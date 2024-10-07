@@ -40,7 +40,7 @@ function TestResults() {
     <>
       <GlobalStyles />
       <h1>Test results</h1>
-      {/* eslint-disable-next-line react/no-danger */}
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */}
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </>
   )

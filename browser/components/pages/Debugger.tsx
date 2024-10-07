@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 
-import { WebHandle } from '../../../debugger-web/pkg'
+import type { WebHandle } from '../../../debugger-web/pkg'
 import { roms } from '../../romsList'
 
 const CANVAS_ID = 'debugger'
@@ -49,7 +49,6 @@ export function Debugger() {
         }
         appHandler = await app.start(canvas, roms)
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error(error)
       }
     }

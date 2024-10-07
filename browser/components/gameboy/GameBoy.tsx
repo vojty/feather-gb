@@ -1,4 +1,4 @@
-import { ForwardedRef, forwardRef } from 'react'
+import { type ForwardedRef, forwardRef } from 'react'
 
 import { JsKeys } from '../../../gb-web/pkg'
 import { useInput } from '../../hooks/useInput'
@@ -11,7 +11,7 @@ export const DISPLAY_HEIGHT = 144
 
 function GameBoyComponent(
   { running }: { running: boolean },
-  ref: ForwardedRef<HTMLCanvasElement | null>
+  ref: ForwardedRef<HTMLCanvasElement | null>,
 ) {
   const { zoom } = useTheme()
   const { input, onKeyDown, onKeyUp } = useInput()
@@ -35,7 +35,7 @@ function GameBoyComponent(
             style={{
               display: 'block', // prevents wierd margin
               imageRendering: 'pixelated',
-              zoom
+              zoom,
             }}
             height={DISPLAY_HEIGHT}
             width={DISPLAY_WIDTH}
@@ -43,7 +43,9 @@ function GameBoyComponent(
         </Display>
 
         <div className="flex items-baseline">
-          <Styled.NintendoText className="font-pretendo">Nintendo</Styled.NintendoText>
+          <Styled.NintendoText className="font-pretendo">
+            Nintendo
+          </Styled.NintendoText>
           <Styled.GameBoyText className="font-gills-sans font-medium italic">
             GAME&nbsp;BOY
           </Styled.GameBoyText>
@@ -58,7 +60,8 @@ function GameBoyComponent(
                 onPointerDown={() => onKeyDown(JsKeys.ArrowUp)}
                 onPointerUp={() => onKeyUp(JsKeys.ArrowUp)}
                 $orientation={ArrowOrientation.HORIZONTAL}
-                $pressed={pressedUp}>
+                $pressed={pressedUp}
+              >
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
@@ -69,7 +72,8 @@ function GameBoyComponent(
                 onPointerDown={() => onKeyDown(JsKeys.ArrowLeft)}
                 onPointerUp={() => onKeyUp(JsKeys.ArrowLeft)}
                 $orientation={ArrowOrientation.VERTICAL}
-                $pressed={pressedLeft}>
+                $pressed={pressedLeft}
+              >
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
@@ -79,7 +83,8 @@ function GameBoyComponent(
                 onPointerDown={() => onKeyDown(JsKeys.ArrowRight)}
                 onPointerUp={() => onKeyUp(JsKeys.ArrowRight)}
                 $orientation={ArrowOrientation.VERTICAL}
-                $pressed={pressedRight}>
+                $pressed={pressedRight}
+              >
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
@@ -90,7 +95,8 @@ function GameBoyComponent(
                 onPointerDown={() => onKeyDown(JsKeys.ArrowDown)}
                 onPointerUp={() => onKeyUp(JsKeys.ArrowDown)}
                 $orientation={ArrowOrientation.HORIZONTAL}
-                $pressed={pressedDown}>
+                $pressed={pressedDown}
+              >
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />
                 <Styled.ArrowStripe />

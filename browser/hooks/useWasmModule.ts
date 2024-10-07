@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import * as Module from '../../gb-web/pkg'
+import type * as Module from '../../gb-web/pkg'
 
 export type WasmModule = typeof Module
 
@@ -13,7 +13,6 @@ export function useWasmModule() {
         wasm.init()
         setWasmModule(wasm)
       })
-      // eslint-disable-next-line no-console
       .catch(console.error)
   }, [])
 

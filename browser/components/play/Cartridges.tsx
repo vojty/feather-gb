@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { roms } from '../../romsList'
-import { Rom } from '../../types'
+import type { Rom } from '../../types'
 import { fetchBytes } from '../../utils/std'
 
 type Props = {
@@ -21,21 +21,24 @@ const options: readonly Option[] = roms.filter((rom) =>
     'demos/gejmboj.gb',
     'demos/oh.gb',
     'demos/opus5.gb',
-    'demos/pocket.gb'
-  ].includes(rom.name)
+    'demos/pocket.gb',
+  ].includes(rom.name),
 )
 
 const initial = options.find((rom) => rom.name === 'demos/oh.gb') || null
 
-export function Cartridges(props: Props) {
-  const onChange = useCallback((newSelected: Option | null) => {
-    if (!newSelected) {
-      return
-    }
-    fetchBytes(newSelected.url).then((bytes) =>
-      props.onCartridgeLoad({ name: newSelected.name, bytes })
-    )
-  }, [])
+export function Cartridges({ onCartridgeLoad, selectedName }: Props) {
+  const onChange = useCallback(
+    (newSelected: Option | null) => {
+      if (!newSelected) {
+        return
+      }
+      fetchBytes(newSelected.url).then((bytes) =>
+        onCartridgeLoad({ name: newSelected.name, bytes }),
+      )
+    },
+    [onCartridgeLoad],
+  )
 
   // Init load
   useEffect(() => {
@@ -47,8 +50,11 @@ export function Cartridges(props: Props) {
       <tbody>
         {options.map((option) => (
           <tr
-            className={props.selectedName === option.name ? 'font-medium underline' : ''}
-            key={option.url}>
+            className={
+              selectedName === option.name ? 'font-medium underline' : ''
+            }
+            key={option.url}
+          >
             <td className="px-1">{option.name}</td>
             <td className="px-1">
               <button type="button" onClick={() => onChange(option)}>

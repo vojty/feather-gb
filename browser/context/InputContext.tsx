@@ -1,6 +1,6 @@
-import { createContext, ReactNode, useCallback, useState } from 'react'
+import { createContext, type ReactNode, useCallback, useState } from 'react'
 
-import { JsKeys } from '../../gb-web/pkg'
+import type { JsKeys } from '../../gb-web/pkg'
 
 export const InputContext = createContext<{
   input: JsKeys[]
@@ -9,7 +9,7 @@ export const InputContext = createContext<{
 }>({
   input: [],
   onKeyDown: () => {},
-  onKeyUp: () => {}
+  onKeyUp: () => {},
 })
 
 export function InputContextProvider({ children }: { children: ReactNode }) {
@@ -29,7 +29,8 @@ export function InputContextProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    // eslint-disable-next-line react/jsx-no-constructed-context-values
-    <InputContext.Provider value={{ input, onKeyUp, onKeyDown }}>{children}</InputContext.Provider>
+    <InputContext.Provider value={{ input, onKeyUp, onKeyDown }}>
+      {children}
+    </InputContext.Provider>
   )
 }

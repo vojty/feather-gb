@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import { Styled } from './GameBoy.styled'
 
@@ -12,13 +12,15 @@ export function Display(props: Props) {
     <Styled.Display>
       <Styled.DisplayTop>
         <Styled.DisplayLine width="25%" />
-        <Styled.DisplayHeaderText>DOT MATRIX WITH STEREO SOUND</Styled.DisplayHeaderText>
+        <Styled.DisplayHeaderText>
+          DOT MATRIX WITH STEREO SOUND
+        </Styled.DisplayHeaderText>
         <Styled.DisplayLine width="12%" />
       </Styled.DisplayTop>
 
       <Styled.DisplayContent>
         <Styled.Battery>
-          <Styled.BatteryIndicator enabled={props.enabled} />
+          <Styled.BatteryIndicator $enabled={props.enabled} />
           BATTERY
         </Styled.Battery>
 

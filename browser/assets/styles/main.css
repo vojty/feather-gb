@@ -3,47 +3,50 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'GillSans';
-  src: url('../fonts/GillSansMediumItalic.otf');
+  font-family: "GillSans";
+  src: url("../fonts/GillSansMediumItalic.otf");
   font-style: italic;
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'GillSans';
-  src: url('../fonts/GillSansBoldItalic.otf');
+  font-family: "GillSans";
+  src: url("../fonts/GillSansBoldItalic.otf");
   font-style: italic;
   font-weight: 700;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Pretendo';
-  src: url('../fonts/Pretendo.ttf');
+  font-family: "Pretendo";
+  src: url("../fonts/Pretendo.ttf");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'NESController';
-  src: url('../fonts/NES_Controller.ttf');
+  font-family: "NESController";
+  src: url("../fonts/NES_Controller.ttf");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 
 .font-nes {
-  font-family: 'NESController';
+  /* biome-ignore lint/a11y/useGenericFontNames: <explanation> */
+  font-family: "NESController";
 }
 
 .font-pretendo {
-  font-family: 'Pretendo';
+  /* biome-ignore lint/a11y/useGenericFontNames: <explanation> */
+  font-family: "Pretendo";
 }
 
 .font-gills-sans {
-  font-family: 'GillSans';
+  /* biome-ignore lint/a11y/useGenericFontNames: <explanation> */
+  font-family: "GillSans";
 }
 
 html,

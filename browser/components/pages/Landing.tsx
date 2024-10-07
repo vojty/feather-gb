@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ReactComponent as Feather } from '../../assets/images/feather.svg'
-import { ReactComponent as GameboyLogo } from '../../assets/images/gameboy.svg'
+import Feather from '../../assets/images/feather.svg?react'
+import GameboyLogo from '../../assets/images/gameboy.svg?react'
 
 const Nintendo = styled.span`
   font-size: 30px;
@@ -28,7 +28,9 @@ export function Landing() {
         <span className="text-xl mr-3">Just another</span>
         <div className="flex items-baseline justify-center flex-wrap">
           <Nintendo className="font-pretendo mr-2">Nintendo</Nintendo>
-          <GameBoy className="font-gills-sans font-bold italic">GAME&nbsp;BOY</GameBoy>
+          <GameBoy className="font-gills-sans font-bold italic">
+            GAME&nbsp;BOY
+          </GameBoy>
         </div>
         <span className="text-xl ml-3">emulator</span>
       </div>

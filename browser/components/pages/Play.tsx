@@ -3,12 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
-import { WebEmulator } from '../../../gb-web/pkg'
+import type { WebEmulator } from '../../../gb-web/pkg'
 import { memory } from '../../../gb-web/pkg/gb_web_bg.wasm'
 import { InputContextProvider } from '../../context/InputContext'
 import { useInputHandler } from '../../hooks/useInputHandler'
-import { useWasmModule, WasmModule } from '../../hooks/useWasmModule'
-import { Rom, Theme } from '../../types'
+import { useWasmModule, type WasmModule } from '../../hooks/useWasmModule'
+import type { Rom, Theme } from '../../types'
 import { warmupAudio } from '../../utils/audio'
 import { range } from '../../utils/std'
 import { FullscreenLoader } from '../common/FullscreenLoader'
@@ -32,7 +32,7 @@ type Props = {
 }
 
 const audioContext = new AudioContext({
-  sampleRate: 44100
+  sampleRate: 44100,
 })
 
 function renderFrame(emulator: WebEmulator, ctx: CanvasRenderingContext2D) {
@@ -42,7 +42,7 @@ function renderFrame(emulator: WebEmulator, ctx: CanvasRenderingContext2D) {
   const canvasData = new Uint8Array(
     memory.buffer,
     canvasDataPointer,
-    DISPLAY_WIDTH * DISPLAY_HEIGHT * 3
+    DISPLAY_WIDTH * DISPLAY_HEIGHT * 3,
   )
 
   range(0, DISPLAY_HEIGHT).forEach((y) => {
@@ -79,37 +79,41 @@ function DeviceHandler(props: Props) {
     initScreen(ctx)
   }, [ctx])
 
-  const onAudioBufferCallback = useCallback((bufferPtr: number) => {
-    const BUFFER_SIZE = wasmModule.get_audio_buffer_size()
+  const onAudioBufferCallback = useCallback(
+    (bufferPtr: number) => {
+      const BUFFER_SIZE = wasmModule.get_audio_buffer_size()
 
-    const audioData = new Float32Array(memory.buffer, bufferPtr, BUFFER_SIZE)
+      const audioData = new Float32Array(memory.buffer, bufferPtr, BUFFER_SIZE)
 
-    const frameCount = audioData.length / CHANNELS_COUNT
-    const audioBuffer = audioContext.createBuffer(
-      CHANNELS_COUNT,
-      frameCount,
-      audioContext.sampleRate
-    )
-    for (let channel = 0; channel < CHANNELS_COUNT; channel += 1) {
-      const nowBuffering = audioBuffer.getChannelData(channel)
-      for (let i = 0; i < frameCount; i += 1) {
-        // audio data frames are interleaved
-        nowBuffering[i] = audioData[i * CHANNELS_COUNT + channel]
+      const frameCount = audioData.length / CHANNELS_COUNT
+      const audioBuffer = audioContext.createBuffer(
+        CHANNELS_COUNT,
+        frameCount,
+        audioContext.sampleRate,
+      )
+      for (let channel = 0; channel < CHANNELS_COUNT; channel += 1) {
+        const nowBuffering = audioBuffer.getChannelData(channel)
+        for (let i = 0; i < frameCount; i += 1) {
+          // audio data frames are interleaved
+          nowBuffering[i] = audioData[i * CHANNELS_COUNT + channel]
+        }
       }
-    }
-    const audioSource = audioContext.createBufferSource()
-    audioSource.buffer = audioBuffer
-    audioSource.connect(audioContext.destination)
+      const audioSource = audioContext.createBufferSource()
+      audioSource.buffer = audioBuffer
+      audioSource.connect(audioContext.destination)
 
-    // taken from here https://github.com/Powerlated/OptimeGB/blob/master/src/core/audioplayer.ts#L91-L94
-    // TODO after some time, the game gets audio delay
-    // Reset time if close to buffer underrun
-    if (currentAudioSeconds.current <= audioContext.currentTime + 0.02) {
-      currentAudioSeconds.current = audioContext.currentTime + 0.06
-    }
-    audioSource.start(currentAudioSeconds.current)
-    currentAudioSeconds.current += BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
-  }, [])
+      // taken from here https://github.com/Powerlated/OptimeGB/blob/master/src/core/audioplayer.ts#L91-L94
+      // TODO after some time, the game gets audio delay
+      // Reset time if close to buffer underrun
+      if (currentAudioSeconds.current <= audioContext.currentTime + 0.02) {
+        currentAudioSeconds.current = audioContext.currentTime + 0.06
+      }
+      audioSource.start(currentAudioSeconds.current)
+      currentAudioSeconds.current +=
+        BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
+    },
+    [wasmModule.get_audio_buffer_size],
+  )
 
   // Create emulator on cartridge load
   useEffect(() => {
@@ -123,7 +127,7 @@ function DeviceHandler(props: Props) {
     initScreen(ctx)
 
     registerInputs(emulator.current)
-  }, [bytes, wasmModule, registerInputs])
+  }, [ctx, bytes, wasmModule, registerInputs])
 
   useEffect(() => {
     const e = emulator.current
@@ -132,7 +136,7 @@ function DeviceHandler(props: Props) {
     }
 
     e.set_audio_buffer_callback(soundEnabled ? onAudioBufferCallback : () => {})
-  }, [emulator.current, soundEnabled, onAudioBufferCallback])
+  }, [soundEnabled, onAudioBufferCallback])
 
   // Handle stop/start
   useEffect(() => {
@@ -151,14 +155,17 @@ function DeviceHandler(props: Props) {
     } else {
       window.cancelAnimationFrame(loopId.current)
     }
-  }, [running])
+  }, [running, ctx])
 
   return null
 }
 
 export function Play() {
   const [zoom, setZoom] = useLocalStorage('zoom', DEFAULT_ZOOM)
-  const [soundEnabled, setSoundEnabled] = useLocalStorage('sound_enabled', false)
+  const [soundEnabled, setSoundEnabled] = useLocalStorage(
+    'sound_enabled',
+    false,
+  )
   const [running, setRunning] = useState(false)
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
   const [rom, setRom] = useState<Rom | null>(null)
@@ -201,10 +208,10 @@ export function Play() {
     })
   }, [])
 
-  const onCartridgeLoad = (loadedRom: Rom) => {
+  const onCartridgeLoad = useCallback((loadedRom: Rom) => {
     setRunning(false)
     setRom(loadedRom)
-  }
+  }, [])
 
   if (!wasmModule) {
     return <FullscreenLoader />
@@ -236,15 +243,22 @@ export function Play() {
             <button
               className="mx-2 border rounded px-1 py-1"
               type="button"
-              onClick={onRunningToggle}>
+              onClick={onRunningToggle}
+            >
               {running ? 'Stop' : 'Run'}
             </button>
 
-            <OpenButton className="mx-2 border rounded px-1 py-1" onLoad={onCartridgeLoad}>
+            <OpenButton
+              className="mx-2 border rounded px-1 py-1"
+              onLoad={onCartridgeLoad}
+            >
               Upload ROM
             </OpenButton>
 
-            <label className="flex justify-center items-center" htmlFor="soundEnableCheckbox">
+            <label
+              className="flex justify-center items-center"
+              htmlFor="soundEnableCheckbox"
+            >
               <input
                 id="soundEnableCheckbox"
                 className="mr-1"
@@ -256,15 +270,23 @@ export function Play() {
             </label>
           </div>
 
-          {rom?.custom && <div className="mt-2 flex justify-center text-xs">{rom.name}</div>}
+          {rom?.custom && (
+            <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
+          )}
 
           <div className="mt-2 flex justify-center text-xs">
-            <Cartridges selectedName={rom?.name} onCartridgeLoad={onCartridgeLoad} />
+            <Cartridges
+              selectedName={rom?.name}
+              onCartridgeLoad={onCartridgeLoad}
+            />
           </div>
 
           <div className="mt-2 flex text-center justify-center text-xs">
             <div>
-              <p>Select one of the available demos or upload your custom *.gb file and press Run</p>
+              <p>
+                Select one of the available demos or upload your custom *.gb
+                file and press Run
+              </p>
               <p>
                 The test ROMs are available in{' '}
                 <Link className="underline" to="/debug">

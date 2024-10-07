@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef } from 'react'
 
-import { JsKeys, WebEmulator } from '../../gb-web/pkg'
+import { JsKeys, type WebEmulator } from '../../gb-web/pkg'
 import { InputContext } from '../context/InputContext'
 
 const keysMap: { [key in string]: JsKeys } = {
@@ -19,7 +19,7 @@ const keysMap: { [key in string]: JsKeys } = {
   KeyK: JsKeys.B,
   KeyC: JsKeys.B,
   KeyB: JsKeys.Start,
-  KeyN: JsKeys.Select
+  KeyN: JsKeys.Select,
 }
 
 /**
@@ -63,7 +63,7 @@ export function useInputHandler() {
       window.removeEventListener('keydown', onWindowKeyDown)
       window.removeEventListener('keyup', onWindowKeyUp)
     }
-  }, [])
+  }, [onKeyDown, onKeyUp])
 
   const register = useCallback((emulator: WebEmulator) => {
     emulatorRef.current = emulator

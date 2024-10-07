@@ -1,17 +1,22 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "removeComments": false,
-    "module": "esnext",
-    "target": "esnext",
-    "lib": ["esnext", "dom"],
-    "noEmit": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node"
-  },
-  "include": ["vite.config.mts", "browser/**/*", "debugger-web/pkg/**/*", "gb-web/pkg/**/*"]
+	"compilerOptions": {
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"removeComments": false,
+		"module": "esnext",
+		"target": "esnext",
+		"lib": ["esnext", "dom"],
+		"noEmit": true,
+		"jsx": "preserve",
+		"sourceMap": true,
+		"esModuleInterop": true,
+		"moduleResolution": "Bundler"
+	},
+	"include": [
+		"vite.config.ts",
+		"browser/**/*",
+		"debugger-web/pkg/**/*",
+		"gb-web/pkg/**/*"
+	]
 }

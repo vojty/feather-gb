@@ -1,6 +1,4 @@
-import styled, { css, ThemedStyledProps } from 'styled-components'
-
-import { Theme } from '../../types'
+import styled, { css, type ExecutionContext } from 'styled-components'
 
 const SCREEN_PADDING_LEFT = 45
 const SCREEN_PADDING_TOP = 23
@@ -16,8 +14,8 @@ const ARROW_SIZE = 26
 const TEXT_COLOR = '#393C81'
 const AB_COLOR = '#8A205E'
 
-function zoom<P, T extends Theme>(value: number) {
-  return (props: ThemedStyledProps<P, T>) => `${props.theme.zoom * value}px`
+function zoom(value: number) {
+  return (props: ExecutionContext) => `${props.theme.zoom * value}px`
 }
 
 function activeButtonEffect() {
@@ -93,8 +91,8 @@ const ScreenOverlay = styled.div`
   bottom: 0;
 `
 
-const BatteryIndicator = styled.div<{ enabled?: boolean }>`
-  background-color: ${(props) => (props.enabled ? `#f00` : '#000')};
+const BatteryIndicator = styled.div<{ $enabled?: boolean }>`
+  background-color: ${(props) => (props.$enabled ? '#f00' : '#000')};
   box-shadow: 0 0 3px 1px #ef5350;
   height: ${zoom(INDICATOR_SIZE)};
   width: ${zoom(INDICATOR_SIZE)};
@@ -210,8 +208,8 @@ const ButtonsStartSelect = styled.div`
 const Arrows = styled.div``
 
 export enum ArrowOrientation {
-  HORIZONTAL,
-  VERTICAL
+  HORIZONTAL = 0,
+  VERTICAL = 1,
 }
 
 const ArrowsLine = styled.div`
@@ -347,5 +345,5 @@ export const Styled = {
   ArrowCenter,
   ArrowStripe,
   Speakers,
-  Speaker
+  Speaker,
 }
