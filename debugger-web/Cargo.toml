@@ -15,15 +15,15 @@ crate-type = ["cdylib"]
 debugger = { path = "../debugger" }
 eframe = "0.29.1"
 env_logger = "0.11.5"
-js-sys = "0.3.72"
+js-sys = "=0.3.70"
 log = "0.4.22"
 serde = { version = "1.0.214", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
-wasm-bindgen = { version = "0.2.95", features = ["serde-serialize"] }
-wasm-bindgen-futures = "0.4.45"
+wasm-bindgen = { version = "=0.2.93", features = ["serde-serialize"] }
+wasm-bindgen-futures = "=0.4.42"
 
 [dependencies.web-sys]
-version = "0.3.72"
+version = "=0.3.70"
 features = [
   'Headers',
   'Request',
