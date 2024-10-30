@@ -1,5 +1,5 @@
 [workspace]
-members = ["debugger", "debugger-web" , "gb", "integration-tests", "gb-web"]
+members = ["debugger", "debugger-web", "gb", "integration-tests", "gb-web"]
 resolver = "2"
 
 [profile.release]
