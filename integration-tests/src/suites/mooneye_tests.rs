@@ -7,7 +7,7 @@ use regex::Regex;
 use crate::utils::{get_result_mark, path_to_basename};
 use crate::{markdown, utils::create_emulator};
 
-/**
+/*
  * Test groups:
  *
  * dmg = Game Boy

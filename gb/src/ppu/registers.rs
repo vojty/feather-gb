@@ -83,7 +83,7 @@ pub const R_LY: u16 = 0xff44;
  */
 pub const R_LYC: u16 = 0xff45;
 
-/**
+/*
  * DMA Transfer and Start Address (W)
  *
  * The DMA Transfer (40*28 bit) from internal ROM or

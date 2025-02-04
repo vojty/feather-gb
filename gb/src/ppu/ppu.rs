@@ -545,9 +545,9 @@ impl Ppu {
             if self.is_cgb {
                 let obj_on_top = self.lcdc.bits() & 1 == 0;
                 let line_tile_attributes = self.line_tiles[x];
-                let bg_is_zero = line_tile_attributes.map_or(false, |pair| pair.0 == 0);
-                let bg_has_priority = line_tile_attributes
-                    .map_or(false, |pair| pair.1 == BgToOamPriority::BgPriority);
+                let bg_is_zero = line_tile_attributes.is_some_and(|pair| pair.0 == 0);
+                let bg_has_priority =
+                    line_tile_attributes.is_some_and(|pair| pair.1 == BgToOamPriority::BgPriority);
 
                 if obj_on_top || bg_is_zero || (is_above_bg && !bg_has_priority) {
                     screen_buffer.set_pixel(x, y, &pixel);
