@@ -34,7 +34,7 @@
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.0",
     "remark-html": "^16.0.1",
-    "rimraf": "^6.0.1",
+    "rimraf": "^6.1.0",
     "typescript": "^5.9.3",
     "unified": "^11.0.5",
     "unplugin-fonts": "^1.4.0",
