@@ -85,9 +85,11 @@ impl Canvas {
     }
 
     pub fn create_image(&self) -> ColorImage {
+        let size = self.get_scaled_size();
         ColorImage {
-            size: self.get_scaled_size(),
+            size,
             pixels: self.pixels.clone(),
+            source_size: Vec2::new(size[0] as f32, size[1] as f32),
         }
     }
 }

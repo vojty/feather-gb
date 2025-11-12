@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 debugger = { path = "../debugger" }
-eframe = "0.31.0"
+eframe = "0.33.0"
 env_logger = "0.11.6"
 js-sys = "0.3.77"
 log = "0.4.25"

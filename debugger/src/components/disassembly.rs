@@ -70,7 +70,7 @@ impl Disassembly {
     pub fn show(&mut self, ctx: &egui::Context, open: &mut bool, e: &Emulator) {
         Window::new("Disassembly")
             .resizable(true)
-            .default_width(268.0)
+            .default_width(300.0)
             .open(open)
             .show(ctx, |ui| {
                 let pc = e.cpu.pc;

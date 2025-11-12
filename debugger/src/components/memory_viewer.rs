@@ -48,8 +48,6 @@ impl MemoryArea {
     }
 }
 
-#[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "persistence", serde(default))]
 #[derive(PartialEq)]
 pub struct MemoryViewer {
     tack_item_align: Align,
