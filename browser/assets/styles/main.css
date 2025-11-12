@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noUnknownAtRules: tailwind specifics */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,17 +36,17 @@
 }
 
 .font-nes {
-  /* biome-ignore lint/a11y/useGenericFontNames: <explanation> */
+  /* biome-ignore lint/a11y/useGenericFontNames: custom font loaded by vite */
   font-family: "NESController";
 }
 
 .font-pretendo {
-  /* biome-ignore lint/a11y/useGenericFontNames: <explanation> */
+  /* biome-ignore lint/a11y/useGenericFontNames: custom font loaded by vite */
   font-family: "Pretendo";
 }
 
 .font-gills-sans {
-  /* biome-ignore lint/a11y/useGenericFontNames: <explanation> */
+  /* biome-ignore lint/a11y/useGenericFontNames: custom font loaded by vite */
   font-family: "GillSans";
 }
 

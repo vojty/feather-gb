@@ -40,7 +40,7 @@ function TestResults() {
     <>
       <GlobalStyles />
       <h1>Test results</h1>
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */}
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: generated markdown */}
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </>
   )

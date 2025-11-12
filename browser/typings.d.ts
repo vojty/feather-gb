@@ -17,3 +17,10 @@ declare module '*.md' {
 }
 
 declare let USE_HASH_ROUTER: boolean
+
+declare module 'prettier' {
+  // any
+  // biome-ignore lint/suspicious/noExplicitAny: SVGR complains about missing `prettier` types
+  type Options = any
+  export type { Options }
+}

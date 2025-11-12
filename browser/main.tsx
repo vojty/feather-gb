@@ -1,13 +1,11 @@
 import './assets/styles/main.css'
 
-import React from 'react'
 import { BrowserRouter, HashRouter } from 'react-router-dom'
 import 'unfonts.css' // this is a virtual CSS file created by `unplugin-fonts/vite`
 import { createRoot } from 'react-dom/client'
 
 import { Root } from './components/Root'
 
-// @ts-ignore
 window.global ||= window
 
 const container = document.getElementById('root')

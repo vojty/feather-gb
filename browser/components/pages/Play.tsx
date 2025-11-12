@@ -69,7 +69,7 @@ const CHANNELS_COUNT = 2
 // Helper component so we don't have to deal with nullable values in parent components
 function DeviceHandler(props: Props) {
   const { bytes, wasmModule, running, ctx, soundEnabled } = props
-  const emulator = useRef<WebEmulator>()
+  const emulator = useRef<WebEmulator>(undefined)
   const currentAudioSeconds = useRef(0)
   const loopId = useRef(0)
   const registerInputs = useInputHandler()

@@ -27,7 +27,7 @@ const keysMap: { [key in string]: JsKeys } = {
  */
 export function useInputHandler() {
   const { onKeyDown, onKeyUp, input } = useContext(InputContext)
-  const emulatorRef = useRef<WebEmulator | null>()
+  const emulatorRef = useRef<WebEmulator>(undefined)
 
   // Propagate collected inputs to emulator
   useEffect(() => {

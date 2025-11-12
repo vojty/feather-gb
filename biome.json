@@ -1,23 +1,20 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.5/schema.json",
   "vcs": {
     "enabled": false,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
-    "include": ["browser/**/*"],
-    "ignoreUnknown": false,
-    "ignore": []
+    "includes": ["**/browser/**/*"],
+    "ignoreUnknown": false
   },
   "formatter": {
     "enabled": true,
     "indentWidth": 2,
     "indentStyle": "space"
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
