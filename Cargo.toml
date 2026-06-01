@@ -5,3 +5,8 @@ resolver = "2"
 [profile.release]
 lto = true
 opt-level = 3
+
+[profile.dev-optimized]
+inherits = "dev" # Start with dev settings
+opt-level = 2    # Add some optimization
+debug = false    # Remove debug info (can speed up linking)
