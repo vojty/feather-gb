@@ -56,8 +56,7 @@ export function FpsCounter() {
 
   return (
     <Container className="flex items-center justify-end">
-      Average FPS:{' '}
-      <Canvas width={CANVAS_WIDTH} height={CANVAS_HEIGHT} ref={canvasRef} />
+      Average FPS: <Canvas width={CANVAS_WIDTH} height={CANVAS_HEIGHT} ref={canvasRef} />
     </Container>
   )
 }

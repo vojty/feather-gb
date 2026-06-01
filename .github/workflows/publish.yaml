@@ -27,7 +27,7 @@ jobs:
       - name: Setup wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
         with:
-          version: "latest"
+          version: 'latest'
 
       - uses: pnpm/action-setup@v6
         name: Install pnpm + dependencies

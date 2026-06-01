@@ -12,9 +12,7 @@ export function Display(props: Props) {
     <Styled.Display>
       <Styled.DisplayTop>
         <Styled.DisplayLine width="25%" />
-        <Styled.DisplayHeaderText>
-          DOT MATRIX WITH STEREO SOUND
-        </Styled.DisplayHeaderText>
+        <Styled.DisplayHeaderText>DOT MATRIX WITH STEREO SOUND</Styled.DisplayHeaderText>
         <Styled.DisplayLine width="12%" />
       </Styled.DisplayTop>
 

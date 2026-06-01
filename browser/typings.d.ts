@@ -16,6 +16,8 @@ declare module '*.md' {
   export = _
 }
 
+declare module '*.css' {}
+
 declare let USE_HASH_ROUTER: boolean
 
 declare module 'prettier' {

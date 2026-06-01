@@ -9,11 +9,6 @@
     "includes": ["**/browser/**/*"],
     "ignoreUnknown": false
   },
-  "formatter": {
-    "enabled": true,
-    "indentWidth": 2,
-    "indentStyle": "space"
-  },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,

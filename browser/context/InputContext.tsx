@@ -29,8 +29,6 @@ export function InputContextProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <InputContext.Provider value={{ input, onKeyUp, onKeyDown }}>
-      {children}
-    </InputContext.Provider>
+    <InputContext.Provider value={{ input, onKeyUp, onKeyDown }}>{children}</InputContext.Provider>
   )
 }

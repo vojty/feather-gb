@@ -43,9 +43,7 @@ function GameBoyComponent(
         </Display>
 
         <div className="flex items-baseline">
-          <Styled.NintendoText className="font-pretendo">
-            Nintendo
-          </Styled.NintendoText>
+          <Styled.NintendoText className="font-pretendo">Nintendo</Styled.NintendoText>
           <Styled.GameBoyText className="font-gills-sans font-medium italic">
             GAME&nbsp;BOY
           </Styled.GameBoyText>

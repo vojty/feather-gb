@@ -28,9 +28,7 @@ export function Landing() {
         <span className="text-xl mr-3">Just another</span>
         <div className="flex items-baseline justify-center flex-wrap">
           <Nintendo className="font-pretendo mr-2">Nintendo</Nintendo>
-          <GameBoy className="font-gills-sans font-bold italic">
-            GAME&nbsp;BOY
-          </GameBoy>
+          <GameBoy className="font-gills-sans font-bold italic">GAME&nbsp;BOY</GameBoy>
         </div>
         <span className="text-xl ml-3">emulator</span>
       </div>

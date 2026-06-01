@@ -109,8 +109,7 @@ function DeviceHandler(props: Props) {
         currentAudioSeconds.current = audioContext.currentTime + 0.06
       }
       audioSource.start(currentAudioSeconds.current)
-      currentAudioSeconds.current +=
-        BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
+      currentAudioSeconds.current += BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
     },
     [wasmModule.get_audio_buffer_size],
   )
@@ -162,10 +161,7 @@ function DeviceHandler(props: Props) {
 
 export function Play() {
   const [zoom, setZoom] = useLocalStorage('zoom', DEFAULT_ZOOM)
-  const [soundEnabled, setSoundEnabled] = useLocalStorage(
-    'sound_enabled',
-    false,
-  )
+  const [soundEnabled, setSoundEnabled] = useLocalStorage('sound_enabled', false)
   const [running, setRunning] = useState(false)
   const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
   const [rom, setRom] = useState<Rom | null>(null)
@@ -248,17 +244,11 @@ export function Play() {
               {running ? 'Stop' : 'Run'}
             </button>
 
-            <OpenButton
-              className="mx-2 border rounded px-1 py-1"
-              onLoad={onCartridgeLoad}
-            >
+            <OpenButton className="mx-2 border rounded px-1 py-1" onLoad={onCartridgeLoad}>
               Upload ROM
             </OpenButton>
 
-            <label
-              className="flex justify-center items-center"
-              htmlFor="soundEnableCheckbox"
-            >
+            <label className="flex justify-center items-center" htmlFor="soundEnableCheckbox">
               <input
                 id="soundEnableCheckbox"
                 className="mr-1"
@@ -270,23 +260,15 @@ export function Play() {
             </label>
           </div>
 
-          {rom?.custom && (
-            <div className="mt-2 flex justify-center text-xs">{rom.name}</div>
-          )}
+          {rom?.custom && <div className="mt-2 flex justify-center text-xs">{rom.name}</div>}
 
           <div className="mt-2 flex justify-center text-xs">
-            <Cartridges
-              selectedName={rom?.name}
-              onCartridgeLoad={onCartridgeLoad}
-            />
+            <Cartridges selectedName={rom?.name} onCartridgeLoad={onCartridgeLoad} />
           </div>
 
           <div className="mt-2 flex text-center justify-center text-xs">
             <div>
-              <p>
-                Select one of the available demos or upload your custom *.gb
-                file and press Run
-              </p>
+              <p>Select one of the available demos or upload your custom *.gb file and press Run</p>
               <p>
                 The test ROMs are available in{' '}
                 <Link className="underline" to="/debug">
