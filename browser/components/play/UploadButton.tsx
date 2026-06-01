@@ -16,7 +16,7 @@ export function OpenButton(props: Props) {
       return
     }
     const file = files[0]
-    file
+    void file
       .arrayBuffer()
       .then((data) => new Uint8Array(data))
       .then((bytes) => onLoad({ name: `Custom: ${file.name}`, bytes, custom: true }))

@@ -18,5 +18,5 @@ export function warmupAudio(audioContext: AudioContext) {
   source.connect(audioContext.destination)
   // Play sound
   source.start(0)
-  audioContext.resume()
+  void audioContext.resume()
 }

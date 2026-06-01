@@ -53,7 +53,7 @@ export function Debugger() {
       }
     }
 
-    loadDebugger()
+    void loadDebugger()
 
     return () => {
       appHandler?.stop_web()

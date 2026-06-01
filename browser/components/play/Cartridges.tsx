@@ -33,7 +33,7 @@ export function Cartridges({ onCartridgeLoad, selectedName }: Props) {
       if (!newSelected) {
         return
       }
-      fetchBytes(newSelected.url).then((bytes) =>
+      void fetchBytes(newSelected.url).then((bytes) =>
         onCartridgeLoad({ name: newSelected.name, bytes }),
       )
     },

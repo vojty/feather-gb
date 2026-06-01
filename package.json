@@ -16,9 +16,10 @@
     "dev-tests": "cargo run -p integration-tests --profile dev-optimized",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "lint": "biome lint",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "tsc": "tsc --noEmit",
-    "validate": "pnpm run tsc && pnpm run lint"
+    "validate": "pnpm run tsc && pnpm run lint && pnpm run fmt:check"
   },
   "dependencies": {
     "@rehooks/local-storage": "^2.4.5",
@@ -31,7 +32,6 @@
     "tailwindcss": "^3.4.13"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.5",
     "@darkobits/vite-plugin-favicons": "^0.3.3",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
@@ -43,6 +43,8 @@
     "node-addon-api": "^8.8.0",
     "node-gyp": "^12.3.0",
     "oxfmt": "^0.52.0",
+    "oxlint": "^1.67.0",
+    "oxlint-tsgolint": "^0.23.0",
     "postcss": "^8.5.15",
     "rehype-parse": "^9.0.1",
     "rehype-rewrite": "^4.0.4",
