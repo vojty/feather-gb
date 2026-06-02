@@ -95,7 +95,7 @@ Only DMG compatible tests used.
 | roms/mooneye-test-suite/build/acceptance/ppu/lcdon_write_timing-GS.gb        | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/stat_irq_blocking.gb            | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/stat_lyc_onoff.gb               | ✅     |
-| roms/mooneye-test-suite/build/acceptance/ppu/vblank_stat_intr-GS.gb          | ❌     |
+| roms/mooneye-test-suite/build/acceptance/ppu/vblank_stat_intr-GS.gb          | ✅     |
 | roms/mooneye-test-suite/build/acceptance/push_timing.gb                      | ✅     |
 | roms/mooneye-test-suite/build/acceptance/rapid_di_ei.gb                      | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ret_cc_timing.gb                    | ✅     |
@@ -210,13 +210,13 @@ From https://github.com/vojty/wilbertpol-test-suite
 
 https://github.com/Hacktix/scribbltests
 
-| Name      | Expected                    | Result                    | Diff                    | Status     |
-| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
-| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0 |
-| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0 |
-| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0 |
-| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0 |
-| statcount | ![](statcount/expected.png) | ![](statcount/result.png) | ![](statcount/diff.png) | ✅ Diff: 0 |
+| Name      | Expected                    | Result                    | Diff                    | Status         |
+| --------- | --------------------------- | ------------------------- | ----------------------- | -------------- |
+| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ❌ Diff: 11520 |
+| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0     |
+| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0     |
+| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0     |
+| statcount | ![](statcount/expected.png) | ![](statcount/result.png) | ![](statcount/diff.png) | ✅ Diff: 0     |
 
 ## TurtleTests
 
@@ -241,7 +241,7 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 
 | Name                              | Expected                                            | Result                                            | Diff                                            | Status         |
 | --------------------------------- | --------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | -------------- |
-| m2_win_en_toggle                  | ![](m2_win_en_toggle/expected.png)                  | ![](m2_win_en_toggle/result.png)                  | ![](m2_win_en_toggle/diff.png)                  | ❌ Diff: 18060 |
+| m2_win_en_toggle                  | ![](m2_win_en_toggle/expected.png)                  | ![](m2_win_en_toggle/result.png)                  | ![](m2_win_en_toggle/diff.png)                  | ✅ Diff: 0     |
 | m3_bgp_change                     | ![](m3_bgp_change/expected.png)                     | ![](m3_bgp_change/result.png)                     | ![](m3_bgp_change/diff.png)                     | ❌ Diff: 2927  |
 | m3_bgp_change_sprites             | ![](m3_bgp_change_sprites/expected.png)             | ![](m3_bgp_change_sprites/result.png)             | ![](m3_bgp_change_sprites/diff.png)             | ❌ Diff: 9346  |
 | m3_lcdc_bg_en_change              | ![](m3_lcdc_bg_en_change/expected.png)              | ![](m3_lcdc_bg_en_change/result.png)              | ![](m3_lcdc_bg_en_change/diff.png)              | ❌ Diff: 3457  |
@@ -284,4 +284,4 @@ Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms
 | roms/age-test-roms/build/stat-mode-window/stat-mode-window-dmgC.gb          | ❌     | ![](age-tests/stat-mode-window-dmgC.gb/result.png)         |
 | roms/age-test-roms/build/vram/vram-read-dmgC.gb                             | ❌     | ![](age-tests/vram-read-dmgC.gb/result.png)                |
 
-Generated at: 2026-06-02 19:26:57.228043 UTC, took 4s
+Generated at: 2026-06-02 19:38:35.293393 UTC, took 3s

@@ -341,6 +341,11 @@ impl Ppu {
                     // https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf section 8.9.1
                     self.change_stat_mode(Mode::HBlank);
 
+                    // FORCE A STAT UPDATE HERE!
+                    // This evaluates the brief drop to HBlank, pulling prev_stat_flag
+                    // to false so the impending Mode 2 interrupt isn't blocked.
+                    self.stat_update(ic);
+
                     if self.skip_frames > 0 {
                         self.skip_frames -= 1;
                     }
@@ -362,7 +367,10 @@ impl Ppu {
         // Evaluate purely based on current PPU state
         let mode_intr = match self.stat_mode {
             Mode::HBlank => self.stat.contains(StatBits::H_BLANK_INTERRUPT),
-            Mode::VBlank => self.stat.contains(StatBits::V_BLANK_INTERRUPT), // REVERTED
+            Mode::VBlank => {
+                self.stat.contains(StatBits::V_BLANK_INTERRUPT)
+                    || self.stat.contains(StatBits::OAM_INTERRUPT) // RESTORE THIS
+            }
             Mode::OamSearch => self.stat.contains(StatBits::OAM_INTERRUPT),
             Mode::PixelTransfer => false,
         };
@@ -764,6 +772,9 @@ impl Ppu {
 
                     if !self.prev_stat_flag && glitch_line {
                         ic.request_interrupt(InterruptBits::LCD_STATS);
+                        // CRITICAL: We must record that the line is now HIGH so the
+                        // subsequent normal stat_update doesn't fire a duplicate!
+                        self.prev_stat_flag = true;
                     }
                 }
 
