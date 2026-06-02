@@ -362,10 +362,7 @@ impl Ppu {
         // Evaluate purely based on current PPU state
         let mode_intr = match self.stat_mode {
             Mode::HBlank => self.stat.contains(StatBits::H_BLANK_INTERRUPT),
-            Mode::VBlank => {
-                self.stat.contains(StatBits::V_BLANK_INTERRUPT)
-                    || self.stat.contains(StatBits::OAM_INTERRUPT)
-            } // Note: DMG triggers OAM interrupt in VBlank too!
+            Mode::VBlank => self.stat.contains(StatBits::V_BLANK_INTERRUPT), // REVERTED
             Mode::OamSearch => self.stat.contains(StatBits::OAM_INTERRUPT),
             Mode::PixelTransfer => false,
         };
@@ -393,14 +390,17 @@ impl Ppu {
     }
 
     fn check_ly_equals_lyc_no_mode(&mut self, ic: &mut InterruptController) {
-        if Some(self.lyc) == self.ly_to_compare {
-            self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, true);
-        } else {
-            self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
+        let ly_match = Some(self.lyc) == self.ly_to_compare;
+        self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, ly_match);
+
+        let ly_intr = ly_match && self.stat.contains(StatBits::LYC_EQUALS_LY_INTERRUPT);
+
+        // When the LCD turns on, we ignore the artificial HBlank stat_mode
+        // and ONLY evaluate the LYC interrupt to safely seed the IRQ line.
+        if !self.prev_stat_flag && ly_intr {
+            ic.request_interrupt(InterruptBits::LCD_STATS);
         }
-        // This is ugly hack, because this function is called when LCD is turned off
-        // and the mode can't be PixelTransfer so mode interrupt wont happend
-        self.stat_update(ic)
+        self.prev_stat_flag = ly_intr;
     }
 
     fn init_pixel_transfer(&mut self) {
@@ -755,14 +755,15 @@ impl Ppu {
                 }
             }
             R_STAT => {
-                // 1. Simulate the hardware glitch for DMG (stat_write_if-GS.gb)
+                // 1. Simulate the FULL hardware glitch for DMG
                 if is_lcd_enabled(&self.lcdc) && !self.is_cgb {
-                    if self.stat_mode == Mode::HBlank || self.stat_mode == Mode::VBlank {
-                        // The glitch pulls the internal STAT IRQ line HIGH.
-                        // If it was previously LOW, this causes a rising edge -> Interrupt!
-                        if !self.prev_stat_flag {
-                            ic.request_interrupt(InterruptBits::LCD_STATS);
-                        }
+                    let glitch_line = self.stat_mode == Mode::HBlank
+                        || self.stat_mode == Mode::VBlank
+                        || self.stat_mode == Mode::OamSearch
+                        || self.ly == self.lyc;
+
+                    if !self.prev_stat_flag && glitch_line {
+                        ic.request_interrupt(InterruptBits::LCD_STATS);
                     }
                 }
 
@@ -771,7 +772,7 @@ impl Ppu {
                 new_stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
                 self.stat = (self.stat & StatBits::LYC_EQUALS_LY_FLAG) | new_stat;
 
-                // 3. Re-evaluate the new line state normally
+                // 3. Re-evaluate normally
                 if is_lcd_enabled(&self.lcdc) {
                     self.stat_update(ic);
                 }
