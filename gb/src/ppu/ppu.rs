@@ -194,9 +194,11 @@ impl Ppu {
 
         self.line_clocks += 1;
 
-        // Mode change is delayed
+        // Apply pending mode at the exact start of the cycle
         if let Some(pending_mode) = self.pending_mode {
             self.change_stat_mode(pending_mode);
+            // This update now happens precisely when the mode switches,
+            // preserving the cycle-perfect timing scxly expects.
             self.stat_update(ic);
             self.pending_mode = None;
         }
@@ -273,11 +275,7 @@ impl Ppu {
                     match self.ly {
                         0..=143 => {
                             self.mode = Mode::OamSearch;
-                            // FIX: Apply Mode 2 immediately at cycle 0
-                            // to satisfy Wilbertpol's exact timing assertions
-                            self.change_stat_mode(Mode::OamSearch);
-                            self.stat_update(ic);
-                            self.pending_mode = None;
+                            self.pending_mode = Some(Mode::OamSearch);
                         }
                         144 => {
                             self.mode = Mode::VBlank;

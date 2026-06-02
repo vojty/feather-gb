@@ -86,13 +86,13 @@ Only DMG compatible tests used.
 | roms/mooneye-test-suite/build/acceptance/pop_timing.gb                       | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/hblank_ly_scx_timing-GS.gb      | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/intr_1_2_timing-GS.gb           | ✅     |
-| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_0_timing.gb              | ❌     |
-| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_mode0_timing.gb          | ❌     |
+| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_0_timing.gb              | ✅     |
+| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_mode0_timing.gb          | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/intr_2_mode0_timing_sprites.gb  | ❌     |
-| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_mode3_timing.gb          | ❌     |
-| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_oam_ok_timing.gb         | ❌     |
-| roms/mooneye-test-suite/build/acceptance/ppu/lcdon_timing-GS.gb              | ❌     |
-| roms/mooneye-test-suite/build/acceptance/ppu/lcdon_write_timing-GS.gb        | ❌     |
+| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_mode3_timing.gb          | ✅     |
+| roms/mooneye-test-suite/build/acceptance/ppu/intr_2_oam_ok_timing.gb         | ✅     |
+| roms/mooneye-test-suite/build/acceptance/ppu/lcdon_timing-GS.gb              | ✅     |
+| roms/mooneye-test-suite/build/acceptance/ppu/lcdon_write_timing-GS.gb        | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/stat_irq_blocking.gb            | ❌     |
 | roms/mooneye-test-suite/build/acceptance/ppu/stat_lyc_onoff.gb               | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/vblank_stat_intr-GS.gb          | ✅     |
@@ -160,22 +160,22 @@ From https://github.com/vojty/wilbertpol-test-suite
 | roms/wilbertpol-test-suite/build/acceptance/gpu/hblank_ly_scx_timing_variant_nops.gb     | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_0_timing.gb                         | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_1_timing.gb                         | ✅     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx1_timing_nops.gb         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx2_timing_nops.gb         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx3_timing_nops.gb         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx4_timing_nops.gb         | ✅     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx5_timing_nops.gb         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx6_timing_nops.gb         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx7_timing_nops.gb         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx8_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx1_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx2_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx3_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx4_timing_nops.gb         | ❌     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx5_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx6_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx7_timing_nops.gb         | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_scx8_timing_nops.gb         | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_timing_sprites_nops.gb      | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_timing_sprites_scx1_nops.gb | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_timing_sprites_scx2_nops.gb | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_timing_sprites_scx3_nops.gb | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_mode0_timing_sprites_scx4_nops.gb | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_timing.gb                         | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/lcdon_mode_timing.gb                     | ❌     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_01_mode0_2.gb                       | ❌     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/lcdon_mode_timing.gb                     | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_01_mode0_2.gb                       | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode0_2-GS.gb                       | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode1_0-GS.gb                       | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode2_3.gb                          | ✅     |
@@ -184,7 +184,7 @@ From https://github.com/vojty/wilbertpol-test-suite
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly143_144_152_153.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly143_144_mode0_1.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly143_144_mode3_0.gb                     | ✅     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc-GS.gb                             | ❌     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc-GS.gb                             | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_0-GS.gb                           | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_0_write-GS.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_144-GS.gb                         | ✅     |
@@ -210,13 +210,13 @@ From https://github.com/vojty/wilbertpol-test-suite
 
 https://github.com/Hacktix/scribbltests
 
-| Name      | Expected                    | Result                    | Diff                    | Status       |
-| --------- | --------------------------- | ------------------------- | ----------------------- | ------------ |
-| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0   |
-| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0   |
-| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0   |
-| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0   |
-| statcount | ![](statcount/expected.png) | ![](statcount/result.png) | ![](statcount/diff.png) | ❌ Diff: 195 |
+| Name      | Expected                    | Result                    | Diff                    | Status     |
+| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
+| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0 |
+| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0 |
+| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0 |
+| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0 |
+| statcount | ![](statcount/expected.png) | ![](statcount/result.png) | ![](statcount/diff.png) | ✅ Diff: 0 |
 
 ## TurtleTests
 
@@ -242,29 +242,29 @@ https://github.com/mattcurrie/mealybug-tearoom-tests
 | Name                              | Expected                                            | Result                                            | Diff                                            | Status         |
 | --------------------------------- | --------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | -------------- |
 | m2_win_en_toggle                  | ![](m2_win_en_toggle/expected.png)                  | ![](m2_win_en_toggle/result.png)                  | ![](m2_win_en_toggle/diff.png)                  | ✅ Diff: 0     |
-| m3_bgp_change                     | ![](m3_bgp_change/expected.png)                     | ![](m3_bgp_change/result.png)                     | ![](m3_bgp_change/diff.png)                     | ❌ Diff: 496   |
-| m3_bgp_change_sprites             | ![](m3_bgp_change_sprites/expected.png)             | ![](m3_bgp_change_sprites/result.png)             | ![](m3_bgp_change_sprites/diff.png)             | ❌ Diff: 6437  |
-| m3_lcdc_bg_en_change              | ![](m3_lcdc_bg_en_change/expected.png)              | ![](m3_lcdc_bg_en_change/result.png)              | ![](m3_lcdc_bg_en_change/diff.png)              | ❌ Diff: 2874  |
+| m3_bgp_change                     | ![](m3_bgp_change/expected.png)                     | ![](m3_bgp_change/result.png)                     | ![](m3_bgp_change/diff.png)                     | ❌ Diff: 2927  |
+| m3_bgp_change_sprites             | ![](m3_bgp_change_sprites/expected.png)             | ![](m3_bgp_change_sprites/result.png)             | ![](m3_bgp_change_sprites/diff.png)             | ❌ Diff: 9346  |
+| m3_lcdc_bg_en_change              | ![](m3_lcdc_bg_en_change/expected.png)              | ![](m3_lcdc_bg_en_change/result.png)              | ![](m3_lcdc_bg_en_change/diff.png)              | ❌ Diff: 3457  |
 | m3_lcdc_bg_map_change             | ![](m3_lcdc_bg_map_change/expected.png)             | ![](m3_lcdc_bg_map_change/result.png)             | ![](m3_lcdc_bg_map_change/diff.png)             | ❌ Diff: 2386  |
 | m3_lcdc_obj_en_change             | ![](m3_lcdc_obj_en_change/expected.png)             | ![](m3_lcdc_obj_en_change/result.png)             | ![](m3_lcdc_obj_en_change/diff.png)             | ❌ Diff: 146   |
-| m3_lcdc_obj_en_change_variant     | ![](m3_lcdc_obj_en_change_variant/expected.png)     | ![](m3_lcdc_obj_en_change_variant/result.png)     | ![](m3_lcdc_obj_en_change_variant/diff.png)     | ❌ Diff: 1145  |
+| m3_lcdc_obj_en_change_variant     | ![](m3_lcdc_obj_en_change_variant/expected.png)     | ![](m3_lcdc_obj_en_change_variant/result.png)     | ![](m3_lcdc_obj_en_change_variant/diff.png)     | ❌ Diff: 1334  |
 | m3_lcdc_obj_size_change           | ![](m3_lcdc_obj_size_change/expected.png)           | ![](m3_lcdc_obj_size_change/result.png)           | ![](m3_lcdc_obj_size_change/diff.png)           | ❌ Diff: 309   |
 | m3_lcdc_obj_size_change_scx       | ![](m3_lcdc_obj_size_change_scx/expected.png)       | ![](m3_lcdc_obj_size_change_scx/result.png)       | ![](m3_lcdc_obj_size_change_scx/diff.png)       | ❌ Diff: 190   |
 | m3_lcdc_tile_sel_change           | ![](m3_lcdc_tile_sel_change/expected.png)           | ![](m3_lcdc_tile_sel_change/result.png)           | ![](m3_lcdc_tile_sel_change/diff.png)           | ❌ Diff: 2574  |
-| m3_lcdc_tile_sel_win_change       | ![](m3_lcdc_tile_sel_win_change/expected.png)       | ![](m3_lcdc_tile_sel_win_change/result.png)       | ![](m3_lcdc_tile_sel_win_change/diff.png)       | ❌ Diff: 1563  |
+| m3_lcdc_tile_sel_win_change       | ![](m3_lcdc_tile_sel_win_change/expected.png)       | ![](m3_lcdc_tile_sel_win_change/result.png)       | ![](m3_lcdc_tile_sel_win_change/diff.png)       | ❌ Diff: 2741  |
 | m3_lcdc_win_en_change_multiple    | ![](m3_lcdc_win_en_change_multiple/expected.png)    | ![](m3_lcdc_win_en_change_multiple/result.png)    | ![](m3_lcdc_win_en_change_multiple/diff.png)    | ❌ Diff: 8169  |
-| m3_lcdc_win_en_change_multiple_wx | ![](m3_lcdc_win_en_change_multiple_wx/expected.png) | ![](m3_lcdc_win_en_change_multiple_wx/result.png) | ![](m3_lcdc_win_en_change_multiple_wx/diff.png) | ❌ Diff: 3741  |
-| m3_lcdc_win_map_change            | ![](m3_lcdc_win_map_change/expected.png)            | ![](m3_lcdc_win_map_change/result.png)            | ![](m3_lcdc_win_map_change/diff.png)            | ❌ Diff: 1096  |
+| m3_lcdc_win_en_change_multiple_wx | ![](m3_lcdc_win_en_change_multiple_wx/expected.png) | ![](m3_lcdc_win_en_change_multiple_wx/result.png) | ![](m3_lcdc_win_en_change_multiple_wx/diff.png) | ❌ Diff: 4966  |
+| m3_lcdc_win_map_change            | ![](m3_lcdc_win_map_change/expected.png)            | ![](m3_lcdc_win_map_change/result.png)            | ![](m3_lcdc_win_map_change/diff.png)            | ❌ Diff: 2052  |
 | m3_obp0_change                    | ![](m3_obp0_change/expected.png)                    | ![](m3_obp0_change/result.png)                    | ![](m3_obp0_change/diff.png)                    | ❌ Diff: 414   |
 | m3_scx_high_5_bits                | ![](m3_scx_high_5_bits/expected.png)                | ![](m3_scx_high_5_bits/result.png)                | ![](m3_scx_high_5_bits/diff.png)                | ❌ Diff: 6426  |
 | m3_scx_low_3_bits                 | ![](m3_scx_low_3_bits/expected.png)                 | ![](m3_scx_low_3_bits/result.png)                 | ![](m3_scx_low_3_bits/diff.png)                 | ❌ Diff: 540   |
-| m3_scy_change                     | ![](m3_scy_change/expected.png)                     | ![](m3_scy_change/result.png)                     | ![](m3_scy_change/diff.png)                     | ❌ Diff: 8907  |
-| m3_window_timing                  | ![](m3_window_timing/expected.png)                  | ![](m3_window_timing/result.png)                  | ![](m3_window_timing/diff.png)                  | ❌ Diff: 27    |
+| m3_scy_change                     | ![](m3_scy_change/expected.png)                     | ![](m3_scy_change/result.png)                     | ![](m3_scy_change/diff.png)                     | ❌ Diff: 8750  |
+| m3_window_timing                  | ![](m3_window_timing/expected.png)                  | ![](m3_window_timing/result.png)                  | ![](m3_window_timing/diff.png)                  | ❌ Diff: 665   |
 | m3_window_timing_wx_0             | ![](m3_window_timing_wx_0/expected.png)             | ![](m3_window_timing_wx_0/result.png)             | ![](m3_window_timing_wx_0/diff.png)             | ❌ Diff: 954   |
-| m3_wx_4_change                    | ![](m3_wx_4_change/expected.png)                    | ![](m3_wx_4_change/result.png)                    | ![](m3_wx_4_change/diff.png)                    | ❌ Diff: 11925 |
+| m3_wx_4_change                    | ![](m3_wx_4_change/expected.png)                    | ![](m3_wx_4_change/result.png)                    | ![](m3_wx_4_change/diff.png)                    | ❌ Diff: 229   |
 | m3_wx_4_change_sprites            | ![](m3_wx_4_change_sprites/expected.png)            | ![](m3_wx_4_change_sprites/result.png)            | ![](m3_wx_4_change_sprites/diff.png)            | ❌ Diff: 10    |
-| m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 10734 |
-| m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 6631  |
+| m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ❌ Diff: 638   |
+| m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ❌ Diff: 13799 |
 
 ## AGE test suite
 
@@ -284,4 +284,4 @@ Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms
 | roms/age-test-roms/build/stat-mode-window/stat-mode-window-dmgC.gb          | ❌     | ![](age-tests/stat-mode-window-dmgC.gb/result.png)         |
 | roms/age-test-roms/build/vram/vram-read-dmgC.gb                             | ❌     | ![](age-tests/vram-read-dmgC.gb/result.png)                |
 
-Generated at: 2026-06-02 19:49:38.336878 UTC, took 3s
+Generated at: 2026-06-02 19:54:40.985636 UTC, took 3s
