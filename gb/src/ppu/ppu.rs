@@ -273,7 +273,11 @@ impl Ppu {
                     match self.ly {
                         0..=143 => {
                             self.mode = Mode::OamSearch;
-                            self.pending_mode = Some(Mode::OamSearch);
+                            // FIX: Apply Mode 2 immediately at cycle 0
+                            // to satisfy Wilbertpol's exact timing assertions
+                            self.change_stat_mode(Mode::OamSearch);
+                            self.stat_update(ic);
+                            self.pending_mode = None;
                         }
                         144 => {
                             self.mode = Mode::VBlank;
@@ -339,12 +343,10 @@ impl Ppu {
                     // Cycle 4+     line   0 => STAT mode=2
                     // tested by ly00_mode0_2.gs
                     // https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf section 8.9.1
-                    self.change_stat_mode(Mode::HBlank);
 
-                    // FORCE A STAT UPDATE HERE!
-                    // This evaluates the brief drop to HBlank, pulling prev_stat_flag
-                    // to false so the impending Mode 2 interrupt isn't blocked.
-                    self.stat_update(ic);
+                    // FIX: Silently drop the line state to create the falling edge
+                    // WITHOUT firing a false HBlank interrupt!
+                    self.prev_stat_flag = false;
 
                     if self.skip_frames > 0 {
                         self.skip_frames -= 1;
@@ -763,18 +765,14 @@ impl Ppu {
                 }
             }
             R_STAT => {
-                // 1. Simulate the FULL hardware glitch for DMG
+                // 1. Simulate the FULL hardware glitch for DMG (stat_write_if-GS.gb)
                 if is_lcd_enabled(&self.lcdc) && !self.is_cgb {
-                    let glitch_line = self.stat_mode == Mode::HBlank
-                        || self.stat_mode == Mode::VBlank
-                        || self.stat_mode == Mode::OamSearch
-                        || self.ly == self.lyc;
-
-                    if !self.prev_stat_flag && glitch_line {
-                        ic.request_interrupt(InterruptBits::LCD_STATS);
-                        // CRITICAL: We must record that the line is now HIGH so the
-                        // subsequent normal stat_update doesn't fire a duplicate!
-                        self.prev_stat_flag = true;
+                    // The glitch pulls the line high in Modes 0, 1, and 2 (Not Mode 3)
+                    if self.stat_mode != Mode::PixelTransfer {
+                        if !self.prev_stat_flag {
+                            ic.request_interrupt(InterruptBits::LCD_STATS);
+                            self.prev_stat_flag = true;
+                        }
                     }
                 }
 
