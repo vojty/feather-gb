@@ -14,6 +14,7 @@ check_status() {
 (
     printf "\n[ Make TurtleTests ]\n"
     cd roms/TurtleTests
+    rgbenv use 0.5.0
     make clean
     make all
     check_status
@@ -23,6 +24,7 @@ check_status() {
 (
     printf "\n[ Make mooneye-test-suite ]\n"
     cd roms/mooneye-test-suite
+    rgbenv use 0.5.0
     make clean
     make all
     check_status
@@ -32,6 +34,8 @@ check_status() {
 (
     printf "\n[ Make mealybug-tearoom-tests ]\n"
     cd roms/mealybug-tearoom-tests
+    git submodule update --init --recursive --checkout
+    rgbenv use 0.5.0
     make clean
     make all
 )
@@ -40,6 +44,8 @@ check_status() {
 (
     printf "\n[ Make dmg-acid2 ]\n"
     cd roms/dmg-acid2
+    git submodule update --init --recursive --checkout
+    rgbenv use 0.5.0
     make clean
     make all
     check_status
@@ -49,6 +55,8 @@ check_status() {
 (
     echo "[ Make cgb-acid2 ]"
     cd roms/cgb-acid2
+    git submodule update --init --recursive --checkout
+    rgbenv use 0.5.0
     make clean
     make all
     check_status
@@ -58,6 +66,7 @@ check_status() {
 (
     echo "[ Make striketrough ]"
     cd roms/strikethrough
+    rgbenv use 0.5.0
     make clean
     make
 )
@@ -66,6 +75,7 @@ check_status() {
 (
     echo "[ Make BullyGB ]"
     cd roms/BullyGB
+    rgbenv use 0.5.0
     make clean
     make
     check_status
@@ -75,6 +85,7 @@ check_status() {
 (
     echo "[ Make MBC3 Tester ]"
     cd roms/MBC3-Tester-gb/disassembly
+    rgbenv use 0.4.2
     make clean
     make all
     check_status
@@ -84,6 +95,7 @@ check_status() {
 (
     echo "[ Make Wilbert Pol's test suite ]"
     cd roms/wilbertpol-test-suite
+    rgbenv use 0.5.0
     make clean
     make
     check_status
@@ -93,6 +105,7 @@ check_status() {
 (
     echo "[ Make AGE test roms ]"
     cd roms/age-test-roms
+    rgbenv use 0.5.0
     make clean
     make
     check_status
