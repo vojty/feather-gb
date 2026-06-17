@@ -110,3 +110,13 @@ check_status() {
     make
     check_status
 )
+
+# Update docboy-test-suite
+(
+    echo "[ Make docboy-test-suite ]"
+    cd roms/docboy-test-suite
+    rgbenv use 0.9.0
+    make clean
+    make dmg
+    check_status
+)

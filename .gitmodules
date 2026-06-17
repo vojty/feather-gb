@@ -35,3 +35,6 @@
 [submodule "roms/age-test-roms"]
 	path = roms/age-test-roms
 	url = https://github.com/c-sp/age-test-roms.git
+[submodule "roms/docboy-test-suite"]
+	path = roms/docboy-test-suite
+	url = https://github.com/Docheinstein/docboy-test-suite.git
