@@ -194,10 +194,12 @@ impl Ppu {
 
         self.line_clocks += 1;
 
-        // Mode change is delayed
+        // Apply pending mode at the exact start of the cycle
         if let Some(pending_mode) = self.pending_mode {
             self.change_stat_mode(pending_mode);
-            self.stat_update(ic, pending_mode);
+            // This update now happens precisely when the mode switches,
+            // preserving the cycle-perfect timing scxly expects.
+            self.stat_update(ic);
             self.pending_mode = None;
         }
 
@@ -302,7 +304,7 @@ impl Ppu {
                         self.check_ly_equals_lyc(ic);
                         if self.line == 144 {
                             ic.request_interrupt(InterruptBits::V_BLANK);
-                            self.stat_update(ic, Mode::OamSearch);
+                            self.stat_update(ic);
                         }
                     }
                     TOTAL_LINE_CLOCKS => {
@@ -314,7 +316,7 @@ impl Ppu {
                     }
                     _ => {}
                 }
-                self.stat_update(ic, Mode::VBlank);
+                self.stat_update(ic);
             }
             153 => match self.line_clocks {
                 4 => {
@@ -339,7 +341,10 @@ impl Ppu {
                     // Cycle 4+     line   0 => STAT mode=2
                     // tested by ly00_mode0_2.gs
                     // https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf section 8.9.1
-                    self.change_stat_mode(Mode::HBlank);
+
+                    // FIX: Silently drop the line state to create the falling edge
+                    // WITHOUT firing a false HBlank interrupt!
+                    self.prev_stat_flag = false;
 
                     if self.skip_frames > 0 {
                         self.skip_frames -= 1;
@@ -354,27 +359,33 @@ impl Ppu {
         }
     }
 
-    fn stat_update(&mut self, ic: &mut InterruptController, mode: Mode) {
+    fn stat_update(&mut self, ic: &mut InterruptController) {
         if !is_lcd_enabled(&self.lcdc) {
             return;
         }
 
-        let mode_intr = match mode {
-            Mode::OamSearch => self.stat.get_bits(StatBits::OAM_INTERRUPT),
-            Mode::HBlank => self.stat.get_bits(StatBits::H_BLANK_INTERRUPT),
-            Mode::VBlank => self.stat.get_bits(StatBits::V_BLANK_INTERRUPT),
-            Mode::PixelTransfer => 0,
+        // Evaluate purely based on current PPU state
+        let mode_intr = match self.stat_mode {
+            Mode::HBlank => self.stat.contains(StatBits::H_BLANK_INTERRUPT),
+            Mode::VBlank => {
+                self.stat.contains(StatBits::V_BLANK_INTERRUPT)
+                    || self.stat.contains(StatBits::OAM_INTERRUPT) // RESTORE THIS
+            }
+            Mode::OamSearch => self.stat.contains(StatBits::OAM_INTERRUPT),
+            Mode::PixelTransfer => false,
         };
 
         let ly_equals_ly_intr = self.stat.contains(StatBits::LYC_EQUALS_LY_FLAG)
             && self.stat.contains(StatBits::LYC_EQUALS_LY_INTERRUPT);
 
-        let stat_flag = mode_intr > 0 || ly_equals_ly_intr;
+        let current_stat_line = mode_intr || ly_equals_ly_intr;
 
-        if !self.prev_stat_flag && stat_flag {
+        // Detect Rising Edge
+        if !self.prev_stat_flag && current_stat_line {
             ic.request_interrupt(InterruptBits::LCD_STATS);
         }
-        self.prev_stat_flag = stat_flag;
+
+        self.prev_stat_flag = current_stat_line;
     }
 
     fn check_ly_equals_lyc(&mut self, ic: &mut InterruptController) {
@@ -383,18 +394,21 @@ impl Ppu {
         } else {
             self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
         }
-        self.stat_update(ic, self.stat_mode)
+        self.stat_update(ic)
     }
 
     fn check_ly_equals_lyc_no_mode(&mut self, ic: &mut InterruptController) {
-        if Some(self.lyc) == self.ly_to_compare {
-            self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, true);
-        } else {
-            self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
+        let ly_match = Some(self.lyc) == self.ly_to_compare;
+        self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, ly_match);
+
+        let ly_intr = ly_match && self.stat.contains(StatBits::LYC_EQUALS_LY_INTERRUPT);
+
+        // When the LCD turns on, we ignore the artificial HBlank stat_mode
+        // and ONLY evaluate the LYC interrupt to safely seed the IRQ line.
+        if !self.prev_stat_flag && ly_intr {
+            ic.request_interrupt(InterruptBits::LCD_STATS);
         }
-        // This is ugly hack, because this function is called when LCD is turned oo
-        // and the mode can't be PixelTransfer so mode interrupt wont happend
-        self.stat_update(ic, Mode::PixelTransfer)
+        self.prev_stat_flag = ly_intr;
     }
 
     fn init_pixel_transfer(&mut self) {
@@ -745,19 +759,29 @@ impl Ppu {
                 self.lyc = value;
                 if is_lcd_enabled(&self.lcdc) {
                     self.check_ly_equals_lyc(ic);
-                    self.stat_update(ic, self.stat_mode);
+                    self.stat_update(ic);
                 }
             }
             R_STAT => {
+                // 1. Simulate the FULL hardware glitch for DMG (stat_write_if-GS.gb)
+                if is_lcd_enabled(&self.lcdc) && !self.is_cgb {
+                    // The glitch pulls the line high in Modes 0, 1, and 2 (Not Mode 3)
+                    if self.stat_mode != Mode::PixelTransfer {
+                        if !self.prev_stat_flag {
+                            ic.request_interrupt(InterruptBits::LCD_STATS);
+                            self.prev_stat_flag = true;
+                        }
+                    }
+                }
+
+                // 2. Update the register
                 let mut new_stat = StatBits::from_bits_truncate(value);
-                // LY=LYC is not writeable
                 new_stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
                 self.stat = (self.stat & StatBits::LYC_EQUALS_LY_FLAG) | new_stat;
 
-                if is_lcd_enabled(&self.lcdc)
-                    && [Mode::HBlank, Mode::VBlank].contains(&self.stat_mode)
-                {
-                    self.stat_update(ic, self.stat_mode)
+                // 3. Re-evaluate normally
+                if is_lcd_enabled(&self.lcdc) {
+                    self.stat_update(ic);
                 }
             }
             R_SCX => self.scx = value,

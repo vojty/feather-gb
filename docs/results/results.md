@@ -93,7 +93,7 @@ Only DMG compatible tests used.
 | roms/mooneye-test-suite/build/acceptance/ppu/intr_2_oam_ok_timing.gb         | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/lcdon_timing-GS.gb              | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/lcdon_write_timing-GS.gb        | ✅     |
-| roms/mooneye-test-suite/build/acceptance/ppu/stat_irq_blocking.gb            | ✅     |
+| roms/mooneye-test-suite/build/acceptance/ppu/stat_irq_blocking.gb            | ❌     |
 | roms/mooneye-test-suite/build/acceptance/ppu/stat_lyc_onoff.gb               | ✅     |
 | roms/mooneye-test-suite/build/acceptance/ppu/vblank_stat_intr-GS.gb          | ✅     |
 | roms/mooneye-test-suite/build/acceptance/push_timing.gb                      | ✅     |
@@ -176,8 +176,8 @@ From https://github.com/vojty/wilbertpol-test-suite
 | roms/wilbertpol-test-suite/build/acceptance/gpu/intr_2_timing.gb                         | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/lcdon_mode_timing.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_01_mode0_2.gb                       | ✅     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode0_2-GS.gb                       | ✅     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode1_0-GS.gb                       | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode0_2-GS.gb                       | ❌     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode1_0-GS.gb                       | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode2_3.gb                          | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly00_mode3_0.gb                          | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly143_144_145.gb                         | ✅     |
@@ -185,7 +185,7 @@ From https://github.com/vojty/wilbertpol-test-suite
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly143_144_mode0_1.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly143_144_mode3_0.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc-GS.gb                             | ✅     |
-| roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_0-GS.gb                           | ✅     |
+| roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_0-GS.gb                           | ❌     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_0_write-GS.gb                     | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_144-GS.gb                         | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/ly_lyc_153-GS.gb                         | ✅     |
@@ -284,4 +284,4 @@ Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms
 | roms/age-test-roms/build/stat-mode-window/stat-mode-window-dmgC.gb          | ❌     | ![](age-tests/stat-mode-window-dmgC.gb/result.png)         |
 | roms/age-test-roms/build/vram/vram-read-dmgC.gb                             | ❌     | ![](age-tests/vram-read-dmgC.gb/result.png)                |
 
-Generated at: 2024-02-09 20:54:34.760468 UTC, took 2s
+Generated at: 2026-06-02 19:54:40.985636 UTC, took 3s
