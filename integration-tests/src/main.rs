@@ -52,8 +52,7 @@ pub async fn main() {
     fs::write(&output_file, content.join("\n\n")).unwrap();
 
     // Format markdown with prettier
-    let mut child = Command::new("./node_modules/.bin/prettier")
-        .arg("--write")
+    let mut child = Command::new("./node_modules/.bin/oxfmt")
         .arg(OUTPUT_DIR)
         .stdout(Stdio::null()) // hide succces
         .spawn()
