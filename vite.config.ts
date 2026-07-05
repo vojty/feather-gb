@@ -12,7 +12,6 @@ import remarkHtml from 'remark-html'
 import { unified } from 'unified'
 import { defineConfig, UserConfig } from 'vite'
 import Unfonts from 'unplugin-fonts/vite'
-import svgr from 'vite-plugin-svgr'
 import wasm from 'vite-plugin-wasm'
 import wasmPack from 'vite-plugin-wasm-pack'
 
@@ -98,7 +97,6 @@ export default defineConfig((configEnv) => {
       wasm(), // adds wasm support
       wasmPack('./gb-web'), // loads wasm module
       wasmPack('./debugger-web'), // loads wasm module
-      svgr(), // adds support for SVG -> React components
       react(), // adds react support
       markdownLoader(), // adds support for markdown -> html
     ],

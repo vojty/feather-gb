@@ -1,5 +1,3 @@
-/// <reference types="vite-plugin-svgr/client" />
-
 // returns URL with file-loader
 declare module '*.gb' {
   const _: string
@@ -12,6 +10,11 @@ declare module '*.gbc' {
 }
 
 declare module '*.md' {
+  const _: string
+  export = _
+}
+
+declare module '*.svg' {
   const _: string
   export = _
 }
