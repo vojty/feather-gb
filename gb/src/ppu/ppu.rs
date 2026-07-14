@@ -192,8 +192,6 @@ impl Ppu {
             return;
         }
 
-        self.line_clocks += 1;
-
         // Mode change is delayed
         if let Some(pending_mode) = self.pending_mode {
             self.change_stat_mode(pending_mode);
@@ -201,10 +199,22 @@ impl Ppu {
             self.pending_mode = None;
         }
 
+        // println!(
+        //     "C{}, L{}, M{}",
+        //     self.line_clocks, self.line, self.mode as u8
+        // );
+
+        // TODO the very first line 0 stays in Mode=0 which is wrong, it should go like 0->3->0
+
         if self.line < 144 {
             self.process_screen_line(ic, events);
         } else {
             self.process_vblank_line(ic);
+        }
+        self.line_clocks += 1;
+
+        if self.line_clocks == TOTAL_LINE_CLOCKS {
+            self.line_clocks = 0;
         }
     }
 
@@ -219,7 +229,7 @@ impl Ppu {
         // LY=LYC handler
         match self.line_clocks {
             // Line to compare is 4 cycles late
-            4 => {
+            3 => {
                 // the check for 0 line is performed during line 153 or when LCD is turned on
                 if self.line != 0 {
                     self.ly_to_compare = Some(self.ly);
@@ -235,7 +245,7 @@ impl Ppu {
                 if self.wy == self.ly {
                     self.window_line_enabled = true
                 }
-                if self.line_clocks == 80 {
+                if self.line_clocks == 79 {
                     self.mode = Mode::PixelTransfer;
                     self.pending_mode = Some(Mode::PixelTransfer);
                     self.init_pixel_transfer();
@@ -263,12 +273,19 @@ impl Ppu {
                 }
             }
             Mode::HBlank => {
-                if self.line_clocks == TOTAL_LINE_CLOCKS {
-                    self.line_clocks = 0;
+                if self.line_clocks == 453 {
                     self.ly += 1;
-                    self.line += 1;
                     self.ly_to_compare = None;
                     self.check_ly_equals_lyc(ic);
+                }
+
+                if self.line_clocks == 454 {
+                    self.ly_to_compare = Some(self.ly);
+                    self.check_ly_equals_lyc(ic);
+                }
+
+                if self.line_clocks == TOTAL_LINE_CLOCKS - 1 {
+                    self.line += 1;
 
                     match self.ly {
                         0..=143 => {
@@ -297,7 +314,7 @@ impl Ppu {
         match self.line {
             144..=152 => {
                 match self.line_clocks {
-                    4 => {
+                    3 => {
                         self.ly_to_compare = Some(self.ly);
                         self.check_ly_equals_lyc(ic);
                         if self.line == 144 {
@@ -305,8 +322,7 @@ impl Ppu {
                             self.stat_update(ic, Mode::OamSearch);
                         }
                     }
-                    TOTAL_LINE_CLOCKS => {
-                        self.line_clocks = 0;
+                    455 => {
                         self.ly += 1;
                         self.line += 1;
                         self.ly_to_compare = None;
@@ -317,20 +333,20 @@ impl Ppu {
                 self.stat_update(ic, Mode::VBlank);
             }
             153 => match self.line_clocks {
-                4 => {
+                3 => {
                     self.ly_to_compare = Some(153);
                     self.check_ly_equals_lyc(ic);
                     self.ly = 0;
                 }
-                8 => {
+                7 => {
                     self.ly_to_compare = None;
                     self.check_ly_equals_lyc(ic);
                 }
-                12 => {
+                11 => {
                     self.ly_to_compare = Some(0);
                     self.check_ly_equals_lyc(ic);
                 }
-                TOTAL_LINE_CLOCKS => {
+                455 => {
                     self.mode = Mode::OamSearch;
                     self.pending_mode = Some(Mode::OamSearch);
                     // Transition from the last line 153 to the line 0 goes like this:
@@ -346,7 +362,6 @@ impl Ppu {
                     }
                     self.window_line = 0;
                     self.line = 0;
-                    self.line_clocks = 0;
                 }
                 _ => {}
             },
@@ -720,7 +735,7 @@ impl Ppu {
                     self.mode = Mode::OamSearch;
                     self.pending_mode = None;
 
-                    self.line_clocks = 4;
+                    self.line_clocks = 2;
                     // Only LY=LYC can trigger STAT interrupt now
                     self.check_ly_equals_lyc_no_mode(ic);
                     self.ly_to_compare = None;

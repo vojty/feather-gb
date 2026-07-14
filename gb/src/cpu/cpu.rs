@@ -211,14 +211,14 @@ impl Cpu {
 
 impl Cpu {
     pub fn read_u8_tick(&mut self, hw: &mut Hardware, address: u16) -> u8 {
-        let value = hw.read_byte(address);
         self.tick(hw);
+        let value = hw.read_byte(address);
         value
     }
 
     pub fn write_u8_tick(&mut self, hw: &mut Hardware, address: u16, value: u8) {
+        self.tick(hw);
         hw.write_byte(address, value);
-        self.tick(hw)
     }
 
     pub fn read_imm_u8_tick(&mut self, hw: &mut Hardware) -> u8 {
