@@ -109,7 +109,7 @@ impl Ppu {
     }
 
     fn render_lines(&self, ui: &Ui, stats: &LineStatsData, base: Pos2) {
-        let stroke_width = 1.0;
+        let stroke_width: f32 = 1.0;
         let stroke_oam_search = Stroke::new(stroke_width, COLOR_OAM_SEARCH);
         let stroke_pixel_transfer = Stroke::new(stroke_width, COLOR_PIXEL_TRANSFER);
         let stroke_h_blank = Stroke::new(stroke_width, COLOR_H_BLANK);

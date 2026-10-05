@@ -237,14 +237,14 @@ export function Play() {
 
           <div className="mt-2 flex justify-center items-center text-xs">
             <button
-              className="mx-2 border rounded px-1 py-1"
+              className="mx-2 border rounded-sm px-1 py-1"
               type="button"
               onClick={onRunningToggle}
             >
               {running ? 'Stop' : 'Run'}
             </button>
 
-            <OpenButton className="mx-2 border rounded px-1 py-1" onLoad={onCartridgeLoad}>
+            <OpenButton className="mx-2 border rounded-sm px-1 py-1" onLoad={onCartridgeLoad}>
               Upload ROM
             </OpenButton>
 

@@ -3,7 +3,7 @@ use constants::DISPLAY_WIDTH;
 use parse_display::Display;
 
 use crate::{
-    constants::{self, SPRITES_PER_LINE, TILE_SIZE},
+    constants::{self, SPRITES_COUNT, SPRITES_PER_LINE, TILE_SIZE},
     events::Events,
     interrupts::{InterruptBits, InterruptController},
     ppu::vram::BgToOamPriority,
@@ -112,7 +112,6 @@ pub struct Ppu {
 
     line_tiles: [Option<(u8, BgToOamPriority)>; DISPLAY_WIDTH], // index = x, value = (color index,priority)
     fetcher: Fetcher,
-    possible_sprites: ArrayVec<Sprite, 40>,
 
     is_cgb: bool,
 
@@ -151,7 +150,6 @@ impl Ppu {
             skip_frames: 0,
             system_palette,
 
-            possible_sprites: ArrayVec::new(),
 
             bg_color_palettes: ColorPaletteMemory::new(),
             obj_color_palettes: ColorPaletteMemory::new(),
@@ -506,21 +504,23 @@ impl Ppu {
         )
     }
 
-    fn collect_sprites(&mut self) {
+    fn collect_sprites(&self) -> ArrayVec<&Sprite, SPRITES_COUNT> {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
 
         let current_line = self.ly as isize;
 
-        self.possible_sprites = self
+        let mut sprites: ArrayVec<&Sprite, SPRITES_COUNT> = self
             .oam
             .sprites
-            .into_iter()
+            .iter()
             .filter(|sprite| sprite.y <= current_line && current_line < sprite.y + sprite_height)
             .collect();
 
         if !self.is_cgb || get_oam_priority(self.opri) == OamPriority::XPosition {
-            self.possible_sprites.sort_by(|&a, &b| a.x.cmp(&b.x));
+            sprites.sort_by(|a, b| a.x.cmp(&b.x));
         }
+
+        sprites
     }
 
     fn render_sprites(&mut self) {
@@ -528,12 +528,10 @@ impl Ppu {
             return;
         }
 
-        self.collect_sprites();
-
         // 10 pixels per max 8 pixels = 80
         let pixels: ArrayVec<(usize, usize, Rgb, bool), 80> = self
-            .possible_sprites
-            .iter()
+            .collect_sprites()
+            .into_iter()
             .take(SPRITES_PER_LINE)
             .rev()
             .flat_map(|sprite| self.render_sprite(sprite))
