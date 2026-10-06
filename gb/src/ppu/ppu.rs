@@ -115,7 +115,7 @@ pub struct Ppu {
     window_line_enabled: bool,
     window_x: i32,
     x: u8,
-    sampled_scx: u8,
+    fine_scroll_done: bool,
     pub prev_stat_flag: bool,
     pub line_clocks: u32,
     pub mode: Mode,
@@ -177,7 +177,7 @@ impl Ppu {
             window_x: 0,
             window_line_enabled: false,
             x: 0,
-            sampled_scx: 0,
+            fine_scroll_done: false,
             prev_stat_flag: false,
             line_clocks: 0,
             mode: Mode::HBlank,
@@ -514,16 +514,13 @@ impl Ppu {
     fn init_pixel_transfer(&mut self) {
         self.pipeline_active = true;
         self.x = 0;
-        self.window_x = (self.wx as i32) - 7;
         self.dropped_pixels = 0;
+        self.fine_scroll_done = false;
 
         // Reset
         for x in self.line_tiles.iter_mut() {
             *x = None;
         }
-
-        // TODO check this
-        self.sampled_scx = self.scx;
 
         self.bg_fifo.clear();
         self.fetcher.start_line(FETCHER_START_DELAY);
@@ -545,19 +542,51 @@ impl Ppu {
         }
 
         // Window trigger - BG FIFO is cleared and the fetcher starts over with the window tiles
-        let scx_discarded = self.dropped_pixels == self.sampled_scx % (TILE_SIZE as u8);
-        let wx = self.wx.saturating_sub(7);
-        if bg_enabled
-            && is_window_enabled(&self.lcdc)
+        // SCX fine scroll is compared live on every dot until it matches the discarded pixels count
+        if !self.fine_scroll_done && self.dropped_pixels == self.scx % (TILE_SIZE as u8) {
+            self.fine_scroll_done = true;
+        }
+        let scx_discarded = self.fine_scroll_done;
+        // The window doesn't trigger at WX=166 on DMG
+        let max_wx = if self.is_cgb { 166 } else { 165 };
+        // The trigger doesn't depend on LCDC.0, the window just isn't rendered then
+        if is_window_enabled(&self.lcdc)
             && self.window_line_enabled
             && self.fetcher.layer != MapLayer::Window
             && scx_discarded
-            && self.x == wx
+            && self.wx <= max_wx
+            && self.x == self.wx.saturating_sub(7)
         {
             self.bg_fifo.clear();
             self.fetcher.start_window(self.window_line);
             self.window_line += 1;
-            return;
+            // WX is sampled at the trigger, it can be changed during mode 3
+            self.window_x = (self.wx as i32) - 7;
+
+            // WX < 7 - on hardware the window is triggered (7 - WX) dots earlier, while the first
+            // (junk) tile is still being shifted out. Catch the fetcher up, the first (7 - WX)
+            // window pixels are then discarded below in the time the window would have taken.
+            let head_start = 7u8.saturating_sub(self.wx);
+            for _ in 0..head_start {
+                self.fetcher.tick(
+                    &self.vram,
+                    &self.lcdc,
+                    self.scx,
+                    self.ly.wrapping_add(self.scy),
+                    &mut self.bg_fifo,
+                );
+            }
+            if self.bg_fifo.is_empty() {
+                return;
+            }
+
+            // WX=0 with SCX%8=0 triggers 7 dots before the first visible pixel, but the fetcher
+            // can't push sooner than on this dot - shift out one of the 7 discarded pixels now.
+            // (with SCX%8>0 WX=0 triggers one dot later, the timing then matches the model)
+            if self.wx == 0 && self.scx % (TILE_SIZE as u8) == 0 {
+                self.bg_fifo.shift();
+                self.window_x += 1;
+            }
         }
 
         let Some(fifo_item) = self.bg_fifo.shift() else {
@@ -566,17 +595,15 @@ impl Ppu {
 
         // discard pixels from tile that are not visible due to X scroll (the FIFO is clocked even if BG is disabled)
         if !scx_discarded {
-            self.dropped_pixels += 1;
+            self.dropped_pixels = (self.dropped_pixels + 1) % (TILE_SIZE as u8);
             return;
         }
 
-        if bg_enabled {
-            // WX is between <0,6> - discard pixels of the first window tile
-            // TODO WX=0 is probably broken somehow https://discord.com/channels/465585922579103744/465586075830845475/786173202211799051
-            if self.fetcher.layer == MapLayer::Window && self.window_x < 0 {
-                self.window_x += 1;
-                return;
-            }
+        // WX is between <0,6> - discard pixels of the first window tile
+        // TODO WX=0 is probably broken somehow https://discord.com/channels/465585922579103744/465586075830845475/786173202211799051
+        if self.fetcher.layer == MapLayer::Window && self.window_x < 0 {
+            self.window_x += 1;
+            return;
         }
 
         let bg_layer_enabled = self.is_cgb || bg_enabled;
