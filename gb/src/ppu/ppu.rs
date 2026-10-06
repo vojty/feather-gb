@@ -12,7 +12,7 @@ use crate::{
 };
 
 use super::{
-    fetcher::{Fetcher, FifoItem},
+    fetcher::{BgFifo, Fetcher, FifoItem},
     oam::{Oam, Sprite, OAM_END, OAM_START},
     palettes::{ColorPaletteMemory, DmgPalette, DmgPalettes, Palette, Rgb},
     screen_buffer::{Buffer, ScreenBuffer},
@@ -50,6 +50,8 @@ const LCD_ON_LINE_CLOCKS: u32 = 1;
 // The pixel pipeline (fetcher + FIFO) starts a few dots before STAT reports mode 3,
 // the first line after LCD-on included (SameBoy reaches `mode_3_start` at the same dot)
 const PIPELINE_START: u32 = 78;
+// Dots after the pipeline start before the fetcher starts its first (thrown away) fetch
+const FETCHER_START_DELAY: u8 = 2;
 // Dot of the line 144 when STAT enters mode 1 and V-Blank interrupt is requested
 const VBLANK_START: u32 = 3;
 const STAT_UNUSED_MASK: u8 = 0b1000_0000;
@@ -142,7 +144,10 @@ pub struct Ppu {
     screen_buffer: ScreenBuffer,
 
     line_tiles: [Option<(u8, BgToOamPriority)>; DISPLAY_WIDTH], // index = x, value = (color index,priority)
+    // Pixel pipeline - the fetcher produces tile slices, the FIFO consumes them one pixel per dot.
+    // The PPU orchestrates both (window trigger, SCX discard, pixel output).
     fetcher: Fetcher,
+    bg_fifo: BgFifo,
 
     is_cgb: bool,
 
@@ -199,6 +204,7 @@ impl Ppu {
 
             screen_buffer: ScreenBuffer::new(),
             fetcher: Fetcher::new(is_cgb),
+            bg_fifo: BgFifo::new(),
             line_tiles: [None; DISPLAY_WIDTH],
 
             is_cgb,
@@ -519,75 +525,73 @@ impl Ppu {
         // TODO check this
         self.sampled_scx = self.scx;
 
-        let x = self.sampled_scx;
-        let y = self.ly.wrapping_add(self.scy);
-        self.fetcher.start(x, y, MapLayer::Background);
+        self.bg_fifo.clear();
+        self.fetcher.start_line(FETCHER_START_DELAY);
     }
 
     fn process_pixel_transfer(&mut self) {
-        self.fetcher
-            .tick(&self.vram, &self.lcdc, self.ly.wrapping_add(self.scy));
+        let bg_enabled = is_background_or_window_enable(&self.lcdc);
 
-        if self.fetcher.len() <= 8 {
+        self.fetcher.tick(
+            &self.vram,
+            &self.lcdc,
+            self.scx,
+            self.ly.wrapping_add(self.scy),
+            &mut self.bg_fifo,
+        );
+
+        if self.bg_fifo.is_empty() {
             return;
         }
 
-        if is_background_or_window_enable(&self.lcdc) {
-            // TODO check this - this might be true even if bg&win is disabled
-            // discard pixels from tile that are not visible due to X scroll
-            if self.dropped_pixels < self.sampled_scx % (TILE_SIZE as u8) {
-                self.dropped_pixels += 1;
-                self.fetcher.shift();
-                return;
-            }
+        // Window trigger - BG FIFO is cleared and the fetcher starts over with the window tiles
+        let scx_discarded = self.dropped_pixels == self.sampled_scx % (TILE_SIZE as u8);
+        let wx = self.wx.saturating_sub(7);
+        if bg_enabled
+            && is_window_enabled(&self.lcdc)
+            && self.window_line_enabled
+            && self.fetcher.layer != MapLayer::Window
+            && scx_discarded
+            && self.x == wx
+        {
+            self.bg_fifo.clear();
+            self.fetcher.start_window(self.window_line);
+            self.window_line += 1;
+            return;
+        }
 
-            // WX is between <0,6> - discard previous fetched pixels
+        let Some(fifo_item) = self.bg_fifo.shift() else {
+            return;
+        };
+
+        // discard pixels from tile that are not visible due to X scroll (the FIFO is clocked even if BG is disabled)
+        if !scx_discarded {
+            self.dropped_pixels += 1;
+            return;
+        }
+
+        if bg_enabled {
+            // WX is between <0,6> - discard pixels of the first window tile
             // TODO WX=0 is probably broken somehow https://discord.com/channels/465585922579103744/465586075830845475/786173202211799051
-            if self.fetcher.mode == MapLayer::Window && self.window_x < 0 {
+            if self.fetcher.layer == MapLayer::Window && self.window_x < 0 {
                 self.window_x += 1;
-                self.fetcher.shift();
-                return;
-            }
-
-            let wx = if self.wx <= 7 { 0 } else { self.wx - 7 };
-            let is_window_possible = self.window_line_enabled && self.x == wx;
-            if is_window_enabled(&self.lcdc)
-                && is_window_possible
-                && self.fetcher.mode != MapLayer::Window
-            {
-                let x = self.x.wrapping_sub(self.wx).wrapping_add(7);
-                let y = self.window_line;
-                self.window_line += 1;
-                self.fetcher.start(x, y, MapLayer::Window);
                 return;
             }
         }
 
-        let fifo_item = self.fetcher.shift();
-        let bg_layer_enabled = if self.is_cgb {
-            true
-        } else {
-            is_background_or_window_enable(&self.lcdc)
-        };
+        let bg_layer_enabled = self.is_cgb || bg_enabled;
         if bg_layer_enabled {
-            match fifo_item {
-                Some(fifo_item) => {
-                    let palette = if self.is_cgb {
-                        self.bg_color_palettes.get_palette(fifo_item.palette)
-                    } else {
-                        &self.bgp_pal
-                    };
+            let palette = if self.is_cgb {
+                self.bg_color_palettes.get_palette(fifo_item.palette)
+            } else {
+                &self.bgp_pal
+            };
 
-                    let color = palette.colors[fifo_item.color_number as usize];
-                    let priority = self.get_bg_tile_priority(&fifo_item);
-                    self.line_tiles[self.x as usize] = Some((fifo_item.color_number, priority));
-                    // self.line_tiles
-                    //     .insert(self.x, (fifo_item.color_number, priority));
+            let color = palette.colors[fifo_item.color_number as usize];
+            let priority = self.get_bg_tile_priority(&fifo_item);
+            self.line_tiles[self.x as usize] = Some((fifo_item.color_number, priority));
 
-                    self.render_pixel(&color);
-                }
-                None => panic!("Trying to pop pixels from empty FIFO."),
-            }
+            self.render_pixel(&color);
         } else {
             // TODO is this true for CGB?
             let color = self.bgp_pal.colors[0];
