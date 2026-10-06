@@ -30,6 +30,7 @@ impl SplitU16 for u16 {
 }
 
 const HRAM_START: u16 = 0xff80;
+const HALT_INTERRUPT_SAMPLE_AT: u32 = 2;
 const HRAM_END: u16 = 0xfffe;
 const HRAM_SIZE: usize = HRAM_END as usize - HRAM_START as usize + 1;
 
@@ -213,7 +214,7 @@ impl MemoryAccess for Hardware {
                     }
                     self.serial.write_byte(address, value)
                 } // Serial
-                0xff04..=0xff07 => self.timer.write_byte(address, value, ic), // Timer
+                0xff04..=0xff07 => self.timer.write_byte(address, value), // Timer
                 0xff0f => self.interrupts.write_byte(address, value), // Interrupt controller
                 0xff10..=0xff14 => self.apu.write_byte(address, value), // APU Channel 1
                 0xff16..=0xff19 => self.apu.write_byte(address, value), // APU Channel 2
@@ -370,11 +371,11 @@ impl Emulator {
         );
     }
 
+    // Interrupt dispatch takes 5 M-cycles, the first one is the (discarded) opcode fetch
     fn handle_interrupts(&mut self) {
         self.cpu.ime = false;
         self.cpu.halted = false;
 
-        self.cpu.tick(&mut self.hw);
         self.cpu.tick(&mut self.hw);
         self.cpu.tick(&mut self.hw);
 
@@ -382,6 +383,7 @@ impl Emulator {
         let (high, _) = self.cpu.pc.split_to_u8();
         self.cpu.write_u8_tick(&mut self.hw, self.cpu.sp, high);
 
+        // IE might have been overwritten by the push above, the interrupt is chosen now
         let address = self.hw.interrupts.ack_interrupt();
 
         self.cpu.sp = self.cpu.sp.wrapping_sub(1);
@@ -391,37 +393,67 @@ impl Emulator {
         self.cpu.pc = address;
     }
 
-    pub fn run_instruction(&mut self) {
-        if self.cpu.halted && !self.cpu.just_halted {
-            self.cpu.tick(&mut self.hw);
-        }
-
-        // self.create_peach_log_line();
-        let pending_interrupts = self.hw.interrupts.has_available_interrupts();
-
-        self.cpu.just_halted = false;
+    fn enable_requested_ime(&mut self) -> bool {
         let current_ime = self.cpu.ime;
-
         if self.cpu.ime_requested {
             self.cpu.ime_requested = false;
             self.cpu.ime = true;
         }
+        current_ime
+    }
 
-        if self.cpu.halted && !current_ime && pending_interrupts {
-            self.cpu.halted = false;
-        } else if current_ime && pending_interrupts {
-            self.cpu.halted = false;
-            self.handle_interrupts();
-        } else if !self.cpu.halted {
-            let op_code = self.cpu.read_imm_u8_tick(&mut self.hw);
-            if self.cpu.halt_bug {
-                self.cpu.pc -= 1;
-                self.cpu.halt_bug = false;
-            }
-            self.cpu.execute(op_code, &mut self.hw);
+    fn run_halted(&mut self) {
+        let pending_interrupts = if self.cpu.just_halted {
+            self.hw.interrupts.has_available_interrupts()
         } else {
-            // should not happend invalid state?
+            // DMG samples interrupts in the middle of the M-cycle while halted
+            self.cpu
+                .tick_range(&mut self.hw, 0, HALT_INTERRUPT_SAMPLE_AT);
+            let pending = self.hw.interrupts.has_available_interrupts();
+            self.cpu
+                .tick_range(&mut self.hw, HALT_INTERRUPT_SAMPLE_AT, 4);
+            pending
+        };
+        self.cpu.just_halted = false;
+        let current_ime = self.enable_requested_ime();
+
+        if pending_interrupts {
+            self.cpu.halted = false;
+            // the halted M-cycle acts as the opcode fetch,
+            // so the timing is the same as if NOPs were executed
+            if current_ime {
+                self.handle_interrupts();
+            } else {
+                let op_code = self.hw.read_byte(self.cpu.pc);
+                self.cpu.increment_pc();
+                self.cpu.execute(op_code, &mut self.hw);
+            }
         }
+    }
+
+    pub fn run_instruction(&mut self) {
+        if self.cpu.halted {
+            self.run_halted();
+            return;
+        }
+        self.cpu.just_halted = false;
+
+        // Interrupts are checked at the end of the opcode fetch
+        let op_code = self.cpu.read_u8_tick(&mut self.hw, self.cpu.pc);
+        let pending_interrupts = self.hw.interrupts.has_available_interrupts();
+        let current_ime = self.enable_requested_ime();
+
+        if current_ime && pending_interrupts {
+            self.handle_interrupts();
+            return;
+        }
+
+        if self.cpu.halt_bug {
+            self.cpu.halt_bug = false;
+        } else {
+            self.cpu.increment_pc();
+        }
+        self.cpu.execute(op_code, &mut self.hw);
     }
 
     pub fn on_key_down(&mut self, key: JoypadKey) {
