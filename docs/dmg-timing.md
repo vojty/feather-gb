@@ -77,8 +77,10 @@ After TIMA overflows it reads `0x00` for 4 T-cycles. Then TMA is loaded and the 
 | 86–93 | LX 0–7: the junk pixels are shifted out but not drawn. Tile 0 is fetched meanwhile |
 | 94    | Tile 0 pushed, LX 8 is the first visible pixel (x = LX − 8)                        |
 
-- SCX fine scroll: before LX starts counting, SCX % 8 pixels are discarded. SCX is compared live on every dot until it matches the discarded count (SameBoy; docboy reads SCX once instead). Mealybug `m3_window_timing_wx_0`.
+- SCX discard: before LX starts counting, SCX % 8 pixels are discarded. SCX is compared live on every dot until it matches the discarded count (SameBoy; docboy reads SCX once instead). Mealybug `m3_window_timing_wx_0`.
 - The BG tile counter advances when a tile's high byte is fetched. The junk tile doesn't advance it.
+- Each fetcher step takes 2 dots: LCDC and SCX are latched on the first one, VRAM (and SCY) is read on the second one. The push dot is also the first dot of the next tile ID fetch.
+- Objects: when LX matches an object's X, the pipeline waits until the BG fetcher has read the tile's high byte and the BG FIFO isn't empty, then stalls for 6 more dots (the BG fetcher advances during the first 2). On DMG, clearing OBJ_EN while waiting skips the object. If the window triggers at the same LX, the trigger goes first and the object waits for the first window tile (Mealybug `m3_lcdc_tile_sel_win_change`). Only the timing is modelled, object pixels are drawn at the end of mode 3. AGE `stat-mode-sprites`, SameBoy.
 
 ## Window
 
@@ -87,15 +89,15 @@ Based on docboy's model, using its LX counter.
 - **WY condition:** checked on every dot of the frame. LY = WY while WIN_EN is set marks the window as triggerable for the rest of the frame. Reset when a new frame starts.
 - **Trigger:** happens when the pixel about to be shifted out is at LX = WX + 1, so the window starts at x = WX − 7. LCDC.0 doesn't matter (the window is just not drawn). WX < 7 triggers during LX 0–7, and the first 7 − WX window pixels are shifted out undrawn. AGE `stat-mode-window`, Mealybug `m3_window_timing`.
 - **Trigger cost:** the BG FIFO is cleared and the window tile arrives 6 dots later.
-- **WX = 0, SCX % 8 > 0:** triggers when the junk tile is pushed, before the fine scroll discard, plus 1 idle dot. The discard then applies to window pixels. This means 1 dot more than other WX values. Mealybug `m3_window_timing_wx_0`, docboy.
+- **WX = 0, SCX % 8 > 0:** triggers when the junk tile is pushed, before the SCX discard, plus 1 idle dot. The discard then applies to window pixels. This means 1 dot more than other WX values. Mealybug `m3_window_timing_wx_0`, docboy.
 - **WX = 166:** doesn't trigger on DMG (CGB: up to 166). AGE `stat-mode-window`.
 - **Window enabled late (DMG):** if WIN_EN was off on the previous dot, the window also triggers 1 dot late (LX = WX + 2). Mealybug `m3_lcdc_win_en_change_multiple_wx`, docboy.
-- **Window disabled:** if WIN_EN is off when a window tile fetch starts, the fetcher switches back to the BG and the window can trigger again on the same line. The first window tile's fetch starts on the trigger dot, so WIN_EN is checked on its tile ID fetch dot instead (the dot after the trigger). If WIN_EN is cleared on the trigger dot, the BG FIFO is still cleared, but the BG is fetched instead. A tile whose fetch has already started is fetched from the window, even if WIN_EN is cleared during the fetch. Window tiles (except the first one) also advance the BG tile counter, so the BG continues where the window covered it. Mealybug `m3_lcdc_win_en_change_multiple`, `m3_lcdc_win_en_change_multiple_wx`, docboy (it checks WIN_EN on every fetcher step, which breaks the test with our fetcher timing).
+- **Window disabled:** if WIN_EN is off when a window tile fetch starts, the fetcher switches back to the BG and the window can trigger again on the same line. The first window tile's fetch starts on the trigger dot, so LCDC (WIN_EN and the window tile map) is latched there (SameBoy). If WIN_EN is cleared on the trigger dot, the BG FIFO is still cleared, but the BG is fetched instead. A tile whose fetch has already started is fetched from the window, even if WIN_EN is cleared during the fetch. Window tiles (except the first one) also advance the BG tile counter, so the BG continues where the window covered it. Mealybug `m3_lcdc_win_en_change_multiple`, `m3_lcdc_win_en_change_multiple_wx`, docboy (it checks WIN_EN on every fetcher step, which breaks the test with our fetcher timing).
 - **00 pixel glitch (DMG):** if LX = WX + 1 on the dot a tile is pushed, a color 0 pixel is shifted out instead and the tile waits 1 dot. It applies whenever the WY condition was met in the frame, also to the BG and on later lines, but not to the first tile after a trigger (also when the window was aborted during it). On CGB only while the window is active. Mealybug `m3_wx_4_change`, `m3_wx_5_change`, `m3_wx_6_change`, docboy.
 
 ## Calibrated, not derived
 
-- Pixel pipeline start (dot 78) and the fetcher start delay: depend on our fetcher, which is built differently from other emulators.
+- Pixel pipeline start (dot 78) and the fetcher start (dot 80): depend on our fetcher, which is built differently from other emulators.
 - The trigger condition LX = WX + 1, measured against our pipeline order (docboy checks LX = WX after shifting the pixel out).
 - DIV (`0xABCB`) and the PPU position when the boot ROM is skipped.
 
@@ -103,5 +105,5 @@ Based on docboy's model, using its LX counter.
 
 - LCDC `OBJ_EN` write special cases and the CGB window-disable glitches.
 - WX 1-dot "just changed" glitch (SameBoy's late trigger at position + 6).
-- Sprite penalty during mode 3.
+- OBJ FIFO: objects only stall the pipeline, see Pixel transfer.
 - Most mid-scanline register changes (Mealybug `m3_*`).

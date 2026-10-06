@@ -3,7 +3,7 @@ use constants::DISPLAY_WIDTH;
 use parse_display::Display;
 
 use crate::{
-    constants::{self, SPRITES_COUNT, SPRITES_PER_LINE, TILE_SIZE},
+    constants::{self, SPRITES_PER_LINE, TILE_SIZE},
     events::Events,
     interrupts::{InterruptBits, InterruptController},
     ppu::vram::BgToOamPriority,
@@ -50,10 +50,11 @@ const LCD_ON_LINE_CLOCKS: u32 = 1;
 // The pixel pipeline (fetcher + FIFO) starts a few dots before STAT reports mode 3,
 // the first line after LCD-on included (SameBoy reaches `mode_3_start` at the same dot)
 const PIPELINE_START: u32 = 78;
-// Dots after the pipeline start before the fetcher starts its first (junk) fetch
-const FETCHER_START_DELAY: u8 = 1;
+// The first dot of the fetcher's first (junk) fetch
+const FETCHER_START: u32 = 80;
 // LX of the first visible pixel - LX 0-7 are the pixels of the junk tile (not drawn)
 const FIRST_VISIBLE_LX: u8 = 8;
+const LAST_LX: u8 = FIRST_VISIBLE_LX + DISPLAY_WIDTH as u8;
 const WINDOW_ENABLE_DELAY: u8 = 1;
 // Dots of the object fetch once the BG fetcher is ready (OAM read + 2 tile data reads)
 const OBJECT_FETCH_DOTS: u8 = 6;
@@ -66,15 +67,6 @@ const STAT_UNUSED_MASK: u8 = 0b1000_0000;
 enum Access {
     Read,
     Write,
-}
-
-#[derive(PartialEq, Eq, Clone, Copy)]
-enum ObjectFetch {
-    Idle,
-    // Waiting for the BG fetcher to finish its tile data fetch (and for the BG FIFO to fill)
-    WaitForFetcher,
-    // Dots done of the object fetch itself
-    Fetching(u8),
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -134,13 +126,12 @@ pub struct Ppu {
     window_enabled_history: u8,
     // Pixels shifted out of the BG FIFO (after the SCX discard), the visible ones start at 8
     lx: u8,
-    x: u8,
-    fine_scroll_done: bool,
+    scx_discard_done: bool,
     pub prev_stat_flag: bool,
     pub line_clocks: u32,
     pub mode: Mode,
     pub line: u8,
-    dropped_pixels: u8,
+    scx_discarded: u8,
     mode_for_interrupt: Option<Mode>,
     lyc_interrupt_line: bool,
     hblank_interrupt_at: Option<u32>,
@@ -171,7 +162,8 @@ pub struct Ppu {
     // OAM X of the objects selected for the line (sorted), the objects with X < LX are done
     line_objects_x: ArrayVec<u8, SPRITES_PER_LINE>,
     next_object: usize,
-    object_fetch: ObjectFetch,
+    // Dots done of the current object fetch (0 - no fetch in progress)
+    object_fetch_dots: u8,
 
     is_cgb: bool,
 
@@ -201,8 +193,7 @@ impl Ppu {
             window_wy_triggered: false,
             window_enabled_history: 0,
             lx: 0,
-            x: 0,
-            fine_scroll_done: false,
+            scx_discard_done: false,
             prev_stat_flag: false,
             line_clocks: 0,
             mode: Mode::HBlank,
@@ -225,7 +216,7 @@ impl Ppu {
             obp0_pal: Palette::empty(),
             obp1_pal: Palette::empty(),
 
-            dropped_pixels: 0,
+            scx_discarded: 0,
 
             screen_buffer: ScreenBuffer::new(),
             fetcher: Fetcher::new(is_cgb),
@@ -233,7 +224,7 @@ impl Ppu {
             line_tiles: [None; DISPLAY_WIDTH],
             line_objects_x: ArrayVec::new(),
             next_object: 0,
-            object_fetch: ObjectFetch::Idle,
+            object_fetch_dots: 0,
 
             is_cgb,
 
@@ -419,11 +410,11 @@ impl Ppu {
 
         match self.mode {
             Mode::OamSearch | Mode::PixelTransfer
-                if self.pipeline_active && self.line_clocks > PIPELINE_START =>
+                if self.pipeline_active && self.line_clocks >= FETCHER_START =>
             {
                 self.process_pixel_transfer();
 
-                if self.x == DISPLAY_WIDTH as u8 {
+                if self.lx == LAST_LX {
                     self.pipeline_active = false;
                     self.mode = Mode::HBlank;
                     self.change_stat_mode(Mode::HBlank);
@@ -581,9 +572,8 @@ impl Ppu {
     fn init_pixel_transfer(&mut self) {
         self.pipeline_active = true;
         self.lx = 0;
-        self.x = 0;
-        self.dropped_pixels = 0;
-        self.fine_scroll_done = false;
+        self.scx_discarded = 0;
+        self.scx_discard_done = false;
 
         // Reset
         for x in self.line_tiles.iter_mut() {
@@ -591,7 +581,7 @@ impl Ppu {
         }
 
         self.bg_fifo.clear();
-        self.fetcher.start_line(FETCHER_START_DELAY);
+        self.fetcher.start_line();
 
         // The first 10 objects (in OAM order) on the line, sorted by X (OAM order on the same X)
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
@@ -606,13 +596,13 @@ impl Ppu {
             .collect();
         self.line_objects_x.sort();
         self.next_object = 0;
-        self.object_fetch = ObjectFetch::Idle;
+        self.object_fetch_dots = 0;
     }
 
     /// Object fetch stalls the pixel pipeline when LX matches the object X.
     /// Returns true if the pipeline is stalled in this dot.
     fn process_object_fetch(&mut self) -> bool {
-        if self.object_fetch == ObjectFetch::Idle {
+        if self.object_fetch_dots == 0 {
             while self
                 .line_objects_x
                 .get(self.next_object)
@@ -626,53 +616,46 @@ impl Ppu {
             if !objects_enabled || self.line_objects_x.get(self.next_object) != Some(&self.lx) {
                 return false;
             }
-            self.object_fetch = ObjectFetch::WaitForFetcher;
-        }
 
-        if self.object_fetch == ObjectFetch::WaitForFetcher {
+            // The window trigger at the same LX goes first, the object then waits for
+            // the first window tile. Mealybug `m3_lcdc_tile_sel_win_change`.
+            if self.window_triggers_at_lx() {
+                return false;
+            }
+
+            // Wait for the BG fetcher to finish its tile data fetch (and for the BG FIFO to fill)
             if !self.fetcher.is_ready_for_object() || self.bg_fifo.is_empty() {
                 self.tick_fetcher();
                 return true;
             }
-            self.object_fetch = ObjectFetch::Fetching(0);
         }
 
-        if let ObjectFetch::Fetching(dots) = self.object_fetch {
-            if dots < OBJECT_FETCH_BG_FETCHER_DOTS {
-                self.tick_fetcher();
-            }
-            let dots = dots + 1;
-            self.object_fetch = if dots == OBJECT_FETCH_DOTS {
-                self.next_object += 1;
-                ObjectFetch::Idle
-            } else {
-                ObjectFetch::Fetching(dots)
-            };
+        if self.object_fetch_dots < OBJECT_FETCH_BG_FETCHER_DOTS {
+            self.tick_fetcher();
+        }
+        self.object_fetch_dots += 1;
+        if self.object_fetch_dots == OBJECT_FETCH_DOTS {
+            self.object_fetch_dots = 0;
+            self.next_object += 1;
         }
         true
     }
 
     /// Returns true if the fetcher pushed pixels to the BG FIFO
     fn tick_fetcher(&mut self) -> bool {
-        let window_first_fetch = self.fetcher.is_window_first_fetch();
-        let pushed = self.fetcher.tick(
+        self.fetcher.tick(
             &self.vram,
             &self.lcdc,
-            self.window_enabled_seen(0),
             self.scx,
             self.ly.wrapping_add(self.scy),
             &mut self.bg_fifo,
-        );
-        if pushed && window_first_fetch {
-            self.fetcher.end_window_first_fetch();
-        }
-        pushed
+        )
     }
 
     fn process_pixel_transfer(&mut self) {
         let bg_enabled = is_background_or_window_enable(&self.lcdc);
-        let fine_scroll = self.scx % (TILE_SIZE as u8);
-        let window_first_fetch = self.fetcher.is_window_first_fetch();
+        let scx_discard = self.scx % (TILE_SIZE as u8);
+        let first_fetch = self.fetcher.is_first_fetch();
 
         if self.process_object_fetch() {
             return;
@@ -680,49 +663,40 @@ impl Ppu {
 
         let pushed = self.tick_fetcher();
 
-        let window_can_trigger = self.window_wy_triggered
-            && self.window_enabled_seen(0)
-            && self.fetcher.layer != MapLayer::Window;
+        let window_can_trigger = self.window_can_trigger();
 
-        // SCX fine scroll - the first SCX % 8 pixels are discarded before LX starts counting.
+        // SCX discard - the first SCX % 8 pixels are discarded before LX starts counting.
         // SCX is compared live on every dot until it matches the discarded pixels count.
-        if !self.fine_scroll_done {
-            // WX=0 with SCX % 8 > 0 - the window is triggered before the fine scroll discard
+        if !self.scx_discard_done {
+            // WX=0 with SCX % 8 > 0 - the window is triggered before the SCX discard
             // (when the junk tile is pushed), 1 dot late. The discard then applies to the window.
-            if pushed && window_can_trigger && self.wx == 0 && fine_scroll > 0 {
-                self.start_window(1);
+            if pushed && window_can_trigger && self.wx == 0 && scx_discard > 0 {
+                self.start_window(true);
                 return;
             }
 
             if self.bg_fifo.is_empty() {
                 return;
             }
-            if self.dropped_pixels != fine_scroll {
+            if self.scx_discarded != scx_discard {
                 self.bg_fifo.shift();
-                self.dropped_pixels = (self.dropped_pixels + 1) % (TILE_SIZE as u8);
+                self.scx_discarded = (self.scx_discarded + 1) % (TILE_SIZE as u8);
                 return;
             }
-            self.fine_scroll_done = true;
+            self.scx_discard_done = true;
         }
 
         if self.bg_fifo.is_empty() {
             return;
         }
 
-        // Window trigger - LX matches WX (LX 0-7 included, WX < 7 triggers while the junk tile
-        // is shifted out). The trigger doesn't depend on LCDC.0, the window just isn't rendered.
-        // DMG - if the window has just been enabled, it's triggered also 1 dot late.
-        // The window doesn't trigger at WX=166 on DMG.
-        let max_wx = if self.is_cgb { 166 } else { 165 };
-        let wx_lx = self.wx as u16 + 1;
-        let lx = self.lx as u16;
-        if window_can_trigger
-            && self.wx <= max_wx
-            && (lx == wx_lx || (!self.is_cgb && !self.window_enabled_seen(1) && lx == wx_lx + 1))
-        {
-            self.start_window(0);
+        if self.window_triggers_at_lx() {
+            self.start_window(false);
             return;
         }
+
+        let wx_lx = self.wx as u16 + 1;
+        let lx = self.lx as u16;
 
         // 00 pixel glitch - if LX matches WX when a tile is pushed, a color 0 pixel is shifted out
         // instead and the tile is delayed by 1 dot. Happens if the window WY condition was met
@@ -731,7 +705,7 @@ impl Ppu {
         let insert_pixel = pushed
             && lx == wx_lx
             && self.window_wy_triggered
-            && !window_first_fetch
+            && !first_fetch
             && (!self.is_cgb || self.fetcher.layer == MapLayer::Window);
 
         let fifo_item = if insert_pixel {
@@ -744,10 +718,11 @@ impl Ppu {
         };
 
         // LX 0-7 - the pixels are shifted out, but not drawn
-        self.lx = self.lx.saturating_add(1);
+        self.lx += 1;
         if self.lx <= FIRST_VISIBLE_LX {
             return;
         }
+        let x = (self.lx - FIRST_VISIBLE_LX - 1) as usize;
 
         let bg_layer_enabled = self.is_cgb || bg_enabled;
         if bg_layer_enabled {
@@ -759,27 +734,48 @@ impl Ppu {
 
             let color = palette.colors[fifo_item.color_number as usize];
             let priority = self.get_bg_tile_priority(&fifo_item);
-            self.line_tiles[self.x as usize] = Some((fifo_item.color_number, priority));
+            self.line_tiles[x] = Some((fifo_item.color_number, priority));
 
-            self.render_pixel(&color);
+            self.render_pixel(x, &color);
         } else {
             // TODO is this true for CGB?
             let color = self.bgp_pal.colors[0];
-            self.render_pixel(&color);
+            self.render_pixel(x, &color);
         }
+    }
 
-        self.x += 1;
+    fn window_can_trigger(&self) -> bool {
+        self.window_wy_triggered
+            && self.window_enabled_seen(0)
+            && self.fetcher.layer != MapLayer::Window
+    }
+
+    /// Window trigger - LX matches WX (LX 0-7 included, WX < 7 triggers while the junk tile
+    /// is shifted out). The trigger doesn't depend on LCDC.0, the window just isn't rendered.
+    /// DMG - if the window has just been enabled, it's triggered also 1 dot late.
+    /// The window doesn't trigger at WX=166 on DMG.
+    fn window_triggers_at_lx(&self) -> bool {
+        let max_wx = if self.is_cgb { 166 } else { 165 };
+        let wx_lx = self.wx as u16 + 1;
+        let lx = self.lx as u16;
+        self.window_can_trigger()
+            && self.wx <= max_wx
+            && (lx == wx_lx || (!self.is_cgb && !self.window_enabled_seen(1) && lx == wx_lx + 1))
     }
 
     fn window_enabled_seen(&self, dots_ago: u8) -> bool {
         (self.window_enabled_history >> (WINDOW_ENABLE_DELAY + dots_ago)) & 1 == 1
     }
 
-    /// `idle_dots` - additional dots before the window fetch starts
-    fn start_window(&mut self, idle_dots: u8) {
+    /// `delayed` - the window fetch starts 1 dot later
+    fn start_window(&mut self, delayed: bool) {
         self.bg_fifo.clear();
-        self.fetcher.start_window(self.window_line, idle_dots);
+        self.fetcher.start_window(self.window_line);
         self.window_line = self.window_line.wrapping_add(1);
+        // The trigger dot is the first dot of the window tile ID fetch
+        if !delayed {
+            self.fetcher.latch(&self.lcdc, self.scx);
+        }
     }
 
     fn get_bg_tile_priority(&self, fifo_item: &FifoItem) -> BgToOamPriority {
@@ -792,28 +788,29 @@ impl Ppu {
         fifo_item.priority
     }
 
-    fn render_pixel(&mut self, pixel: &Rgb) {
-        self.screen_buffer.get_write_buffer_mut().set_pixel(
-            self.x as usize,
-            self.ly as usize,
-            pixel,
-        )
+    fn render_pixel(&mut self, x: usize, pixel: &Rgb) {
+        self.screen_buffer
+            .get_write_buffer_mut()
+            .set_pixel(x, self.ly as usize, pixel)
     }
 
-    fn collect_sprites(&self) -> ArrayVec<&Sprite, SPRITES_COUNT> {
+    fn collect_sprites(&self) -> ArrayVec<&Sprite, SPRITES_PER_LINE> {
         let sprite_height = get_sprites_height(&self.lcdc) as isize;
 
         let current_line = self.ly as isize;
 
-        let mut sprites: ArrayVec<&Sprite, SPRITES_COUNT> = self
+        // OAM scan selects the first 10 objects on the line in OAM order (X is not checked)
+        let mut sprites: ArrayVec<&Sprite, SPRITES_PER_LINE> = self
             .oam
             .sprites
             .iter()
             .filter(|sprite| sprite.y <= current_line && current_line < sprite.y + sprite_height)
+            .take(SPRITES_PER_LINE)
             .collect();
 
+        // Drawing priority - lower X wins, stable sort keeps OAM order for equal X
         if !self.is_cgb || get_oam_priority(self.opri) == OamPriority::XPosition {
-            sprites.sort_by(|a, b| a.x.cmp(&b.x));
+            sprites.sort_by_key(|sprite| sprite.x);
         }
 
         sprites
@@ -828,7 +825,6 @@ impl Ppu {
         let pixels: ArrayVec<(usize, usize, Rgb, bool), 80> = self
             .collect_sprites()
             .into_iter()
-            .take(SPRITES_PER_LINE)
             .rev()
             .flat_map(|sprite| self.render_sprite(sprite))
             .collect();

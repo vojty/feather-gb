@@ -3,8 +3,8 @@ use crate::{constants::TILE_WIDTH, traits::MemoryAccess};
 use super::{
     ppu::MapLayer,
     utils::{
-        get_background_tile_map_address, get_window_tile_map_address, transform_tile_number,
-        LcdcBits,
+        get_background_tile_map_address, get_window_tile_map_address, is_window_enabled,
+        transform_tile_number, LcdcBits,
     },
     vram::{BgToOamPriority, TileAttributes, Vram},
 };
@@ -108,20 +108,16 @@ pub struct Fetcher {
     bg_tile_x: u8,
     window_tile_x: u8,
     window_y: u8,
-    // Register values latched on the first dot of the current step
-    step_inputs: Option<StepInputs>,
     tile_id: u8,
     tile_attributes: TileAttributes,
     tile_data_low: u8,
     tile_data_high: u8,
     step: FetcherStep,
-    step_dot: u8,
-    // Dots before the fetcher starts working (the very beginning of mode 3)
-    idle_dots: u8,
-    // The first fetch of the line - its pixels are only shifted out during the LX 0-7 phase
-    junk_fetch: bool,
-    // The first window fetch after the window trigger, it doesn't advance the BG tile counter
-    window_first_fetch: bool,
+    // Register values latched on the first dot of the current step (None - the step hasn't started)
+    latched: Option<StepInputs>,
+    // The first fetch after the line start (the junk tile, only shifted out during LX 0-7) or after
+    // the window trigger. It doesn't advance the BG tile counter.
+    first_fetch: bool,
 }
 
 impl Fetcher {
@@ -132,50 +128,39 @@ impl Fetcher {
             bg_tile_x: 0,
             window_tile_x: 0,
             window_y: 0,
-            step_inputs: None,
             tile_id: 0,
             tile_attributes: TileAttributes::new(),
             tile_data_low: 0,
             tile_data_high: 0,
             step: FetcherStep::GetTileId,
-            step_dot: 0,
-            idle_dots: 0,
-            junk_fetch: false,
-            window_first_fetch: false,
+            latched: None,
+            first_fetch: false,
         }
     }
 
-    fn restart(&mut self, idle_dots: u8) {
-        self.step_inputs = None;
+    fn restart(&mut self, layer: MapLayer) {
+        self.layer = layer;
+        self.first_fetch = true;
         self.step = FetcherStep::GetTileId;
-        self.step_dot = 0;
-        self.idle_dots = idle_dots;
+        self.latched = None;
     }
 
-    pub fn start_line(&mut self, idle_dots: u8) {
-        self.layer = MapLayer::Background;
+    pub fn start_line(&mut self) {
+        self.restart(MapLayer::Background);
         self.bg_tile_x = 0;
-        self.junk_fetch = true;
-        self.window_first_fetch = false;
-        self.restart(idle_dots);
     }
 
-    /// `idle_dots` - additional dots before the window fetch starts
-    pub fn start_window(&mut self, window_y: u8, idle_dots: u8) {
-        self.layer = MapLayer::Window;
+    /// The tile ID fetch starts on the next dot, unless `latch` is called in this dot
+    pub fn start_window(&mut self, window_y: u8) {
+        self.restart(MapLayer::Window);
         self.window_tile_x = 0;
         self.window_y = window_y;
-        self.junk_fetch = false;
-        self.window_first_fetch = true;
-        self.restart(idle_dots);
-        // The dot of the window trigger is the first dot of the tile ID fetch
-        self.step_dot = 1;
     }
 
-    /// The first tile after the window trigger is being fetched/pushed
+    /// The first tile after the line start or the window trigger is being fetched/pushed
     /// (also if the window has been aborted during it)
-    pub fn is_window_first_fetch(&self) -> bool {
-        self.window_first_fetch
+    pub fn is_first_fetch(&self) -> bool {
+        self.first_fetch
     }
 
     fn tile_y(&self, bg_y: u8) -> u8 {
@@ -185,7 +170,7 @@ impl Fetcher {
         }
     }
 
-    // LCDC.4 is checked at the moment of the tile data read
+    // LCDC.4 is latched on the first dot of the step
     fn read_tile_data(&self, vram: &Vram, lcdc: &LcdcBits, bg_y: u8, high: bool) -> u8 {
         let tile_number = transform_tile_number(lcdc, self.tile_id);
         let tile_row = (self.tile_y(bg_y) % 8) as usize;
@@ -202,44 +187,38 @@ impl Fetcher {
         &mut self,
         vram: &Vram,
         lcdc: &LcdcBits,
-        window_enabled: bool,
         scx: u8,
         bg_y: u8,
         fifo: &mut BgFifo,
     ) -> bool {
-        if self.idle_dots > 0 {
-            self.idle_dots -= 1;
-            return false;
-        }
-
         if self.step == FetcherStep::Push {
-            if !self.push(fifo) {
+            if !fifo.push(
+                self.tile_data_low,
+                self.tile_data_high,
+                &self.tile_attributes,
+            ) {
                 return false;
             }
+            self.first_fetch = false;
+            self.step = FetcherStep::GetTileId;
             // The push dot is also the first dot of the next tile ID fetch
-            self.start_step(lcdc, scx);
+            self.latch(lcdc, scx);
             return true;
-        }
-
-        if self.step_dot == 0 {
-            self.start_step(lcdc, scx);
-            return false;
         }
 
         // VRAM is accessed on the second dot of the step. SCX and LCDC are latched on the first
         // dot (the address is computed), SCY is read on the access dot (DMG reads it on every step)
-        self.step_dot = 0;
-        let inputs = self.step_inputs.take().unwrap_or(StepInputs {
-            lcdc: lcdc.bits(),
-            scx,
-        });
+        let Some(inputs) = self.latched.take() else {
+            self.latch(lcdc, scx);
+            return false;
+        };
         let lcdc = &LcdcBits::from_bits_truncate(inputs.lcdc);
 
-        // The window is aborted when it's disabled during the tile ID fetch (the dot after the push,
-        // or the dot after the window trigger), the fetcher continues with the BG
+        // The window is aborted when it's disabled at the start of the tile ID fetch (the push dot,
+        // or the window trigger dot), the fetcher continues with the BG
         if self.step == FetcherStep::GetTileId
             && self.layer == MapLayer::Window
-            && !window_enabled
+            && !is_window_enabled(lcdc)
         {
             self.layer = MapLayer::Background;
         }
@@ -279,7 +258,7 @@ impl Fetcher {
                 self.tile_data_high = self.read_tile_data(vram, lcdc, bg_y, true);
                 // The BG tile counter advances once the slice is fetched (even if the push is
                 // then aborted by the window), but not for the junk and the first window fetch
-                if !self.junk_fetch && !self.is_window_first_fetch() {
+                if !self.first_fetch {
                     self.bg_tile_x = self.bg_tile_x.wrapping_add(1);
                 }
                 self.step = FetcherStep::Push;
@@ -290,37 +269,17 @@ impl Fetcher {
     }
 
     /// The first dot of a fetch step - SCX and LCDC for the VRAM address are latched
-    fn start_step(&mut self, lcdc: &LcdcBits, scx: u8) {
-        self.step_inputs = Some(StepInputs {
+    pub fn latch(&mut self, lcdc: &LcdcBits, scx: u8) {
+        self.latched = Some(StepInputs {
             lcdc: lcdc.bits(),
             scx,
         });
-        self.step_dot = 1;
-    }
-
-    fn push(&mut self, fifo: &mut BgFifo) -> bool {
-        if !fifo.push(
-            self.tile_data_low,
-            self.tile_data_high,
-            &self.tile_attributes,
-        ) {
-            return false;
-        }
-        self.junk_fetch = false;
-        self.step = FetcherStep::GetTileId;
-        true
     }
 
     /// An object fetch can start only once the BG tile data is fetched (the fetcher waits
     /// for the high byte read or for the push)
     pub fn is_ready_for_object(&self) -> bool {
-        self.idle_dots == 0
-            && (self.step == FetcherStep::Push
-                || (self.step == FetcherStep::GetTileHigh && self.step_dot == 1))
-    }
-
-    /// The first window tile has been pushed, the window is fully active now
-    pub fn end_window_first_fetch(&mut self) {
-        self.window_first_fetch = false;
+        self.step == FetcherStep::Push
+            || (self.step == FetcherStep::GetTileHigh && self.latched.is_some())
     }
 }
