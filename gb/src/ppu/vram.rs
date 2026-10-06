@@ -26,7 +26,7 @@ pub enum BgToOamPriority {
     BgPriority,     // BG tile is always on top of the objects
 }
 
-#[derive(Hash)]
+#[derive(Hash, Clone, Copy)]
 pub struct TileAttributes {
     // Bit 7        BG-to-OAM Priority          (0=Use OAM Priority bit, 1=BG Priority)
     // Bit 6        Vertical Flip               (0=Normal, 1=Mirror vertically)
