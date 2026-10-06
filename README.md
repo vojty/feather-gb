@@ -100,6 +100,38 @@ No specific priority here
 
 All external tests require `rgbds@0.4.2` to be installed. The only exception is `age-test-roms` which requires `rgbds0.5.1`. The versions can be switched using https://github.com/gbdev/rgbenv
 
+#### Installing rgbenv (macOS)
+
+1. Install build dependencies. The bison shipped with macOS (2.3) is too old for RGBDS, so a newer one is needed from Homebrew:
+
+   ```sh
+   brew install bison pkgconfig libpng
+   ```
+
+2. Download the script into `~/.local/bin` and make it executable:
+
+   ```sh
+   mkdir -p ~/.local/bin
+   curl -Lo ~/.local/bin/rgbenv https://github.com/gbdev/rgbenv/raw/master/rgbenv
+   chmod +x ~/.local/bin/rgbenv
+   ```
+
+3. Update `PATH` in `~/.zshrc`. Homebrew's bison is keg-only, so it has to be put in front of `/usr/bin` explicitly, otherwise the build fails with `bison: invalid option -- W`:
+
+   ```sh
+   export PATH="$HOME/.local/bin:$PATH"
+   export PATH="/opt/homebrew/opt/bison/bin:$PATH"
+   export PATH="$HOME/.local/share/rgbenv/default/bin:$PATH"
+   ```
+
+4. Restart the shell (or `source ~/.zshrc`) and install the required versions:
+
+   ```sh
+   rgbenv install 0.4.2
+   rgbenv install 0.5.0
+   rgbenv use 0.5.0
+   ```
+
 ### Fonts
 
 - Nintendo - Pretendo - https://fontmeme.com/fonts/pretendo-font/
