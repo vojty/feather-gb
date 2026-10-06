@@ -26,7 +26,7 @@ pub struct FifoItem {
 }
 
 impl FifoItem {
-    const EMPTY: FifoItem = FifoItem {
+    pub const EMPTY: FifoItem = FifoItem {
         color_number: 0,
         priority: BgToOamPriority::OamPriorityBit,
         palette: 0,
@@ -59,6 +59,10 @@ impl BgFifo {
 
     pub fn is_empty(&self) -> bool {
         self.len == 0
+    }
+
+    pub fn is_full(&self) -> bool {
+        self.len == TILE_WIDTH
     }
 
     pub fn clear(&mut self) {
@@ -150,6 +154,15 @@ impl Fetcher {
         self.window_y = window_y;
         // The dot of the window trigger is the first dot of the tile ID fetch
         self.step_dot = 1;
+    }
+
+    /// The window is already active (past its first tile) and the next tile ID read starts
+    /// on the next dot (right after a push)
+    pub fn is_window_tile_start(&self) -> bool {
+        self.layer == MapLayer::Window
+            && self.tile_x > 1
+            && self.step == FetcherStep::GetTileId
+            && self.step_dot == 0
     }
 
     fn tile_y(&self, bg_y: u8) -> u8 {
