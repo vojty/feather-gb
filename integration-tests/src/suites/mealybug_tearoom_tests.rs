@@ -53,3 +53,15 @@ pub async fn run_tests() -> String {
     )
     .await
 }
+
+/// Runs matching tests and reports pixel diff against the reference image.
+pub fn run_filtered(filter: &str) -> Vec<(String, bool, String)> {
+    get_tests()
+        .into_iter()
+        .filter(|t| t.get_name().contains(filter))
+        .map(|t| {
+            let (name, _, _, diff_path, diff) = t.create_result();
+            (name, diff == 0, format!("diff {} ({})", diff, diff_path))
+        })
+        .collect()
+}

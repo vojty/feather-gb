@@ -89,6 +89,12 @@ impl BgFifo {
     }
 }
 
+#[derive(Clone, Copy)]
+struct StepInputs {
+    lcdc: u8,
+    scx: u8,
+}
+
 /// BG/Window fetcher (producer) - reads one tile slice (8 pixels) from VRAM over several dots.
 /// Each of the first 3 steps takes 2 dots (VRAM is accessed on the second one), then it attempts
 /// to push the pixels to the BG FIFO every dot. Fetching (~6 dots) is faster than draining
@@ -102,6 +108,8 @@ pub struct Fetcher {
     bg_tile_x: u8,
     window_tile_x: u8,
     window_y: u8,
+    // Register values latched on the first dot of the current step
+    step_inputs: Option<StepInputs>,
     tile_id: u8,
     tile_attributes: TileAttributes,
     tile_data_low: u8,
@@ -124,6 +132,7 @@ impl Fetcher {
             bg_tile_x: 0,
             window_tile_x: 0,
             window_y: 0,
+            step_inputs: None,
             tile_id: 0,
             tile_attributes: TileAttributes::new(),
             tile_data_low: 0,
@@ -137,6 +146,7 @@ impl Fetcher {
     }
 
     fn restart(&mut self, idle_dots: u8) {
+        self.step_inputs = None;
         self.step = FetcherStep::GetTileId;
         self.step_dot = 0;
         self.idle_dots = idle_dots;
@@ -186,7 +196,7 @@ impl Fetcher {
         }
     }
 
-    /// `scx` and `bg_y` (LY + SCY) are the current register values, they are re-read on every access.
+    /// `scx` and `bg_y` (LY + SCY) are the current register values.
     /// Returns true if the pixels were pushed to the FIFO in this dot.
     pub fn tick(
         &mut self,
@@ -203,26 +213,36 @@ impl Fetcher {
         }
 
         if self.step == FetcherStep::Push {
-            return self.push(fifo);
+            if !self.push(fifo) {
+                return false;
+            }
+            // The push dot is also the first dot of the next tile ID fetch
+            self.start_step(lcdc, scx);
+            return true;
         }
 
-        // The window is aborted when it's disabled at the start of a tile fetch,
-        // the fetcher continues with the BG. The first window tile fetch starts on the trigger
-        // dot (it's 1 dot shorter), so it's checked on its remaining tile ID fetch dot.
+        if self.step_dot == 0 {
+            self.start_step(lcdc, scx);
+            return false;
+        }
+
+        // VRAM is accessed on the second dot of the step. SCX and LCDC are latched on the first
+        // dot (the address is computed), SCY is read on the access dot (DMG reads it on every step)
+        self.step_dot = 0;
+        let inputs = self.step_inputs.take().unwrap_or(StepInputs {
+            lcdc: lcdc.bits(),
+            scx,
+        });
+        let lcdc = &LcdcBits::from_bits_truncate(inputs.lcdc);
+
+        // The window is aborted when it's disabled during the tile ID fetch (the dot after the push,
+        // or the dot after the window trigger), the fetcher continues with the BG
         if self.step == FetcherStep::GetTileId
-            && (self.step_dot == 0 || self.window_first_fetch)
             && self.layer == MapLayer::Window
             && !window_enabled
         {
             self.layer = MapLayer::Background;
         }
-
-        // VRAM is accessed on the second dot of the step
-        self.step_dot += 1;
-        if self.step_dot < 2 {
-            return false;
-        }
-        self.step_dot = 0;
 
         match self.step {
             FetcherStep::GetTileId => {
@@ -230,7 +250,7 @@ impl Fetcher {
                     MapLayer::Background => (
                         get_background_tile_map_address(lcdc),
                         bg_y / 8,
-                        ((scx / 8).wrapping_add(self.bg_tile_x)) & 0x1f,
+                        ((inputs.scx / 8).wrapping_add(self.bg_tile_x)) & 0x1f,
                     ),
                     MapLayer::Window => (
                         get_window_tile_map_address(lcdc),
@@ -269,6 +289,15 @@ impl Fetcher {
         false
     }
 
+    /// The first dot of a fetch step - SCX and LCDC for the VRAM address are latched
+    fn start_step(&mut self, lcdc: &LcdcBits, scx: u8) {
+        self.step_inputs = Some(StepInputs {
+            lcdc: lcdc.bits(),
+            scx,
+        });
+        self.step_dot = 1;
+    }
+
     fn push(&mut self, fifo: &mut BgFifo) -> bool {
         if !fifo.push(
             self.tile_data_low,
@@ -280,6 +309,14 @@ impl Fetcher {
         self.junk_fetch = false;
         self.step = FetcherStep::GetTileId;
         true
+    }
+
+    /// An object fetch can start only once the BG tile data is fetched (the fetcher waits
+    /// for the high byte read or for the push)
+    pub fn is_ready_for_object(&self) -> bool {
+        self.idle_dots == 0
+            && (self.step == FetcherStep::Push
+                || (self.step == FetcherStep::GetTileHigh && self.step_dot == 1))
     }
 
     /// The first window tile has been pushed, the window is fully active now

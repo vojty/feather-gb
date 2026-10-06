@@ -55,6 +55,10 @@ const FETCHER_START_DELAY: u8 = 1;
 // LX of the first visible pixel - LX 0-7 are the pixels of the junk tile (not drawn)
 const FIRST_VISIBLE_LX: u8 = 8;
 const WINDOW_ENABLE_DELAY: u8 = 1;
+// Dots of the object fetch once the BG fetcher is ready (OAM read + 2 tile data reads)
+const OBJECT_FETCH_DOTS: u8 = 6;
+// Dots of the object fetch during which the BG fetcher still advances
+const OBJECT_FETCH_BG_FETCHER_DOTS: u8 = 2;
 // Dot of the line 144 when STAT enters mode 1 and V-Blank interrupt is requested
 const VBLANK_START: u32 = 3;
 const STAT_UNUSED_MASK: u8 = 0b1000_0000;
@@ -62,6 +66,15 @@ const STAT_UNUSED_MASK: u8 = 0b1000_0000;
 enum Access {
     Read,
     Write,
+}
+
+#[derive(PartialEq, Eq, Clone, Copy)]
+enum ObjectFetch {
+    Idle,
+    // Waiting for the BG fetcher to finish its tile data fetch (and for the BG FIFO to fill)
+    WaitForFetcher,
+    // Dots done of the object fetch itself
+    Fetching(u8),
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -155,6 +168,10 @@ pub struct Ppu {
     // The PPU orchestrates both (window trigger, SCX discard, pixel output).
     fetcher: Fetcher,
     bg_fifo: BgFifo,
+    // OAM X of the objects selected for the line (sorted), the objects with X < LX are done
+    line_objects_x: ArrayVec<u8, SPRITES_PER_LINE>,
+    next_object: usize,
+    object_fetch: ObjectFetch,
 
     is_cgb: bool,
 
@@ -214,6 +231,9 @@ impl Ppu {
             fetcher: Fetcher::new(is_cgb),
             bg_fifo: BgFifo::new(),
             line_tiles: [None; DISPLAY_WIDTH],
+            line_objects_x: ArrayVec::new(),
+            next_object: 0,
+            object_fetch: ObjectFetch::Idle,
 
             is_cgb,
 
@@ -240,6 +260,43 @@ impl Ppu {
         self.ly = 0;
         self.line_clocks = 1;
         self.ly_to_compare = Some(0);
+    }
+
+    /// DMG boot ROM leaves the logo (from the cartridge header) and the (R) tile in VRAM,
+    /// some tests rely on it (e.g. mealybug `m3_scx_*` tests render the (R) tile)
+    pub fn init_boot_vram(&mut self, header_logo: &[u8]) {
+        if self.is_cgb {
+            return;
+        }
+
+        // Each logo nibble is scaled 2x (both horizontally and vertically), the boot ROM
+        // writes only the low bitplane
+        let mut address = 0x8010;
+        for byte in header_logo {
+            for nibble in [byte >> 4, byte & 0x0f] {
+                let doubled = (0..4).fold(0u8, |acc, bit| {
+                    let b = (nibble >> (3 - bit)) & 1;
+                    (acc << 2) | (b << 1) | b
+                });
+                for _ in 0..2 {
+                    self.vram.write_byte(address, doubled);
+                    address += 2;
+                }
+            }
+        }
+
+        // (R) tile
+        const REGISTERED_TILE: [u8; 8] = [0x3c, 0x42, 0xb9, 0xa5, 0xb9, 0xa5, 0x42, 0x3c];
+        for (i, row) in REGISTERED_TILE.iter().enumerate() {
+            self.vram.write_byte(0x8190 + i as u16 * 2, *row);
+        }
+
+        // Tile map - logo tiles 0x01-0x18 in two rows, (R) at the end of the first row
+        self.vram.write_byte(0x9910, 0x19);
+        for i in 0..12u16 {
+            self.vram.write_byte(0x9904 + i, 0x01 + i as u8);
+            self.vram.write_byte(0x9924 + i, 0x0d + i as u8);
+        }
     }
 
     pub fn tick(&mut self, ic: &mut InterruptController, events: &mut Events) {
@@ -535,13 +592,69 @@ impl Ppu {
 
         self.bg_fifo.clear();
         self.fetcher.start_line(FETCHER_START_DELAY);
+
+        // The first 10 objects (in OAM order) on the line, sorted by X (OAM order on the same X)
+        let sprite_height = get_sprites_height(&self.lcdc) as isize;
+        let line = self.ly as isize;
+        self.line_objects_x = self
+            .oam
+            .sprites
+            .iter()
+            .filter(|sprite| sprite.y <= line && line < sprite.y + sprite_height)
+            .take(SPRITES_PER_LINE)
+            .map(|sprite| (sprite.x + 8) as u8)
+            .collect();
+        self.line_objects_x.sort();
+        self.next_object = 0;
+        self.object_fetch = ObjectFetch::Idle;
     }
 
-    fn process_pixel_transfer(&mut self) {
-        let bg_enabled = is_background_or_window_enable(&self.lcdc);
-        let fine_scroll = self.scx % (TILE_SIZE as u8);
-        let window_first_fetch = self.fetcher.is_window_first_fetch();
+    /// Object fetch stalls the pixel pipeline when LX matches the object X.
+    /// Returns true if the pipeline is stalled in this dot.
+    fn process_object_fetch(&mut self) -> bool {
+        if self.object_fetch == ObjectFetch::Idle {
+            while self
+                .line_objects_x
+                .get(self.next_object)
+                .is_some_and(|&x| x < self.lx)
+            {
+                self.next_object += 1;
+            }
 
+            // DMG skips the objects entirely when they are disabled
+            let objects_enabled = self.is_cgb || are_sprites_enabled(&self.lcdc);
+            if !objects_enabled || self.line_objects_x.get(self.next_object) != Some(&self.lx) {
+                return false;
+            }
+            self.object_fetch = ObjectFetch::WaitForFetcher;
+        }
+
+        if self.object_fetch == ObjectFetch::WaitForFetcher {
+            if !self.fetcher.is_ready_for_object() || self.bg_fifo.is_empty() {
+                self.tick_fetcher();
+                return true;
+            }
+            self.object_fetch = ObjectFetch::Fetching(0);
+        }
+
+        if let ObjectFetch::Fetching(dots) = self.object_fetch {
+            if dots < OBJECT_FETCH_BG_FETCHER_DOTS {
+                self.tick_fetcher();
+            }
+            let dots = dots + 1;
+            self.object_fetch = if dots == OBJECT_FETCH_DOTS {
+                self.next_object += 1;
+                ObjectFetch::Idle
+            } else {
+                ObjectFetch::Fetching(dots)
+            };
+        }
+        true
+    }
+
+    /// Returns true if the fetcher pushed pixels to the BG FIFO
+    fn tick_fetcher(&mut self) -> bool {
+        let window_first_fetch = self.fetcher.is_window_first_fetch();
         let pushed = self.fetcher.tick(
             &self.vram,
             &self.lcdc,
@@ -553,6 +666,19 @@ impl Ppu {
         if pushed && window_first_fetch {
             self.fetcher.end_window_first_fetch();
         }
+        pushed
+    }
+
+    fn process_pixel_transfer(&mut self) {
+        let bg_enabled = is_background_or_window_enable(&self.lcdc);
+        let fine_scroll = self.scx % (TILE_SIZE as u8);
+        let window_first_fetch = self.fetcher.is_window_first_fetch();
+
+        if self.process_object_fetch() {
+            return;
+        }
+
+        let pushed = self.tick_fetcher();
 
         let window_can_trigger = self.window_wy_triggered
             && self.window_enabled_seen(0)
@@ -911,10 +1037,7 @@ impl Ppu {
                 self.stat_update(ic);
             }
             R_SCX => self.scx = value,
-            R_SCY => {
-                // this should be immediately propagated to fetcher
-                self.scy = value
-            }
+            R_SCY => self.scy = value,
             R_WX => self.wx = value,
             R_WY => self.wy = value,
             R_BGP => self.bgp_pal = Palette::from_bits(value, &self.system_palette),
