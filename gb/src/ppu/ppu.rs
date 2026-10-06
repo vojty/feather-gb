@@ -44,8 +44,9 @@ const LAST_VBLANK_LINE_END: u32 = TOTAL_LINE_CLOCKS + 1;
 // The first line after the LCD is turned on is special - no OAM scan (STAT reports mode 0) and it's shorter
 const FIRST_LINE_OAM_BLOCK: u32 = 79;
 const FIRST_LINE_END: u32 = TOTAL_LINE_CLOCKS - 2;
-// Line clock when the LCD is turned on (LCDC is written 1 T-cycle before the end of M-cycle)
-const LCD_ON_LINE_CLOCKS: u32 = 2;
+// Line clock when the LCD is turned on (LCDC is written 2 T-cycles before the end of M-cycle),
+// the LCD-on sequence then matches SameBoy (which turns the LCD on 1 T-cycle before the end)
+const LCD_ON_LINE_CLOCKS: u32 = 1;
 // The pixel pipeline (fetcher + FIFO) starts a few dots before STAT reports mode 3,
 // the first line after LCD-on included (SameBoy reaches `mode_3_start` at the same dot)
 const PIPELINE_START: u32 = 78;

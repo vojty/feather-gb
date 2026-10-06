@@ -37,7 +37,7 @@ impl InterruptBits {
  * Bit 1: LCDC (see STAT)
  * Bit 0: V-Blank
  */
-pub const R_IF: u16 = 0xff0f;
+const R_IF: u16 = 0xff0f;
 
 /**
  * Interrupt Enable (R/W)
@@ -62,6 +62,9 @@ pub struct InterruptController {
      * When bits are set, the corresponding interrupt can be triggered
      */
     interrupt_enable: InterruptBits,
+
+    // Writing IF blocks the interrupt requests for the rest of the M-cycle (CPU write "wins")
+    requests_blocked: bool,
 }
 
 const INTERRUPTS_PRIORITY: [InterruptBits; 5] = [
@@ -77,6 +80,7 @@ impl InterruptController {
         InterruptController {
             interrupt_enable: InterruptBits::empty(),
             interrupt_flag: InterruptBits::empty(),
+            requests_blocked: false,
         }
     }
 
@@ -86,7 +90,14 @@ impl InterruptController {
     }
 
     pub fn request_interrupt(&mut self, bit: InterruptBits) {
+        if self.requests_blocked {
+            return;
+        }
         self.interrupt_flag.insert(bit);
+    }
+
+    pub fn unblock_requests(&mut self) {
+        self.requests_blocked = false;
     }
 
     pub fn has_available_interrupts(&mut self) -> bool {
@@ -126,7 +137,10 @@ impl MemoryAccess for InterruptController {
     fn write_byte(&mut self, address: u16, value: u8) {
         match address {
             R_IE => self.interrupt_enable = InterruptBits::from_bits_truncate(value),
-            R_IF => self.interrupt_flag = InterruptBits::from_bits_truncate(value),
+            R_IF => {
+                self.interrupt_flag = InterruptBits::from_bits_truncate(value);
+                self.requests_blocked = true;
+            }
             _ => invalid_address("Interrupts (write)", address),
         }
     }

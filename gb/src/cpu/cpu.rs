@@ -5,7 +5,6 @@ use parse_display::{Display, FromStr};
 
 use crate::{
     emulator::{Hardware, SplitU16},
-    interrupts::R_IF,
     ppu::registers::{R_BGP, R_LCDC, R_OBP0, R_OBP1, R_SCX, R_SCY, R_STAT},
     traits::MemoryAccess,
 };
@@ -62,12 +61,11 @@ pub enum Reg16 {
 }
 
 const M_CYCLE_CLOCKS: u32 = 4;
-const LCDC_BG_ENABLE: u8 = 0b0000_0001;
 
 pub struct Cpu {
     pub frame_cycles: u32,
     pub total_cycles: u32,
-    // write which finishes one T-cycle after the end of M-cycle
+    // STAT write which finishes one T-cycle after the end of M-cycle
     delayed_write: Option<(u16, u8)>,
 
     pub halted: bool,
@@ -226,9 +224,11 @@ impl Cpu {
 
     // Some DMG registers are written at a different T-cycle than the end of the M-cycle,
     // see "conflict maps" https://github.com/LIJI32/SameBoy/blob/master/Core/sm83_cpu.c
+    // and https://github.com/Docheinstein/docboy (CPU writes at T1, reads at T3, i.e. 2 dots
+    // before the read, which is T2 here)
     pub fn write_u8_tick(&mut self, hw: &mut Hardware, address: u16, value: u8) {
         match address {
-            // Palettes and LCDC are written in 2 steps, the old value is merged with the new one first
+            // Palettes are written in 2 steps, the old value is merged with the new one first
             R_BGP | R_OBP0 | R_OBP1 => {
                 self.tick_range(hw, 0, 2);
                 let old_value = hw.read_byte(address);
@@ -237,15 +237,8 @@ impl Cpu {
                 hw.write_byte(address, value);
                 self.tick_range(hw, 3, M_CYCLE_CLOCKS);
             }
-            R_LCDC => {
-                self.tick_range(hw, 0, 2);
-                let old_value = hw.read_byte(address);
-                hw.write_byte(address, old_value | (value & LCDC_BG_ENABLE));
-                self.tick_range(hw, 2, 3);
-                hw.write_byte(address, value);
-                self.tick_range(hw, 3, M_CYCLE_CLOCKS);
-            }
-            R_SCX => {
+            // Written at docboy's write timing (LCDC on/off happens immediately)
+            R_LCDC | R_SCX => {
                 self.tick_range(hw, 0, 2);
                 hw.write_byte(address, value);
                 self.tick_range(hw, 2, M_CYCLE_CLOCKS);
@@ -254,12 +247,6 @@ impl Cpu {
                 self.tick_range(hw, 0, 3);
                 hw.write_byte(address, value);
                 self.tick_range(hw, 3, M_CYCLE_CLOCKS);
-            }
-            // CPU write "wins" over the interrupts requested during the next T-cycle
-            R_IF => {
-                self.tick(hw);
-                hw.write_byte(address, value);
-                self.delayed_write = Some((address, value));
             }
             // DMG bug: STAT behaves as if 0xff was written for a single T-cycle
             R_STAT => {
@@ -325,6 +312,9 @@ impl Cpu {
                 if let Some((address, value)) = self.delayed_write.take() {
                     hw.write_byte(address, value);
                 }
+                // IF write blocks the requests until the end of docboy's M-cycle (T3), which is
+                // the first T-cycle of the next M-cycle here
+                hw.interrupts.unblock_requests();
             }
         }
 
