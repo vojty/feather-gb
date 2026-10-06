@@ -24,7 +24,12 @@ fn run_cli(suite: &str, filter: &str) {
         "wilbertpol" => wilbertpol_tests::run_filtered(filter),
         "mooneye" => mooneye_tests::run_filtered(filter),
         "blargg" => blarggs_tests::run_filtered(filter),
-        _ => panic!("Unknown suite '{}', use wilbertpol|mooneye|blargg", suite),
+        "age" => age_tests::run_filtered(filter),
+        "mealybug" => mealybug_tearoom_tests::run_filtered(filter),
+        _ => panic!(
+            "Unknown suite '{}', use wilbertpol|mooneye|blargg|age|mealybug",
+            suite
+        ),
     };
 
     let mut results = results;

@@ -91,3 +91,45 @@ pub async fn run_tests() -> String {
     let results = join_all(handles).await;
     generate_test_report(results)
 }
+
+/// Runs matching tests and, for the generic `write.inc`/`read.inc` style tests,
+/// dumps the TIMING_RESULTS table (from the .sym file) vs EXPECTED_TIMING_RESULTS.
+pub fn run_filtered(filter: &str) -> Vec<TestResult> {
+    use gb::traits::MemoryAccess;
+
+    get_tests()
+        .into_iter()
+        .filter(|f| f.contains(filter))
+        .map(|path| {
+            let (path, valid, _) = execute_test(path);
+            let mut details = String::new();
+            let sym = std::fs::read_to_string(path.replace(".gb", ".sym")).unwrap_or_default();
+            let addr = |name: &str| {
+                sym.lines()
+                    .find(|l| l.ends_with(&format!(" {name}")))
+                    .and_then(|l| u16::from_str_radix(&l[3..7], 16).ok())
+            };
+            if let (Some(res), Some(exp)) = (addr("TIMING_RESULTS"), addr("EXPECTED_TIMING_RESULTS")) {
+                let mut e = create_emulator(&path, Device::DMG);
+                for _ in 0..230 {
+                    e.run_frame();
+                    if !e.hw.events.is_empty() {
+                        break;
+                    }
+                }
+                // 8 SCX values * 5 lines * 12 bytes (DMG)
+                for row in 0..40u16 {
+                    let r: Vec<u8> = (0..12).map(|i| e.hw.read_byte(res + row * 12 + i)).collect();
+                    let x: Vec<u8> = (0..12).map(|i| e.hw.read_byte(exp + row * 12 + i)).collect();
+                    if r != x {
+                        details.push_str(&format!(
+                            "\n  SCX {} delay {}: got {:02x?}\n               want {:02x?}",
+                            row / 5, row % 5, r, x
+                        ));
+                    }
+                }
+            }
+            (path, valid, details)
+        })
+        .collect()
+}

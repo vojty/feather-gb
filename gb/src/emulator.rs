@@ -320,6 +320,8 @@ impl Emulator {
 
             e.hw.timer.init_without_bios();
             e.hw.ppu.init_without_bios();
+            let header_logo: Vec<u8> = (0x104..0x134).map(|a| e.hw.read_byte(a)).collect();
+            e.hw.ppu.init_boot_vram(&header_logo);
             e.hw.apu.init_without_bios();
             e.hw.interrupts.init_without_bios();
         }
