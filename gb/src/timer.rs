@@ -75,7 +75,7 @@ impl Timer {
 
     pub fn init_without_bios(&mut self) {
         // self.divider_counter = 0x1833; // for dmg0
-        self.divider_counter = 0xabcf; // for dmgABC
+        self.divider_counter = 0xabcb; // for dmgABC
         self.tac = TacBits::from_bits_truncate(0x00);
         self.tima = 0x00;
         self.tma = 0x00;
@@ -108,12 +108,11 @@ impl Timer {
         (self.divider_counter & self.get_frequency_edge()) > 0
     }
 
-    fn increment_tima(&mut self, ic: &mut InterruptController) {
+    fn increment_tima(&mut self) {
         self.tima = self.tima.wrapping_add(1);
         if self.tima == 0 {
-            // TIMA loading has delay but interrupt is triggered right away
+            // TIMA reads 0 for 4 cycles, then TMA is loaded and the interrupt is requested
             self.loading_delay_clocks = 4;
-            ic.request_interrupt(InterruptBits::TIMER);
         }
     }
 
@@ -126,6 +125,7 @@ impl Timer {
         }
         if self.loading_delay_clocks == 0 {
             self.tima = self.tma;
+            ic.request_interrupt(InterruptBits::TIMER);
         }
 
         if !self.is_enabled() {
@@ -134,7 +134,7 @@ impl Timer {
 
         // Timer is incremented on falling edge (on change from 1 to 0)
         if prev_counter_bit && !self.has_counter_bit() {
-            self.increment_tima(ic);
+            self.increment_tima();
         }
     }
 }
@@ -149,11 +149,11 @@ impl Timer {
             _ => invalid_address("Timer (read)", address),
         }
     }
-    pub fn write_byte(&mut self, address: u16, value: u8, ic: &mut InterruptController) {
+    pub fn write_byte(&mut self, address: u16, value: u8) {
         match address {
             R_DIV => {
                 if self.has_counter_bit() {
-                    self.increment_tima(ic);
+                    self.increment_tima();
                 }
                 self.divider_counter = 0
             }
@@ -175,7 +175,7 @@ impl Timer {
                 self.tac = TacBits::from_bits_truncate(value);
 
                 if prev_counter_bit && !self.has_counter_bit() {
-                    self.increment_tima(ic);
+                    self.increment_tima();
                 }
             }
             _ => invalid_address("Timer (write)", address),

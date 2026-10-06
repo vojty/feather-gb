@@ -1,6 +1,7 @@
 use futures::{future::join_all, TryFutureExt};
 
 use gb::emulator::{Device, Emulator};
+use gb::traits::MemoryAccess;
 use glob::glob;
 use regex::Regex;
 
@@ -69,6 +70,11 @@ fn is_valid(e: &Emulator) -> bool {
 type TestResult = (String, bool); // (pathname, valid)
 
 fn execute_test(path: String) -> TestResult {
+    let (path, valid, _) = execute_test_verbose(path);
+    (path, valid)
+}
+
+fn execute_test_verbose(path: String) -> (String, bool, String) {
     let mut e = create_emulator(&path, Device::AutoDetect);
 
     let max_frames_to_run = 60;
@@ -82,7 +88,39 @@ fn execute_test(path: String) -> TestResult {
         }
     }
 
-    (path, is_valid(&e))
+    // `setup_assertions` saves registers to HRAM (0xff80, AF/BC/DE/HL pushed little endian),
+    // expected values are at 0xff89 (same layout), 0xc000 is a test case id in some tests
+    let names = ["F", "A", "C", "B", "E", "D", "L", "H"];
+    let dump = names
+        .iter()
+        .enumerate()
+        .filter(|(_, name)| **name != "F")
+        .map(|(i, name)| {
+            let got = e.hw.read_byte(0xff80 + i as u16);
+            let expected = e.hw.read_byte(0xff89 + i as u16);
+            format!("{}={:02X}/{:02X}", name, got, expected)
+        })
+        .collect::<Vec<String>>()
+        .join(" ");
+    let dump = format!(
+        "got/expected {} | c000={:02X}",
+        dump,
+        e.hw.read_byte(0xc000)
+    );
+    (path, is_valid(&e), dump)
+}
+
+/// Runs only tests whose path contains `filter`, returns (path, valid, register dump)
+pub fn run_filtered(filter: &str) -> Vec<(String, bool, String)> {
+    let files: Vec<String> = get_tests()
+        .into_iter()
+        .filter(|f| f.contains(filter))
+        .collect();
+    let handles: Vec<_> = files
+        .into_iter()
+        .map(|file| std::thread::spawn(move || execute_test_verbose(file)))
+        .collect();
+    handles.into_iter().map(|h| h.join().unwrap()).collect()
 }
 
 fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {

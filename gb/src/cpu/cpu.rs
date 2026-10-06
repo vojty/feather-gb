@@ -5,6 +5,8 @@ use parse_display::{Display, FromStr};
 
 use crate::{
     emulator::{Hardware, SplitU16},
+    interrupts::R_IF,
+    ppu::registers::{R_BGP, R_LCDC, R_OBP0, R_OBP1, R_SCX, R_SCY, R_STAT},
     traits::MemoryAccess,
 };
 
@@ -59,9 +61,14 @@ pub enum Reg16 {
     SP,
 }
 
+const M_CYCLE_CLOCKS: u32 = 4;
+const LCDC_BG_ENABLE: u8 = 0b0000_0001;
+
 pub struct Cpu {
     pub frame_cycles: u32,
     pub total_cycles: u32,
+    // write which finishes one T-cycle after the end of M-cycle
+    delayed_write: Option<(u16, u8)>,
 
     pub halted: bool,
     pub halt_bug: bool,
@@ -112,6 +119,7 @@ impl Cpu {
 
             frame_cycles: 0,
             total_cycles: 0,
+            delayed_write: None,
         }
     }
 
@@ -210,15 +218,60 @@ impl Cpu {
 }
 
 impl Cpu {
+    // The memory access happens within the M-cycle, after the hardware has been ticked
     pub fn read_u8_tick(&mut self, hw: &mut Hardware, address: u16) -> u8 {
-        let value = hw.read_byte(address);
         self.tick(hw);
-        value
+        hw.read_byte(address)
     }
 
+    // Some DMG registers are written at a different T-cycle than the end of the M-cycle,
+    // see "conflict maps" https://github.com/LIJI32/SameBoy/blob/master/Core/sm83_cpu.c
     pub fn write_u8_tick(&mut self, hw: &mut Hardware, address: u16, value: u8) {
-        hw.write_byte(address, value);
-        self.tick(hw)
+        match address {
+            // Palettes and LCDC are written in 2 steps, the old value is merged with the new one first
+            R_BGP | R_OBP0 | R_OBP1 => {
+                self.tick_range(hw, 0, 2);
+                let old_value = hw.read_byte(address);
+                hw.write_byte(address, old_value | value);
+                self.tick_range(hw, 2, 3);
+                hw.write_byte(address, value);
+                self.tick_range(hw, 3, M_CYCLE_CLOCKS);
+            }
+            R_LCDC => {
+                self.tick_range(hw, 0, 2);
+                let old_value = hw.read_byte(address);
+                hw.write_byte(address, old_value | (value & LCDC_BG_ENABLE));
+                self.tick_range(hw, 2, 3);
+                hw.write_byte(address, value);
+                self.tick_range(hw, 3, M_CYCLE_CLOCKS);
+            }
+            R_SCX => {
+                self.tick_range(hw, 0, 2);
+                hw.write_byte(address, value);
+                self.tick_range(hw, 2, M_CYCLE_CLOCKS);
+            }
+            R_SCY => {
+                self.tick_range(hw, 0, 3);
+                hw.write_byte(address, value);
+                self.tick_range(hw, 3, M_CYCLE_CLOCKS);
+            }
+            // CPU write "wins" over the interrupts requested during the next T-cycle
+            R_IF => {
+                self.tick(hw);
+                hw.write_byte(address, value);
+                self.delayed_write = Some((address, value));
+            }
+            // DMG bug: STAT behaves as if 0xff was written for a single T-cycle
+            R_STAT => {
+                self.tick(hw);
+                hw.ppu.write_stat_bug(&mut hw.interrupts);
+                self.delayed_write = Some((address, value));
+            }
+            _ => {
+                self.tick(hw);
+                hw.write_byte(address, value);
+            }
+        }
     }
 
     pub fn read_imm_u8_tick(&mut self, hw: &mut Hardware) -> u8 {
@@ -247,27 +300,37 @@ impl Cpu {
     }
 
     pub fn tick(&mut self, hw: &mut Hardware) {
-        // Step
-        let cycles = 4;
+        self.tick_range(hw, 0, M_CYCLE_CLOCKS);
+    }
 
-        // TODO refactor
-        // DMA takes 460 cycles / 40 sprites -> 16 cycles/sprite
-        // sprite = 4 bytes = 16 cycles -> 4 cycles per byte
-        let oam_step = hw.oam_dma.tick();
-        if let Some((source, target)) = oam_step {
-            let byte = hw.read_byte(source);
-            hw.ppu.oam.write_byte(target, byte)
+    // Ticks the hardware for T-cycles <from, to) of the current M-cycle
+    pub fn tick_range(&mut self, hw: &mut Hardware, from: u32, to: u32) {
+        if from == 0 {
+            // TODO refactor
+            // DMA takes 460 cycles / 40 sprites -> 16 cycles/sprite
+            // sprite = 4 bytes = 16 cycles -> 4 cycles per byte
+            let oam_step = hw.oam_dma.tick();
+            if let Some((source, target)) = oam_step {
+                let byte = hw.read_byte(source);
+                hw.ppu.oam.write_byte(target, byte)
+            }
         }
 
-        // When drawing only background it generates 8 pixels every 8 cycles into the upper part of the FIFO
-        // and then shifts them down over the next 8 cycles ready for the next 8 pixels to be written
-        for _ in 0..cycles {
+        for t in from..to {
             hw.ppu.tick(&mut hw.interrupts, &mut hw.events);
             hw.timer.tick(&mut hw.interrupts);
             hw.apu.tick();
+
+            if t == 0 {
+                if let Some((address, value)) = self.delayed_write.take() {
+                    hw.write_byte(address, value);
+                }
+            }
         }
 
-        self.frame_cycles += cycles;
-        self.total_cycles = self.total_cycles.wrapping_add(cycles);
+        if to == M_CYCLE_CLOCKS {
+            self.frame_cycles += M_CYCLE_CLOCKS;
+            self.total_cycles = self.total_cycles.wrapping_add(M_CYCLE_CLOCKS);
+        }
     }
 }

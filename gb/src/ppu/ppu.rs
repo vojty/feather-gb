@@ -29,6 +29,28 @@ use super::registers::*;
 const CGB_REGISTERS: [u16; 6] = [R_BGPD, R_BGPI, R_OBPD, R_OBPI, R_OPRI, R_VBK];
 
 const TOTAL_LINE_CLOCKS: u32 = 456;
+// Dots relative to the LY change (dot 0) of the line
+const OAM_SCAN_END: u32 = 77;
+const MODE3_START: u32 = 81;
+// Dots before the next LY change when the OAM interrupt of the next line is armed
+const OAM_INTERRUPT_BEFORE_LINE_END: u32 = 3;
+// Dots before the next LY change when the LY comparison is disabled on V-Blank lines
+const VBLANK_LY_COMPARE_RESET_BEFORE_LINE_END: u32 = 2;
+const VBLANK_LY_COMPARE_RESET: u32 = TOTAL_LINE_CLOCKS - VBLANK_LY_COMPARE_RESET_BEFORE_LINE_END;
+// LY changes 1 dot earlier on V-Blank lines than on screen lines (SameBoy writes LY 2 dots into
+// the line instead of 3), so line 143 is 1 dot shorter and line 153 is 1 dot longer
+const LAST_SCREEN_LINE_END: u32 = TOTAL_LINE_CLOCKS - 1;
+const LAST_VBLANK_LINE_END: u32 = TOTAL_LINE_CLOCKS + 1;
+// The first line after the LCD is turned on is special - no OAM scan (STAT reports mode 0) and it's shorter
+const FIRST_LINE_OAM_BLOCK: u32 = 79;
+const FIRST_LINE_END: u32 = TOTAL_LINE_CLOCKS - 2;
+// Line clock when the LCD is turned on (LCDC is written 1 T-cycle before the end of M-cycle)
+const LCD_ON_LINE_CLOCKS: u32 = 2;
+// The pixel pipeline (fetcher + FIFO) starts a few dots before STAT reports mode 3,
+// the first line after LCD-on included (SameBoy reaches `mode_3_start` at the same dot)
+const PIPELINE_START: u32 = 78;
+// Dot of the line 144 when STAT enters mode 1 and V-Blank interrupt is requested
+const VBLANK_START: u32 = 3;
 const STAT_UNUSED_MASK: u8 = 0b1000_0000;
 #[derive(PartialEq)]
 enum Access {
@@ -96,7 +118,15 @@ pub struct Ppu {
     pub mode: Mode,
     pub line: u8,
     dropped_pixels: u8,
-    pending_mode: Option<Mode>,
+    mode_for_interrupt: Option<Mode>,
+    lyc_interrupt_line: bool,
+    hblank_interrupt_at: Option<u32>,
+    pipeline_active: bool,
+    first_line_after_lcd_on: bool,
+    oam_read_blocked: bool,
+    oam_write_blocked: bool,
+    vram_read_blocked: bool,
+    vram_write_blocked: bool,
     skip_frames: u32,
     system_palette: DmgPalette,
 
@@ -146,10 +176,17 @@ impl Ppu {
             line_clocks: 0,
             mode: Mode::HBlank,
             line: 0,
-            pending_mode: None,
+            mode_for_interrupt: None,
+            lyc_interrupt_line: false,
+            hblank_interrupt_at: None,
+            pipeline_active: false,
+            first_line_after_lcd_on: false,
+            oam_read_blocked: false,
+            oam_write_blocked: false,
+            vram_read_blocked: false,
+            vram_write_blocked: false,
             skip_frames: 0,
             system_palette,
-
 
             bg_color_palettes: ColorPaletteMemory::new(),
             obj_color_palettes: ColorPaletteMemory::new(),
@@ -182,21 +219,17 @@ impl Ppu {
         self.obp1_pal = Palette::from_bits(0xff, &self.system_palette);
         self.wy = 0x00;
         self.wx = 0x00;
+        // The boot ROM leaves PPU at the very beginning of the line 0 (the timing is relevant
+        // for tests which don't turn the LCD off/on)
+        self.line = 0;
+        self.ly = 0;
+        self.line_clocks = 1;
+        self.ly_to_compare = Some(0);
     }
 
     pub fn tick(&mut self, ic: &mut InterruptController, events: &mut Events) {
         if !is_lcd_enabled(&self.lcdc) {
-            self.line_clocks = 0;
             return;
-        }
-
-        self.line_clocks += 1;
-
-        // Mode change is delayed
-        if let Some(pending_mode) = self.pending_mode {
-            self.change_stat_mode(pending_mode);
-            self.stat_update(ic, pending_mode);
-            self.pending_mode = None;
         }
 
         if self.line < 144 {
@@ -204,52 +237,126 @@ impl Ppu {
         } else {
             self.process_vblank_line(ic);
         }
+
+        self.line_clocks += 1;
+        let line_length = self.line_length();
+        if self.line_clocks == line_length {
+            self.line_clocks = 0;
+            self.first_line_after_lcd_on = false;
+            self.line = if self.line == 153 { 0 } else { self.line + 1 };
+        }
+    }
+
+    fn line_length(&self) -> u32 {
+        if self.first_line_after_lcd_on {
+            FIRST_LINE_END
+        } else if self.line == 143 {
+            LAST_SCREEN_LINE_END
+        } else if self.line == 153 {
+            LAST_VBLANK_LINE_END
+        } else {
+            TOTAL_LINE_CLOCKS
+        }
     }
 
     fn change_stat_mode(&mut self, mode: Mode) {
         self.stat_mode = mode;
     }
 
+    // Timing of the events is relative to the LY change (dot 0) and it's based on SameBoy
     fn process_screen_line(&mut self, ic: &mut InterruptController, events: &mut Events) {
         // 2   -> 3              -> 0
         // OAM -> PIXEL TRANSFER -> H-BLANK
-
-        // LY=LYC handler
+        let first_line = self.first_line_after_lcd_on;
         match self.line_clocks {
-            // Line to compare is 4 cycles late
-            4 => {
-                // the check for 0 line is performed during line 153 or when LCD is turned on
+            0 if !first_line => {
+                // STAT reads mode 0 for a single dot, but the OAM interrupt is already requested
+                self.ly = self.line;
+                self.change_stat_mode(Mode::HBlank);
+                self.oam_read_blocked = true;
+                self.oam_write_blocked = false;
                 if self.line != 0 {
-                    self.ly_to_compare = Some(self.ly);
-                    self.check_ly_equals_lyc(ic);
+                    self.ly_to_compare = None;
+                    self.mode_for_interrupt = Some(Mode::OamSearch);
                 }
+                self.stat_update(ic);
+            }
+            1 if !first_line => {
+                self.mode = Mode::OamSearch;
+                self.change_stat_mode(Mode::OamSearch);
+                self.oam_write_blocked = true;
+                self.ly_to_compare = Some(self.ly);
+                self.mode_for_interrupt = Some(Mode::OamSearch);
+                self.stat_update(ic);
+                // OAM interrupt is just a short pulse
+                self.mode_for_interrupt = None;
+                self.stat_update(ic);
+            }
+            OAM_SCAN_END if !first_line => {
+                self.vram_read_blocked = true;
+                self.oam_write_blocked = false;
+            }
+            FIRST_LINE_OAM_BLOCK if first_line => {
+                self.oam_write_blocked = true;
+            }
+            MODE3_START => {
+                self.mode = Mode::PixelTransfer;
+                self.change_stat_mode(Mode::PixelTransfer);
+                self.mode_for_interrupt = None;
+                self.oam_read_blocked = true;
+                self.oam_write_blocked = true;
+                self.vram_read_blocked = true;
+                self.vram_write_blocked = true;
+                if !first_line {
+                    self.stat_update(ic);
+                }
+                self.screen_buffer.get_write_buffer_mut().set_stats(
+                    Mode::PixelTransfer,
+                    self.line as usize,
+                    self.line_clocks,
+                );
+            }
+            clocks
+                if self.line != 143
+                    && clocks == self.line_length() - OAM_INTERRUPT_BEFORE_LINE_END =>
+            {
+                // Not propagated until the next STAT update
+                self.mode_for_interrupt = Some(Mode::OamSearch);
+            }
+            clocks
+                if self.line == 143
+                    && clocks == LAST_SCREEN_LINE_END - VBLANK_LY_COMPARE_RESET_BEFORE_LINE_END =>
+            {
+                self.ly_to_compare = None;
+                self.stat_update(ic);
             }
             _ => {}
         }
 
+        if self.line_clocks == PIPELINE_START {
+            self.init_pixel_transfer();
+        }
+
+        // window is enabled for current line only if WY=LY
+        if self.mode == Mode::OamSearch && self.wy == self.ly {
+            self.window_line_enabled = true
+        }
+
         match self.mode {
-            Mode::OamSearch => {
-                // window is enabled for current line only if WY=LY
-                if self.wy == self.ly {
-                    self.window_line_enabled = true
-                }
-                if self.line_clocks == 80 {
-                    self.mode = Mode::PixelTransfer;
-                    self.pending_mode = Some(Mode::PixelTransfer);
-                    self.init_pixel_transfer();
-                    self.screen_buffer.get_write_buffer_mut().set_stats(
-                        Mode::PixelTransfer,
-                        self.line as usize,
-                        self.line_clocks,
-                    );
-                }
-            }
-            Mode::PixelTransfer => {
+            Mode::OamSearch | Mode::PixelTransfer
+                if self.pipeline_active && self.line_clocks > PIPELINE_START =>
+            {
                 self.process_pixel_transfer();
 
                 if self.x == DISPLAY_WIDTH as u8 {
-                    self.pending_mode = Some(Mode::HBlank);
+                    self.pipeline_active = false;
                     self.mode = Mode::HBlank;
+                    self.change_stat_mode(Mode::HBlank);
+                    self.hblank_interrupt_at = Some(self.line_clocks + 1);
+                    self.oam_read_blocked = false;
+                    self.oam_write_blocked = false;
+                    self.vram_read_blocked = false;
+                    self.vram_write_blocked = false;
 
                     self.render_sprites();
 
@@ -261,113 +368,108 @@ impl Ppu {
                 }
             }
             Mode::HBlank => {
-                if self.line_clocks == TOTAL_LINE_CLOCKS {
-                    self.line_clocks = 0;
-                    self.ly += 1;
-                    self.line += 1;
-                    self.ly_to_compare = None;
-                    self.check_ly_equals_lyc(ic);
-
-                    match self.ly {
-                        0..=143 => {
-                            self.mode = Mode::OamSearch;
-                            self.pending_mode = Some(Mode::OamSearch);
-                        }
-                        144 => {
-                            self.mode = Mode::VBlank;
-                            self.pending_mode = Some(Mode::VBlank);
-                            self.window_line_enabled = false;
-
-                            if self.skip_frames == 0 {
-                                events.insert(Events::V_BLANK);
-                                self.screen_buffer.commit_frame();
-                            }
-                        }
-                        line => panic!("Invalid screen line {}", line),
-                    }
+                // HBlank interrupt is triggered one dot after STAT reports mode 0
+                if self.hblank_interrupt_at == Some(self.line_clocks) {
+                    self.hblank_interrupt_at = None;
+                    self.mode_for_interrupt = Some(Mode::HBlank);
+                    self.stat_update(ic);
                 }
             }
-            Mode::VBlank => panic!("VBlank should not be processed here, line={}", self.line),
+            _ => {}
+        }
+
+        if self.line == 143 && self.line_clocks == LAST_SCREEN_LINE_END - 1 {
+            self.window_line_enabled = false;
+            if self.skip_frames == 0 {
+                events.insert(Events::V_BLANK);
+                self.screen_buffer.commit_frame();
+            }
         }
     }
 
     fn process_vblank_line(&mut self, ic: &mut InterruptController) {
-        match self.line {
-            144..=152 => {
-                match self.line_clocks {
-                    4 => {
-                        self.ly_to_compare = Some(self.ly);
-                        self.check_ly_equals_lyc(ic);
-                        if self.line == 144 {
-                            ic.request_interrupt(InterruptBits::V_BLANK);
-                            self.stat_update(ic, Mode::OamSearch);
-                        }
-                    }
-                    TOTAL_LINE_CLOCKS => {
-                        self.line_clocks = 0;
-                        self.ly += 1;
-                        self.line += 1;
-                        self.ly_to_compare = None;
-                        self.check_ly_equals_lyc(ic);
-                    }
-                    _ => {}
+        match (self.line, self.line_clocks) {
+            (144..=152, 0) => {
+                self.ly = self.line;
+                self.mode = Mode::VBlank;
+                if self.line == 144
+                    && !self.prev_stat_flag
+                    && self.stat.contains(StatBits::OAM_INTERRUPT)
+                {
+                    ic.request_interrupt(InterruptBits::LCD_STATS);
                 }
-                self.stat_update(ic, Mode::VBlank);
             }
-            153 => match self.line_clocks {
-                4 => {
-                    self.ly_to_compare = Some(153);
-                    self.check_ly_equals_lyc(ic);
-                    self.ly = 0;
+            (144..=152, 2) => {
+                self.ly_to_compare = Some(self.ly);
+                self.stat_update(ic);
+            }
+            (144, VBLANK_START) => {
+                // Entering VBlank triggers the OAM interrupt as well
+                self.change_stat_mode(Mode::VBlank);
+                ic.request_interrupt(InterruptBits::V_BLANK);
+                if !self.prev_stat_flag && self.stat.contains(StatBits::OAM_INTERRUPT) {
+                    ic.request_interrupt(InterruptBits::LCD_STATS);
                 }
-                8 => {
-                    self.ly_to_compare = None;
-                    self.check_ly_equals_lyc(ic);
+                self.mode_for_interrupt = Some(Mode::VBlank);
+                self.stat_update(ic);
+            }
+            (144..=152, VBLANK_LY_COMPARE_RESET) => {
+                self.ly_to_compare = None;
+                self.stat_update(ic);
+            }
+            // Line 153 reports LY=153 only for a few dots, then LY=0
+            (153, 0) => {
+                self.ly = 153;
+            }
+            (153, 4) => {
+                self.ly = 0;
+                self.ly_to_compare = Some(153);
+                self.stat_update(ic);
+            }
+            (153, 6) => {
+                self.ly_to_compare = None;
+                self.stat_update(ic);
+            }
+            (153, 10) => {
+                self.ly_to_compare = Some(0);
+                self.stat_update(ic);
+            }
+            (153, clocks) if clocks == LAST_VBLANK_LINE_END - 1 => {
+                if self.skip_frames > 0 {
+                    self.skip_frames -= 1;
                 }
-                12 => {
-                    self.ly_to_compare = Some(0);
-                    self.check_ly_equals_lyc(ic);
-                }
-                TOTAL_LINE_CLOCKS => {
-                    self.mode = Mode::OamSearch;
-                    self.pending_mode = Some(Mode::OamSearch);
-                    // Transition from the last line 153 to the line 0 goes like this:
-                    // Cycle 456    line 153 => STAT mode=1
-                    // Cycle 0      line   0 => STAT mode=0
-                    // Cycle 4+     line   0 => STAT mode=2
-                    // tested by ly00_mode0_2.gs
-                    // https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf section 8.9.1
-                    self.change_stat_mode(Mode::HBlank);
-
-                    if self.skip_frames > 0 {
-                        self.skip_frames -= 1;
-                    }
-                    self.window_line = 0;
-                    self.line = 0;
-                    self.line_clocks = 0;
-                }
-                _ => {}
-            },
-            line => panic!("Processing line {} during vblank.", line),
+                self.window_line = 0;
+            }
+            _ => {}
         }
     }
 
-    fn stat_update(&mut self, ic: &mut InterruptController, mode: Mode) {
+    fn stat_update(&mut self, ic: &mut InterruptController) {
         if !is_lcd_enabled(&self.lcdc) {
             return;
         }
 
-        let mode_intr = match mode {
-            Mode::OamSearch => self.stat.get_bits(StatBits::OAM_INTERRUPT),
-            Mode::HBlank => self.stat.get_bits(StatBits::H_BLANK_INTERRUPT),
-            Mode::VBlank => self.stat.get_bits(StatBits::V_BLANK_INTERRUPT),
-            Mode::PixelTransfer => 0,
+        // LY=LYC flag, the comparison is not performed during LY changes (the flag is cleared, the interrupt line remains)
+        match self.ly_to_compare {
+            Some(ly) => {
+                self.lyc_interrupt_line = ly == self.lyc;
+                self.stat
+                    .set(StatBits::LYC_EQUALS_LY_FLAG, self.lyc_interrupt_line);
+            }
+            None => self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG),
+        }
+
+        let mode_intr = match self.mode_for_interrupt {
+            Some(Mode::OamSearch) => self.stat.contains(StatBits::OAM_INTERRUPT),
+            Some(Mode::HBlank) => self.stat.contains(StatBits::H_BLANK_INTERRUPT),
+            Some(Mode::VBlank) => self.stat.contains(StatBits::V_BLANK_INTERRUPT),
+            _ => false,
         };
 
-        let ly_equals_ly_intr = self.stat.contains(StatBits::LYC_EQUALS_LY_FLAG)
-            && self.stat.contains(StatBits::LYC_EQUALS_LY_INTERRUPT);
+        let ly_equals_ly_intr =
+            self.lyc_interrupt_line && self.stat.contains(StatBits::LYC_EQUALS_LY_INTERRUPT);
 
-        let stat_flag = mode_intr > 0 || ly_equals_ly_intr;
+        let stat_flag = mode_intr || ly_equals_ly_intr;
 
         if !self.prev_stat_flag && stat_flag {
             ic.request_interrupt(InterruptBits::LCD_STATS);
@@ -375,27 +477,35 @@ impl Ppu {
         self.prev_stat_flag = stat_flag;
     }
 
-    fn check_ly_equals_lyc(&mut self, ic: &mut InterruptController) {
-        if Some(self.lyc) == self.ly_to_compare {
-            self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, true);
-        } else {
-            self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
-        }
-        self.stat_update(ic, self.stat_mode)
+    fn unblock_memory(&mut self) {
+        self.oam_read_blocked = false;
+        self.oam_write_blocked = false;
+        self.vram_read_blocked = false;
+        self.vram_write_blocked = false;
     }
 
-    fn check_ly_equals_lyc_no_mode(&mut self, ic: &mut InterruptController) {
-        if Some(self.lyc) == self.ly_to_compare {
-            self.stat.set(StatBits::LYC_EQUALS_LY_FLAG, true);
-        } else {
-            self.stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
-        }
-        // This is ugly hack, because this function is called when LCD is turned oo
-        // and the mode can't be PixelTransfer so mode interrupt wont happend
-        self.stat_update(ic, Mode::PixelTransfer)
+    fn turn_lcd_on(&mut self, ic: &mut InterruptController) {
+        // The first line is special - no OAM scan, STAT reports mode 0 until pixel transfer starts
+        self.line = 0;
+        self.ly = 0;
+        self.line_clocks = LCD_ON_LINE_CLOCKS;
+        self.first_line_after_lcd_on = true;
+        self.pipeline_active = false;
+        self.mode = Mode::OamSearch;
+        self.change_stat_mode(Mode::HBlank);
+        self.mode_for_interrupt = None;
+        self.hblank_interrupt_at = None;
+        self.ly_to_compare = Some(0);
+        self.unblock_memory();
+        // Only LY=LYC can trigger STAT interrupt now
+        self.stat_update(ic);
+
+        // The first frame (after LCD is turned on) is skipped
+        self.skip_frames = 1;
     }
 
     fn init_pixel_transfer(&mut self) {
+        self.pipeline_active = true;
         self.x = 0;
         self.window_x = (self.wx as i32) - 7;
         self.dropped_pixels = 0;
@@ -625,32 +735,17 @@ impl Ppu {
     }
 
     fn can_access_oam(&self, access: Access) -> bool {
-        // ugly implementation taken from JS version
-        let is_oam_search = self.stat_mode == Mode::OamSearch;
-        let is_pixel_transfer = self.stat_mode == Mode::PixelTransfer;
-        if access == Access::Read {
-            if is_oam_search || is_pixel_transfer {
-                return false;
-            }
-
-            if self.pending_mode == Some(Mode::OamSearch) {
-                return false;
-            }
+        match access {
+            Access::Read => !self.oam_read_blocked,
+            Access::Write => !self.oam_write_blocked,
         }
-
-        let is_oam_accessed = is_oam_search && self.line_clocks <= 76;
-        let is_used = is_oam_accessed || is_pixel_transfer;
-        !is_used
     }
 
     fn can_access_vram(&self, access: Access) -> bool {
-        if self.stat_mode == Mode::PixelTransfer {
-            return false;
+        match access {
+            Access::Read => !self.vram_read_blocked,
+            Access::Write => !self.vram_write_blocked,
         }
-        if access == Access::Read && self.stat_mode == Mode::OamSearch && self.line_clocks == 80 {
-            return false;
-        }
-        true
     }
 }
 
@@ -704,6 +799,17 @@ impl Ppu {
         }
     }
 
+    // DMG bug: STAT behaves as if 0xff was written for a single T-cycle (the CPU then writes the real value),
+    // this can trigger the STAT interrupt
+    pub fn write_stat_bug(&mut self, ic: &mut InterruptController) {
+        if self.is_cgb {
+            return;
+        }
+        let lyc_flag = self.stat & StatBits::LYC_EQUALS_LY_FLAG;
+        self.stat = (StatBits::all() - StatBits::LYC_EQUALS_LY_FLAG) | lyc_flag;
+        self.stat_update(ic);
+    }
+
     pub fn write_byte(&mut self, address: u16, value: u8, ic: &mut InterruptController) {
         match address {
             R_LCDC => {
@@ -712,19 +818,7 @@ impl Ppu {
                 let is_enabled = is_lcd_enabled(&self.lcdc);
                 // off - on
                 if !was_enabled && is_enabled {
-                    // OAM on the first line is skipped
-                    // https://www.reddit.com/r/EmuDev/comments/6h2asw/stat_register_and_stat_interrupt_delay_in_dmgcgb/
-                    self.change_stat_mode(Mode::HBlank);
-                    self.mode = Mode::OamSearch;
-                    self.pending_mode = None;
-
-                    self.line_clocks = 4;
-                    // Only LY=LYC can trigger STAT interrupt now
-                    self.check_ly_equals_lyc_no_mode(ic);
-                    self.ly_to_compare = None;
-
-                    // The first frame (after LCD is turned on) is skipped
-                    self.skip_frames = 1;
+                    self.turn_lcd_on(ic);
                 }
 
                 // On -> off
@@ -732,7 +826,12 @@ impl Ppu {
                     self.ly = 0;
                     self.ly_to_compare = Some(0);
                     self.line = 0;
+                    self.line_clocks = 0;
+                    self.mode = Mode::HBlank;
                     self.change_stat_mode(Mode::HBlank);
+                    self.hblank_interrupt_at = None;
+                    self.first_line_after_lcd_on = false;
+                    self.unblock_memory();
                     self.screen_buffer
                         .get_write_buffer_mut()
                         .clear_with(&self.system_palette.colors[0]);
@@ -741,22 +840,15 @@ impl Ppu {
             R_LY => {} // read-only
             R_LYC => {
                 self.lyc = value;
-                if is_lcd_enabled(&self.lcdc) {
-                    self.check_ly_equals_lyc(ic);
-                    self.stat_update(ic, self.stat_mode);
-                }
+                self.stat_update(ic);
             }
             R_STAT => {
                 let mut new_stat = StatBits::from_bits_truncate(value);
                 // LY=LYC is not writeable
                 new_stat.remove(StatBits::LYC_EQUALS_LY_FLAG);
-                self.stat = (self.stat & StatBits::LYC_EQUALS_LY_FLAG) | new_stat;
-
-                if is_lcd_enabled(&self.lcdc)
-                    && [Mode::HBlank, Mode::VBlank].contains(&self.stat_mode)
-                {
-                    self.stat_update(ic, self.stat_mode)
-                }
+                let lyc_flag = self.stat & StatBits::LYC_EQUALS_LY_FLAG;
+                self.stat = lyc_flag | new_stat;
+                self.stat_update(ic);
             }
             R_SCX => self.scx = value,
             R_SCY => {

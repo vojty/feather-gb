@@ -67,6 +67,11 @@ fn is_valid(e: &Emulator) -> bool {
 type TestResult = (String, bool); // (pathname, valid)
 
 fn execute_test(path: String) -> TestResult {
+    let (path, valid, _) = execute_test_verbose(path);
+    (path, valid)
+}
+
+fn execute_test_verbose(path: String) -> (String, bool, String) {
     let mut e = create_emulator(&path, Device::AutoDetect);
 
     // mbc2/bits_ramg is the longest one
@@ -81,7 +86,24 @@ fn execute_test(path: String) -> TestResult {
         }
     }
 
-    (path, is_valid(&e))
+    let dump = format!(
+        "A={:02X} B={:02X} C={:02X} D={:02X} E={:02X} H={:02X} L={:02X}",
+        e.cpu.a, e.cpu.b, e.cpu.c, e.cpu.d, e.cpu.e, e.cpu.h, e.cpu.l
+    );
+    (path, is_valid(&e), dump)
+}
+
+/// Runs only tests whose path contains `filter`, returns (path, valid, register dump)
+pub fn run_filtered(filter: &str) -> Vec<(String, bool, String)> {
+    let files: Vec<String> = get_tests()
+        .into_iter()
+        .filter(|f| f.contains(filter))
+        .collect();
+    let handles: Vec<_> = files
+        .into_iter()
+        .map(|file| std::thread::spawn(move || execute_test_verbose(file)))
+        .collect();
+    handles.into_iter().map(|h| h.join().unwrap()).collect()
 }
 
 fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {

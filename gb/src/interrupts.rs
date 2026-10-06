@@ -37,7 +37,7 @@ impl InterruptBits {
  * Bit 1: LCDC (see STAT)
  * Bit 0: V-Blank
  */
-const R_IF: u16 = 0xff0f;
+pub const R_IF: u16 = 0xff0f;
 
 /**
  * Interrupt Enable (R/W)

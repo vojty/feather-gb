@@ -54,6 +54,11 @@ fn get_tests() -> Vec<String> {
 type TestResult = (String, bool); // (pathname, valid)
 
 fn execute_test(path: String) -> TestResult {
+    let (path, valid, _) = execute_test_verbose(path);
+    (path, valid)
+}
+
+fn execute_test_verbose(path: String) -> (String, bool, String) {
     let mut e = create_emulator(&path, Device::DMG);
 
     e.set_capture_serial(true);
@@ -82,7 +87,20 @@ fn execute_test(path: String) -> TestResult {
         println!("{} failed, output: {}", path, output);
     }
 
-    (path, valid)
+    (path, valid, output)
+}
+
+/// Runs only tests whose path contains `filter`, returns (path, valid, serial output)
+pub fn run_filtered(filter: &str) -> Vec<(String, bool, String)> {
+    let files: Vec<String> = get_tests()
+        .into_iter()
+        .filter(|f| f.contains(filter))
+        .collect();
+    let handles: Vec<_> = files
+        .into_iter()
+        .map(|file| std::thread::spawn(move || execute_test_verbose(file)))
+        .collect();
+    handles.into_iter().map(|h| h.join().unwrap()).collect()
 }
 
 fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {

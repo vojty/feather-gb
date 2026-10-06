@@ -17,8 +17,38 @@ mod suites;
 mod tests;
 mod utils;
 
+/// Quick mode: `cargo run -p integration-tests -- <suite> [filter]`
+/// Runs only the matching tests of a single suite, prints results and doesn't touch `docs/results`.
+fn run_cli(suite: &str, filter: &str) {
+    let results = match suite {
+        "wilbertpol" => wilbertpol_tests::run_filtered(filter),
+        "mooneye" => mooneye_tests::run_filtered(filter),
+        "blargg" => blarggs_tests::run_filtered(filter),
+        _ => panic!("Unknown suite '{}', use wilbertpol|mooneye|blargg", suite),
+    };
+
+    let mut results = results;
+    results.sort_by(|a, b| a.0.cmp(&b.0));
+    let passed = results.iter().filter(|(_, valid, _)| *valid).count();
+    for (path, valid, details) in &results {
+        if *valid {
+            println!("✅ {}", path);
+        } else {
+            println!("❌ {}  [{}]", path, details.trim());
+        }
+    }
+    println!("{}/{} passed", passed, results.len());
+}
+
 #[tokio::main]
 pub async fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 {
+        let filter = args.get(2).map(String::as_str).unwrap_or("");
+        run_cli(&args[1], filter);
+        return;
+    }
+
     let now = Instant::now();
 
     let suites = vec![
