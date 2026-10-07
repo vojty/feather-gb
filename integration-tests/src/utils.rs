@@ -31,14 +31,6 @@ pub fn path_to_basename(path: &str) -> String {
     }
 }
 
-pub fn get_result_mark(valid: bool) -> String {
-    if valid {
-        String::from('✅')
-    } else {
-        String::from('❌')
-    }
-}
-
 pub fn create_path(paths: &[&str]) -> String {
     paths
         .iter()

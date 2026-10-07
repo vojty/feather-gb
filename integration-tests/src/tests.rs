@@ -1,5 +1,3 @@
-use futures::{future::join_all, TryFutureExt};
-
 use gb::{
     emulator::{Device, Emulator},
     events::Events,
@@ -8,10 +6,8 @@ use gb::{
 
 use crate::{
     markdown,
-    utils::{
-        copy_file, create_emulator, create_path, get_result_mark, save_diff_image, save_screen,
-        OUTPUT_DIR,
-    },
+    report::{run_parallel, SuiteReport, TestRow},
+    utils::{copy_file, create_emulator, create_path, save_diff_image, save_screen, OUTPUT_DIR},
 };
 
 pub struct VisualTestCaseBuilder {
@@ -101,7 +97,37 @@ pub fn get_image_path(name: &str, file_type: ImageResultTypes) -> String {
     create_path(&[OUTPUT_DIR, name, filename])
 }
 
-type TestResult = (String, String, String, String, usize); // (name, reference path, result path, diff path, diff)
+pub struct VisualTestResult {
+    pub name: String,
+    pub expected_path: String,
+    pub result_path: String,
+    pub diff_path: String,
+    /// Number of different pixels
+    pub diff: usize,
+}
+
+impl VisualTestResult {
+    pub fn passed(&self) -> bool {
+        self.diff == 0
+    }
+
+    fn into_row(self) -> TestRow {
+        let passed = self.passed();
+        TestRow::new(
+            self.name,
+            passed,
+            vec![
+                markdown::image(self.expected_path),
+                markdown::image(self.result_path),
+                markdown::image(self.diff_path),
+                format!("{} px", self.diff),
+            ],
+        )
+    }
+}
+
+/// Columns of [`VisualTestResult::into_row`]
+pub const VISUAL_COLUMNS: &[&str] = &["Expected", "Result", "Diff", "Diff pixels"];
 
 impl VisualTestCase {
     pub fn get_name(&self) -> &String {
@@ -116,7 +142,7 @@ impl VisualTestCase {
         get_image_path(&self.name, file_type)
     }
 
-    pub fn create_result(&self) -> TestResult {
+    pub fn create_result(&self) -> VisualTestResult {
         let mut e = create_emulator(self.get_rom_path(), self.device);
         e.set_system_palette(&self.palette);
 
@@ -149,49 +175,28 @@ impl VisualTestCase {
         let diff_path = self.get_image_path(ImageResultTypes::Diff);
         let diff = save_diff_image(&expected_path, &result_path, &diff_path);
 
-        (
-            self.name.clone(),
+        VisualTestResult {
+            name: self.name.clone(),
             expected_path,
             result_path,
             diff_path,
             diff,
-        )
+        }
     }
-}
-
-fn generate_table(results: Vec<Result<TestResult, String>>) -> String {
-    let data = results
-        .into_iter()
-        .map(|result| match result {
-            Ok((name, reference_image, result_image, diff_image, diff)) => vec![
-                name,
-                markdown::image(reference_image),
-                markdown::image(result_image),
-                markdown::image(diff_image),
-                format!("{} Diff: {}", get_result_mark(diff == 0), diff),
-            ],
-            Err(test_name) => vec![test_name, format!("{} (crashes)", get_result_mark(false))],
-        })
-        .collect::<Vec<Vec<String>>>();
-
-    let headings = ["Name", "Expected", "Result", "Diff", "Status"];
-    markdown::table(&headings, &data)
 }
 
 pub async fn execute_tests(
-    name: impl Into<String>,
-    info: impl Into<String>,
+    name: &'static str,
+    sources: &'static [&'static str],
+    notes: &'static str,
     tests: Vec<VisualTestCase>,
-) -> String {
-    let mut handles = vec![];
-    for test in tests {
-        let name = test.get_name().clone();
-        let handle = tokio::spawn(async move { test.create_result() }).map_err(|_| name);
-        handles.push(handle);
-    }
+) -> SuiteReport {
+    let results = run_parallel(
+        tests,
+        |test| test.get_name().clone(),
+        |test| test.create_result().into_row(),
+    )
+    .await;
 
-    let results = join_all(handles).await;
-    let md_table = generate_table(results);
-
-    markdown::test_report(&name.into(), &info.into(), &md_table)
+    SuiteReport::new(name, sources, notes, VISUAL_COLUMNS, results)
 }

@@ -1,12 +1,12 @@
-use futures::{future::join_all, TryFutureExt};
-
 use gb::emulator::{Device, Emulator};
 use gb::traits::MemoryAccess;
 use glob::glob;
 use regex::Regex;
 
-use crate::utils::{get_result_mark, path_to_basename};
-use crate::{markdown, utils::create_emulator};
+use crate::{
+    report::{run_parallel, SuiteReport, TestRow},
+    utils::{create_emulator, path_to_basename},
+};
 
 /*
  * Test groups:
@@ -67,13 +67,6 @@ fn is_valid(e: &Emulator) -> bool {
         && e.cpu.l == 0x22
 }
 
-type TestResult = (String, bool); // (pathname, valid)
-
-fn execute_test(path: String) -> TestResult {
-    let (path, valid, _) = execute_test_verbose(path);
-    (path, valid)
-}
-
 fn execute_test_verbose(path: String) -> (String, bool, String) {
     let mut e = create_emulator(&path, Device::AutoDetect);
 
@@ -123,35 +116,18 @@ pub fn run_filtered(filter: &str) -> Vec<(String, bool, String)> {
     handles.into_iter().map(|h| h.join().unwrap()).collect()
 }
 
-fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
-    let data = results
-        .into_iter()
-        .map(|result| match result {
-            Ok((path, valid)) => vec![path, get_result_mark(valid)],
-            Err(test_name) => vec![test_name, format!("{} (crashes)", get_result_mark(false))],
-        })
-        .collect::<Vec<Vec<String>>>();
+pub async fn run_tests() -> SuiteReport {
+    let results = run_parallel(get_tests(), String::clone, |path| {
+        let (path, valid, _) = execute_test_verbose(path);
+        TestRow::new(path, valid, vec![])
+    })
+    .await;
 
-    let headings = ["Test", "Result"];
-    let result = markdown::table(&headings, &data);
-
-    markdown::test_report(
+    SuiteReport::new(
         "Wilbertpol's tests",
-        "From https://github.com/vojty/wilbertpol-test-suite",
-        &result,
+        &["https://github.com/vojty/wilbertpol-test-suite"],
+        "Only DMG compatible tests.",
+        &[],
+        results,
     )
-}
-
-pub async fn run_tests() -> String {
-    let files = get_tests();
-
-    let mut handles = vec![];
-    for file in files {
-        let name = file.clone();
-        let handle = tokio::spawn(async move { execute_test(file) }).map_err(|_| name);
-        handles.push(handle);
-    }
-
-    let results = join_all(handles).await;
-    generate_test_report(results)
 }

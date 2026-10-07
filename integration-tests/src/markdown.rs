@@ -39,7 +39,3 @@ pub fn image(path: impl Into<String>) -> String {
 
     format!("![]({})", image_path)
 }
-
-pub fn test_report(name: &str, info: &str, result: &str) -> String {
-    format!("## {}\n\n{}\n\n{}\n", name, info, result)
-}

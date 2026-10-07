@@ -60,7 +60,7 @@ impl Channel2 {
             R_NR22 => self.volume_envelope.read_byte(),
             R_NR23 => 0xff,
             R_NR24 => 0b1011_1111 | (self.length_counter.get_enabled() as u8) << 6,
-            _ => invalid_address("APU Channel 2 (read)", address)
+            _ => invalid_address("APU Channel 2 (read)", address),
         }
     }
 
