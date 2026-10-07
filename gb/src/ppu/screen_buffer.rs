@@ -78,10 +78,6 @@ impl Buffer {
         &self.stats
     }
 
-    pub fn clear(&mut self) {
-        self.data = Box::new([0; PIXEL_DATA_SIZE]);
-    }
-
     pub fn clear_with(&mut self, pixel: &Rgb) {
         for y in 0..DISPLAY_HEIGHT {
             for x in 0..DISPLAY_WIDTH {

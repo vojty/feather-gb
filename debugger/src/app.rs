@@ -84,7 +84,8 @@ impl Debugger {
 }
 
 impl App for Debugger {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut Frame) {
+        let ctx = &ui.ctx().clone();
         let Debugger {
             running,
             emulator,
@@ -114,7 +115,7 @@ impl App for Debugger {
             }
         }
 
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
+        egui::Panel::left("side_panel").show(ui, |ui| {
             ui.heading("GameBoy Emulator");
             ui.label(format!("FPS: {:.1}", components.frame_history.fps()));
             if ui.button("Organize windows").clicked() {
@@ -222,7 +223,7 @@ impl App for Debugger {
         // ------------------ GB DISPLAY ----------------------
         components.display.show(ctx, emulator);
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             egui::warn_if_debug_build(ui);
         });
 

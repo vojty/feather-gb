@@ -150,9 +150,8 @@ impl MemoryViewer {
                 }
             });
 
-            let margin = ui.visuals().clip_rect_margin;
-            let current_scroll = ui.clip_rect().top() - ui.min_rect().top() + margin;
-            let max_scroll = ui.min_rect().height() - ui.clip_rect().height() + 2.0 * margin;
+            let current_scroll = ui.clip_rect().top() - ui.min_rect().top();
+            let max_scroll = ui.min_rect().height() - ui.clip_rect().height();
             (current_scroll, max_scroll)
         });
         ui.separator();
