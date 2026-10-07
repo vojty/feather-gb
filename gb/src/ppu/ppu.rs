@@ -29,18 +29,15 @@ use super::registers::*;
 const CGB_REGISTERS: [u16; 6] = [R_BGPD, R_BGPI, R_OBPD, R_OBPI, R_OPRI, R_VBK];
 
 const TOTAL_LINE_CLOCKS: u32 = 456;
-// Dots relative to the LY change (dot 0) of the line
+// Every line is 456 dots long, LY changes at dot 0 of the line
 const OAM_SCAN_END: u32 = 77;
 const MODE3_START: u32 = 81;
 // Dots before the next LY change when the OAM interrupt of the next line is armed
 const OAM_INTERRUPT_BEFORE_LINE_END: u32 = 3;
-// Dots before the next LY change when the LY comparison is disabled on V-Blank lines
-const VBLANK_LY_COMPARE_RESET_BEFORE_LINE_END: u32 = 2;
-const VBLANK_LY_COMPARE_RESET: u32 = TOTAL_LINE_CLOCKS - VBLANK_LY_COMPARE_RESET_BEFORE_LINE_END;
-// LY changes 1 dot earlier on V-Blank lines than on screen lines (SameBoy writes LY 2 dots into
-// the line instead of 3), so line 143 is 1 dot shorter and line 153 is 1 dot longer
-const LAST_SCREEN_LINE_END: u32 = TOTAL_LINE_CLOCKS - 1;
-const LAST_VBLANK_LINE_END: u32 = TOTAL_LINE_CLOCKS + 1;
+// Dot when the LY comparison is disabled before the LY change on lines 143-152
+const VBLANK_LY_COMPARE_RESET: u32 = TOTAL_LINE_CLOCKS - 3;
+// Dot of the line 143 when the PPU internally enters V-Blank (and the OAM STAT interrupt fires)
+const VBLANK_ENTER: u32 = TOTAL_LINE_CLOCKS - 1;
 // The first line after the LCD is turned on is special - no OAM scan (STAT reports mode 0) and it's shorter
 const FIRST_LINE_OAM_BLOCK: u32 = 79;
 const FIRST_LINE_END: u32 = TOTAL_LINE_CLOCKS - 2;
@@ -61,7 +58,7 @@ const OBJECT_FETCH_DOTS: u8 = 6;
 // Dots of the object fetch during which the BG fetcher still advances
 const OBJECT_FETCH_BG_FETCHER_DOTS: u8 = 2;
 // Dot of the line 144 when STAT enters mode 1 and V-Blank interrupt is requested
-const VBLANK_START: u32 = 3;
+const VBLANK_START: u32 = 2;
 const STAT_UNUSED_MASK: u8 = 0b1000_0000;
 #[derive(PartialEq)]
 enum Access {
@@ -321,10 +318,6 @@ impl Ppu {
     fn line_length(&self) -> u32 {
         if self.first_line_after_lcd_on {
             FIRST_LINE_END
-        } else if self.line == 143 {
-            LAST_SCREEN_LINE_END
-        } else if self.line == 153 {
-            LAST_VBLANK_LINE_END
         } else {
             TOTAL_LINE_CLOCKS
         }
@@ -394,12 +387,15 @@ impl Ppu {
                 // Not propagated until the next STAT update
                 self.mode_for_interrupt = Some(Mode::OamSearch);
             }
-            clocks
-                if self.line == 143
-                    && clocks == LAST_SCREEN_LINE_END - VBLANK_LY_COMPARE_RESET_BEFORE_LINE_END =>
-            {
+            VBLANK_LY_COMPARE_RESET if self.line == 143 => {
                 self.ly_to_compare = None;
                 self.stat_update(ic);
+            }
+            VBLANK_ENTER if self.line == 143 => {
+                self.mode = Mode::VBlank;
+                if !self.prev_stat_flag && self.stat.contains(StatBits::OAM_INTERRUPT) {
+                    ic.request_interrupt(InterruptBits::LCD_STATS);
+                }
             }
             _ => {}
         }
@@ -444,8 +440,7 @@ impl Ppu {
             _ => {}
         }
 
-        if self.line == 143 && self.line_clocks == LAST_SCREEN_LINE_END - 1 && self.skip_frames == 0
-        {
+        if self.line == 143 && self.line_clocks == VBLANK_ENTER - 1 && self.skip_frames == 0 {
             events.insert(Events::V_BLANK);
             self.screen_buffer.commit_frame();
         }
@@ -455,15 +450,8 @@ impl Ppu {
         match (self.line, self.line_clocks) {
             (144..=152, 0) => {
                 self.ly = self.line;
-                self.mode = Mode::VBlank;
-                if self.line == 144
-                    && !self.prev_stat_flag
-                    && self.stat.contains(StatBits::OAM_INTERRUPT)
-                {
-                    ic.request_interrupt(InterruptBits::LCD_STATS);
-                }
             }
-            (144..=152, 2) => {
+            (144..=152, 1) => {
                 self.ly_to_compare = Some(self.ly);
                 self.stat_update(ic);
             }
@@ -485,20 +473,20 @@ impl Ppu {
             (153, 0) => {
                 self.ly = 153;
             }
-            (153, 4) => {
+            (153, 3) => {
                 self.ly = 0;
                 self.ly_to_compare = Some(153);
                 self.stat_update(ic);
             }
-            (153, 6) => {
+            (153, 5) => {
                 self.ly_to_compare = None;
                 self.stat_update(ic);
             }
-            (153, 10) => {
+            (153, 9) => {
                 self.ly_to_compare = Some(0);
                 self.stat_update(ic);
             }
-            (153, clocks) if clocks == LAST_VBLANK_LINE_END - 1 => {
+            (153, clocks) if clocks == TOTAL_LINE_CLOCKS - 1 => {
                 if self.skip_frames > 0 {
                     self.skip_frames -= 1;
                 }

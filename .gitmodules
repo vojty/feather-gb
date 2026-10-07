@@ -38,3 +38,6 @@
 [submodule "roms/docboy-test-suite"]
 	path = roms/docboy-test-suite
 	url = https://github.com/Docheinstein/docboy-test-suite.git
+[submodule "roms/gbmicrotest"]
+	path = roms/gbmicrotest
+	url = https://github.com/aappleby/gbmicrotest.git
