@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/debugger_web-BVKN-MQ1.js","assets/rolldown-runtime-hePW80VL.js","assets/__vite-plugin-wasm-helper-Y7WR0nsT.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/debugger_web-CNf9Y87f.js","assets/rolldown-runtime-hePW80VL.js","assets/__vite-plugin-wasm-helper-Y7WR0nsT.js"])))=>i.map(i=>d[i]);
 import{r as e}from"./rolldown-runtime-hePW80VL.js";import{i as t,n,s as r,t as i}from"./jsx-runtime-Bx-Vmc5Q.js";import{t as a}from"./preload-helper-CIPaJz92.js";import{t as o}from"./romsList-S93O0J4k.js";var s=e(r(),1),c=i(),l=`debugger`,u=t.canvas`
   margin-right: auto;
   margin-left: auto;
@@ -25,4 +25,4 @@ import{r as e}from"./rolldown-runtime-hePW80VL.js";import{i as t,n,s as r,t as i
       margin: 0 !important;
       padding: 0 !important;
   }
-`;function f(){return(0,s.useEffect)(()=>{let e=null;return(async()=>{try{let t=await a(()=>import(`./debugger_web-BVKN-MQ1.js`),__vite__mapDeps([0,1,2])),n=document.getElementById(l);if(!n||!(n instanceof HTMLCanvasElement))throw Error(`Canvas not found`);e=await t.start(n,o)}catch(e){console.error(e)}})(),()=>{e?.stop_web(),e?.free()}},[]),(0,c.jsxs)(c.Fragment,{children:[(0,c.jsx)(d,{}),(0,c.jsx)(u,{id:l})]})}export{f as Debugger,f as default};
+`;function f(){return(0,s.useEffect)(()=>{let e=null;return(async()=>{try{let t=await a(()=>import(`./debugger_web-CNf9Y87f.js`),__vite__mapDeps([0,1,2])),n=document.getElementById(l);if(!n||!(n instanceof HTMLCanvasElement))throw Error(`Canvas not found`);e=await t.start(n,o)}catch(e){console.error(e)}})(),()=>{e?.stop_web(),e?.free()}},[]),(0,c.jsxs)(c.Fragment,{children:[(0,c.jsx)(d,{}),(0,c.jsx)(u,{id:l})]})}export{f as Debugger,f as default};
