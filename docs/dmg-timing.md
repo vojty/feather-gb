@@ -56,16 +56,15 @@ After TIMA overflows it reads `0x00` for 4 T-cycles. Then TMA is loaded and the 
 
 **V-Blank lines (144–153):**
 
-- LY changes 1 dot earlier than on screen lines: line 143 is 455 dots, line 153 is 457.
-- LY=LYC comparison is off from 2 dots before the LY change until dot 2.
-- Line 144:
-  - Dot 0: STAT interrupt fires if bit 5 (OAM) is enabled.
-  - Dot 3: mode 1 and the V-Blank interrupt. Bit 5 also triggers a STAT interrupt here.
+- Every line is 456 dots, and LY changes at dot 0 as on screen lines (same as DocBoy).
+- LY=LYC comparison is off from dot 453 of the previous line until dot 1 (lines 143–152 → 144–153).
+- Line 143, dot 455: PPU internally enters V-Blank. STAT interrupt fires if bit 5 (OAM) is enabled.
+- Line 144, dot 2: mode 1 and the V-Blank interrupt. Bit 5 also triggers a STAT interrupt here.
 - Line 153:
   - Dot 0: LY reads 153.
-  - Dot 4: LY reads 0 and LY=LYC is compared against 153.
-  - Dots 6–9: comparison off.
-  - From dot 10: compared against 0.
+  - Dot 3: LY reads 0 and LY=LYC is compared against 153.
+  - Dots 5–8: comparison off.
+  - From dot 9: compared against 0.
 
 **Pixel transfer** (dots without sprites, SCX % 8 = 0):
 

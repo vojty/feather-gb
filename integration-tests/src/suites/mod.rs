@@ -2,6 +2,7 @@ pub mod acid2_tests;
 pub mod age_tests;
 pub mod blarggs_sound_tests;
 pub mod blarggs_tests;
+pub mod gbmicrotest;
 pub mod mbc3_tester;
 pub mod mealybug_tearoom_tests;
 pub mod mooneye_tests;
