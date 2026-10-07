@@ -144,7 +144,9 @@ impl Cartridge {
 
         let s = &rom[0x0134..0x0143];
         let name = s.iter().map(|byte| *byte as char).collect::<String>();
-        let data = Data::new(rom, ram, rom_size, ram_size);
+        // Banking works over the physical ROM, the header can understate its size
+        let physical_rom_size = rom.len().next_power_of_two().max(rom_size);
+        let data = Data::new(rom, ram, physical_rom_size, ram_size);
         let controller: Box<dyn Controller> = match cartridge_type {
             CartridgeType::RomOnly => Box::new(RomOnly::new(data)),
             CartridgeType::Mbc1 | CartridgeType::Mbc1Ram | CartridgeType::Mbc1RamBattery => {
@@ -224,7 +226,7 @@ impl Data {
     }
 
     pub fn read_rom(&self, address: usize) -> u8 {
-        if address >= self.rom_size {
+        if address >= self.rom.len() {
             return 0xff;
         }
         self.rom[address]
