@@ -246,6 +246,16 @@ impl MemoryAccess for Hardware {
     }
 }
 
+impl Hardware {
+    // Advances OAM DMA by one M-cycle, copying one byte if a transfer is running
+    pub fn tick_oam_dma(&mut self) {
+        if let Some((source, target)) = self.oam_dma.tick() {
+            let byte = self.read_byte(source);
+            self.ppu.oam.write_byte(target, byte);
+        }
+    }
+}
+
 pub struct Emulator {
     pub cpu: Cpu,
     pub hw: Hardware,
