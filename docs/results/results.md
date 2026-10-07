@@ -1,6 +1,6 @@
 # Test results
 
-Passing **600 out of 693** tests (86.6%).
+Passing **601 out of 693** tests (86.7%).
 
 | Suite                                                    | Passed      | %         | Status |
 | -------------------------------------------------------- | ----------- | --------- | ------ |
@@ -14,8 +14,8 @@ Passing **600 out of 693** tests (86.6%).
 | [MBC3-Tester](#mbc3-tester)                              | 1/1         | 100.0%    | ✅     |
 | [Mealybug Tearoom Tests](#mealybug-tearoom-tests)        | 18/24       | 75.0%     | ❌     |
 | [AGE test suite](#age-test-suite)                        | 8/11        | 72.7%     | ❌     |
-| [gbmicrotest](#gbmicrotest)                              | 406/482     | 84.2%     | ❌     |
-| **Total**                                                | **600/693** | **86.6%** |        |
+| [gbmicrotest](#gbmicrotest)                              | 407/482     | 84.4%     | ❌     |
+| **Total**                                                | **601/693** | **86.7%** |        |
 
 ## Blargg's tests
 
@@ -337,7 +337,7 @@ Source: https://github.com/aappleby/gbmicrotest
 
 Hardware verified DMG tests.
 
-**Passed 406/482 (84.2%)**
+**Passed 407/482 (84.4%)**
 
 | Test                                                  | Status | Details             |
 | ----------------------------------------------------- | ------ | ------------------- |
@@ -559,7 +559,7 @@ Hardware verified DMG tests.
 | roms/gbmicrotest/bin/lyc_int_halt_a.gb                | ✅     | got 04, expected 04 |
 | roms/gbmicrotest/bin/lyc_int_halt_b.gb                | ✅     | got 05, expected 05 |
 | roms/gbmicrotest/bin/mbc1_ram_banks.gb                | ✅     | got 01, expected 01 |
-| roms/gbmicrotest/bin/mbc1_rom_banks.gb                | ❌     | got ff, expected ff |
+| roms/gbmicrotest/bin/mbc1_rom_banks.gb                | ✅     | got 01, expected 01 |
 | roms/gbmicrotest/bin/oam_int_halt_a.gb                | ✅     | got 01, expected 01 |
 | roms/gbmicrotest/bin/oam_int_halt_b.gb                | ✅     | got 02, expected 02 |
 | roms/gbmicrotest/bin/oam_int_if_edge_a.gb             | ✅     | got e0, expected e0 |
@@ -824,4 +824,4 @@ Hardware verified DMG tests.
 | roms/gbmicrotest/bin/win9_a.gb                        | ✅     | got 83, expected 83 |
 | roms/gbmicrotest/bin/win9_b.gb                        | ✅     | got 80, expected 80 |
 
-Generated at: 2026-10-07 07:54:11.554864 UTC, took 3s
+Generated at: 2026-10-07 13:02:10.905653 UTC, took 4s

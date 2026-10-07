@@ -293,14 +293,8 @@ impl Cpu {
     // Ticks the hardware for T-cycles <from, to) of the current M-cycle
     pub fn tick_range(&mut self, hw: &mut Hardware, from: u32, to: u32) {
         if from == 0 {
-            // TODO refactor
-            // DMA takes 460 cycles / 40 sprites -> 16 cycles/sprite
-            // sprite = 4 bytes = 16 cycles -> 4 cycles per byte
-            let oam_step = hw.oam_dma.tick();
-            if let Some((source, target)) = oam_step {
-                let byte = hw.read_byte(source);
-                hw.ppu.oam.write_byte(target, byte)
-            }
+            // OAM DMA copies one byte per M-cycle (160 bytes -> 160 M-cycles)
+            hw.tick_oam_dma();
         }
 
         for t in from..to {
