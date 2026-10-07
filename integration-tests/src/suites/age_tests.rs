@@ -1,10 +1,11 @@
-use futures::{future::join_all, TryFutureExt};
-
 use gb::emulator::{Device, Emulator};
 use glob::glob;
 
-use crate::utils::{get_result_mark, path_to_basename, save_screen, OUTPUT_DIR};
-use crate::{markdown, utils::create_emulator};
+use crate::{
+    markdown,
+    report::{run_parallel, SuiteReport, TestRow},
+    utils::{create_emulator, path_to_basename, save_screen, OUTPUT_DIR},
+};
 
 fn should_collect(basename: String) -> bool {
     basename.contains("dmgC")
@@ -59,37 +60,20 @@ fn execute_test(path: String) -> TestResult {
     (path, is_valid(&e), markdown::image(result_image))
 }
 
-fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
-    let data = results
-        .into_iter()
-        .map(|result| match result {
-            Ok((path, valid, screenshot)) => vec![path, get_result_mark(valid), screenshot],
-            Err(test_name) => vec![test_name, format!("{} (crashes)", get_result_mark(false))],
-        })
-        .collect::<Vec<Vec<String>>>();
+pub async fn run_tests() -> SuiteReport {
+    let results = run_parallel(get_tests(), String::clone, |path| {
+        let (path, valid, screenshot) = execute_test(path);
+        TestRow::new(path, valid, vec![screenshot])
+    })
+    .await;
 
-    let headings = ["Test", "Result", "Screenshot"];
-    let result = markdown::table(&headings, &data);
-
-    markdown::test_report(
+    SuiteReport::new(
         "AGE test suite",
-        "Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms",
-        &result,
+        &["https://github.com/c-sp/age-test-roms"],
+        "Only DMG tests for now.",
+        &["Screenshot"],
+        results,
     )
-}
-
-pub async fn run_tests() -> String {
-    let files = get_tests();
-
-    let mut handles = vec![];
-    for file in files {
-        let name = file.clone();
-        let handle = tokio::spawn(async move { execute_test(file) }).map_err(|_| name);
-        handles.push(handle);
-    }
-
-    let results = join_all(handles).await;
-    generate_test_report(results)
 }
 
 /// Runs matching tests and, for the generic `write.inc`/`read.inc` style tests,
@@ -109,7 +93,9 @@ pub fn run_filtered(filter: &str) -> Vec<TestResult> {
                     .find(|l| l.ends_with(&format!(" {name}")))
                     .and_then(|l| u16::from_str_radix(&l[3..7], 16).ok())
             };
-            if let (Some(res), Some(exp)) = (addr("TIMING_RESULTS"), addr("EXPECTED_TIMING_RESULTS")) {
+            if let (Some(res), Some(exp)) =
+                (addr("TIMING_RESULTS"), addr("EXPECTED_TIMING_RESULTS"))
+            {
                 let mut e = create_emulator(&path, Device::DMG);
                 for _ in 0..230 {
                     e.run_frame();
@@ -119,12 +105,19 @@ pub fn run_filtered(filter: &str) -> Vec<TestResult> {
                 }
                 // 8 SCX values * 5 lines * 12 bytes (DMG)
                 for row in 0..40u16 {
-                    let r: Vec<u8> = (0..12).map(|i| e.hw.read_byte(res + row * 12 + i)).collect();
-                    let x: Vec<u8> = (0..12).map(|i| e.hw.read_byte(exp + row * 12 + i)).collect();
+                    let r: Vec<u8> = (0..12)
+                        .map(|i| e.hw.read_byte(res + row * 12 + i))
+                        .collect();
+                    let x: Vec<u8> = (0..12)
+                        .map(|i| e.hw.read_byte(exp + row * 12 + i))
+                        .collect();
                     if r != x {
                         details.push_str(&format!(
                             "\n  SCX {} delay {}: got {:02x?}\n               want {:02x?}",
-                            row / 5, row % 5, r, x
+                            row / 5,
+                            row % 5,
+                            r,
+                            x
                         ));
                     }
                 }

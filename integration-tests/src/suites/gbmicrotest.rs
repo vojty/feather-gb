@@ -1,11 +1,11 @@
-use futures::{future::join_all, TryFutureExt};
-
 use gb::emulator::Device;
 use gb::traits::MemoryAccess;
 use glob::glob;
 
-use crate::markdown;
-use crate::utils::{create_emulator, get_result_mark};
+use crate::{
+    report::{run_parallel, SuiteReport, TestRow},
+    utils::create_emulator,
+};
 
 // Results are written to 0xFF80-0xFF82, 0xFF82 is 0x01 (pass) or 0xFF (fail)
 const RESULT: u16 = 0xFF80;
@@ -70,47 +70,18 @@ pub fn run_filtered(filter: &str) -> Vec<TestResult> {
         .collect()
 }
 
-fn generate_test_report(results: Vec<Result<TestResult, String>>) -> String {
-    let passed = results
-        .iter()
-        .filter(|result| matches!(result, Ok((_, true, _))))
-        .count();
-    let total = results.len();
+pub async fn run_tests() -> SuiteReport {
+    let results = run_parallel(get_tests(), String::clone, |path| {
+        let (path, valid, details) = execute_test(path);
+        TestRow::new(path, valid, vec![details])
+    })
+    .await;
 
-    let data = results
-        .into_iter()
-        .map(|result| match result {
-            Ok((path, valid, details)) => vec![path, get_result_mark(valid), details],
-            Err(test_name) => vec![
-                test_name,
-                format!("{} (crashes)", get_result_mark(false)),
-                String::new(),
-            ],
-        })
-        .collect::<Vec<Vec<String>>>();
-
-    let headings = ["Test", "Result", "Details"];
-    let result = markdown::table(&headings, &data);
-
-    markdown::test_report(
+    SuiteReport::new(
         "gbmicrotest",
-        &format!(
-            "https://github.com/aappleby/gbmicrotest\n\nHardware verified DMG tests. Passed {passed}/{total}."
-        ),
-        &result,
+        &["https://github.com/aappleby/gbmicrotest"],
+        "Hardware verified DMG tests.",
+        &["Details"],
+        results,
     )
-}
-
-pub async fn run_tests() -> String {
-    let files = get_tests();
-
-    let mut handles = vec![];
-    for file in files {
-        let name = file.clone();
-        let handle = tokio::spawn(async move { execute_test(file) }).map_err(|_| name);
-        handles.push(handle);
-    }
-
-    let results = join_all(handles).await;
-    generate_test_report(results)
 }

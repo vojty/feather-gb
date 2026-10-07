@@ -1,6 +1,7 @@
 use gb::{emulator::Device, traits::MemoryAccess};
 
 use crate::{
+    report::SuiteReport,
     tests::{
         execute_tests, get_image_path, ImageResultTypes, VisualTestCase, VisualTestCaseBuilder,
     },
@@ -47,12 +48,13 @@ fn get_tests() -> Vec<VisualTestCase> {
         .collect()
 }
 
-pub async fn run_tests() -> String {
+pub async fn run_tests() -> SuiteReport {
     let tests = get_tests();
 
     execute_tests(
         "Blargg's tests - dmg_sound",
-        "https://github.com/retrio/gb-test-roms",
+        &["https://github.com/retrio/gb-test-roms"],
+        "",
         tests,
     )
     .await

@@ -1,6 +1,9 @@
 use gb::emulator::Device;
 
-use crate::tests::{execute_tests, VisualTestCase, VisualTestCaseBuilder};
+use crate::{
+    report::SuiteReport,
+    tests::{execute_tests, VisualTestCase, VisualTestCaseBuilder},
+};
 
 const TEST_CASES: [(&str, &str, &str, Device); 2] = [
     (
@@ -20,23 +23,24 @@ const TEST_CASES: [(&str, &str, &str, Device); 2] = [
 fn get_tests() -> Vec<VisualTestCase> {
     TEST_CASES
         .iter()
-        .map(|(name, rom_path, refeference_path, device)| {
-            VisualTestCaseBuilder::new(*name, *rom_path, *refeference_path, *device)
+        .map(|(name, rom_path, reference_path, device)| {
+            VisualTestCaseBuilder::new(*name, *rom_path, *reference_path, *device)
                 .set_max_frames(20)
                 .build()
         })
         .collect()
 }
 
-pub async fn run_tests() -> String {
+pub async fn run_tests() -> SuiteReport {
     let tests = get_tests();
 
     execute_tests(
         "acid2 tests",
-        "
-- https://github.com/mattcurrie/dmg-acid2
-- https://github.com/mattcurrie/cgb-acid2
-    ",
+        &[
+            "https://github.com/mattcurrie/dmg-acid2",
+            "https://github.com/mattcurrie/cgb-acid2",
+        ],
+        "",
         tests,
     )
     .await

@@ -1,6 +1,7 @@
 use gb::{emulator::Device, ppu::palettes::DmgPalettes};
 
 use crate::{
+    report::SuiteReport,
     tests::{execute_tests, VisualTestCase, VisualTestCaseBuilder},
     utils::create_path,
 };
@@ -30,12 +31,13 @@ fn get_tests() -> Vec<VisualTestCase> {
         .collect()
 }
 
-pub async fn run_tests() -> String {
+pub async fn run_tests() -> SuiteReport {
     let tests = get_tests();
 
     execute_tests(
         "Scribbltests",
-        "https://github.com/Hacktix/scribbltests",
+        &["https://github.com/Hacktix/scribbltests"],
+        "",
         tests,
     )
     .await

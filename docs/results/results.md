@@ -19,11 +19,13 @@ Passing **600 out of 693** tests (86.6%).
 
 ## Blargg's tests
 
-https://github.com/retrio/gb-test-roms
+Source: https://github.com/retrio/gb-test-roms
 
-Some of those tests are skipped, see `blarggs_tests.rs` why.
+Some tests are skipped, see `should_collect` in `blarggs_tests.rs` for the reasons.
 
-| Test                                                             | Result |
+**Passed 17/17 (100.0%)**
+
+| Test                                                             | Status |
 | ---------------------------------------------------------------- | ------ |
 | roms/gb-test-roms/cpu_instrs/cpu_instrs.gb                       | ✅     |
 | roms/gb-test-roms/cpu_instrs/individual/01-special.gb            | ✅     |
@@ -45,30 +47,34 @@ Some of those tests are skipped, see `blarggs_tests.rs` why.
 
 ## Blargg's tests - dmg_sound
 
-https://github.com/retrio/gb-test-roms
+Source: https://github.com/retrio/gb-test-roms
 
-| Name                     | Expected                                   | Result                                   | Diff                                   | Status        |
-| ------------------------ | ------------------------------------------ | ---------------------------------------- | -------------------------------------- | ------------- |
-| 01-registers             | ![](01-registers/expected.png)             | ![](01-registers/result.png)             | ![](01-registers/diff.png)             | ✅ Diff: 0    |
-| 02-len_ctr               | ![](02-len_ctr/expected.png)               | ![](02-len_ctr/result.png)               | ![](02-len_ctr/diff.png)               | ✅ Diff: 0    |
-| 03-trigger               | ![](03-trigger/expected.png)               | ![](03-trigger/result.png)               | ![](03-trigger/diff.png)               | ✅ Diff: 0    |
-| 04-sweep                 | ![](04-sweep/expected.png)                 | ![](04-sweep/result.png)                 | ![](04-sweep/diff.png)                 | ✅ Diff: 0    |
-| 05-sweep_details         | ![](05-sweep_details/expected.png)         | ![](05-sweep_details/result.png)         | ![](05-sweep_details/diff.png)         | ✅ Diff: 0    |
-| 06-overflow_on_trigger   | ![](06-overflow_on_trigger/expected.png)   | ![](06-overflow_on_trigger/result.png)   | ![](06-overflow_on_trigger/diff.png)   | ✅ Diff: 0    |
-| 07-len_sweep_period_sync | ![](07-len_sweep_period_sync/expected.png) | ![](07-len_sweep_period_sync/result.png) | ![](07-len_sweep_period_sync/diff.png) | ✅ Diff: 0    |
-| 08-len_ctr_during_power  | ![](08-len_ctr_during_power/expected.png)  | ![](08-len_ctr_during_power/result.png)  | ![](08-len_ctr_during_power/diff.png)  | ✅ Diff: 0    |
-| 09-wave_read_while_on    | ![](09-wave_read_while_on/expected.png)    | ![](09-wave_read_while_on/result.png)    | ![](09-wave_read_while_on/diff.png)    | ❌ Diff: 3433 |
-| 10-wave_trigger_while_on | ![](10-wave_trigger_while_on/expected.png) | ![](10-wave_trigger_while_on/result.png) | ![](10-wave_trigger_while_on/diff.png) | ❌ Diff: 290  |
-| 11-regs_after_power      | ![](11-regs_after_power/expected.png)      | ![](11-regs_after_power/result.png)      | ![](11-regs_after_power/diff.png)      | ✅ Diff: 0    |
-| 12-wave_write_while_on   | ![](12-wave_write_while_on/expected.png)   | ![](12-wave_write_while_on/result.png)   | ![](12-wave_write_while_on/diff.png)   | ❌ Diff: 549  |
+**Passed 9/12 (75.0%)**
+
+| Test                     | Status | Expected                                   | Result                                   | Diff                                   | Diff pixels |
+| ------------------------ | ------ | ------------------------------------------ | ---------------------------------------- | -------------------------------------- | ----------- |
+| 01-registers             | ✅     | ![](01-registers/expected.png)             | ![](01-registers/result.png)             | ![](01-registers/diff.png)             | 0 px        |
+| 02-len_ctr               | ✅     | ![](02-len_ctr/expected.png)               | ![](02-len_ctr/result.png)               | ![](02-len_ctr/diff.png)               | 0 px        |
+| 03-trigger               | ✅     | ![](03-trigger/expected.png)               | ![](03-trigger/result.png)               | ![](03-trigger/diff.png)               | 0 px        |
+| 04-sweep                 | ✅     | ![](04-sweep/expected.png)                 | ![](04-sweep/result.png)                 | ![](04-sweep/diff.png)                 | 0 px        |
+| 05-sweep_details         | ✅     | ![](05-sweep_details/expected.png)         | ![](05-sweep_details/result.png)         | ![](05-sweep_details/diff.png)         | 0 px        |
+| 06-overflow_on_trigger   | ✅     | ![](06-overflow_on_trigger/expected.png)   | ![](06-overflow_on_trigger/result.png)   | ![](06-overflow_on_trigger/diff.png)   | 0 px        |
+| 07-len_sweep_period_sync | ✅     | ![](07-len_sweep_period_sync/expected.png) | ![](07-len_sweep_period_sync/result.png) | ![](07-len_sweep_period_sync/diff.png) | 0 px        |
+| 08-len_ctr_during_power  | ✅     | ![](08-len_ctr_during_power/expected.png)  | ![](08-len_ctr_during_power/result.png)  | ![](08-len_ctr_during_power/diff.png)  | 0 px        |
+| 09-wave_read_while_on    | ❌     | ![](09-wave_read_while_on/expected.png)    | ![](09-wave_read_while_on/result.png)    | ![](09-wave_read_while_on/diff.png)    | 3433 px     |
+| 10-wave_trigger_while_on | ❌     | ![](10-wave_trigger_while_on/expected.png) | ![](10-wave_trigger_while_on/result.png) | ![](10-wave_trigger_while_on/diff.png) | 290 px      |
+| 11-regs_after_power      | ✅     | ![](11-regs_after_power/expected.png)      | ![](11-regs_after_power/result.png)      | ![](11-regs_after_power/diff.png)      | 0 px        |
+| 12-wave_write_while_on   | ❌     | ![](12-wave_write_while_on/expected.png)   | ![](12-wave_write_while_on/result.png)   | ![](12-wave_write_while_on/diff.png)   | 549 px      |
 
 ## Mooneye Test Suite
 
-https://github.com/Gekkio/mooneye-test-suite
+Source: https://github.com/Gekkio/mooneye-test-suite
 
-Only DMG compatible tests used.
+Only DMG compatible tests.
 
-| Test                                                                         | Result |
+**Passed 93/98 (94.9%)**
+
+| Test                                                                         | Status |
 | ---------------------------------------------------------------------------- | ------ |
 | roms/mooneye-test-suite/build/acceptance/add_sp_e_timing.gb                  | ✅     |
 | roms/mooneye-test-suite/build/acceptance/bits/mem_oam.gb                     | ✅     |
@@ -171,9 +177,13 @@ Only DMG compatible tests used.
 
 ## Wilbertpol's tests
 
-From https://github.com/vojty/wilbertpol-test-suite
+Source: https://github.com/vojty/wilbertpol-test-suite
 
-| Test                                                                                     | Result |
+Only DMG compatible tests.
+
+**Passed 39/39 (100.0%)**
+
+| Test                                                                                     | Status |
 | ---------------------------------------------------------------------------------------- | ------ |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/hblank_ly_scx_timing_nops.gb             | ✅     |
 | roms/wilbertpol-test-suite/build/acceptance/gpu/hblank_ly_scx_timing_variant_nops.gb     | ✅     |
@@ -217,79 +227,97 @@ From https://github.com/vojty/wilbertpol-test-suite
 
 ## acid2 tests
 
+Sources:
+
 - https://github.com/mattcurrie/dmg-acid2
 - https://github.com/mattcurrie/cgb-acid2
 
-| Name      | Expected                    | Result                    | Diff                    | Status     |
-| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
-| dmg-acid2 | ![](dmg-acid2/expected.png) | ![](dmg-acid2/result.png) | ![](dmg-acid2/diff.png) | ✅ Diff: 0 |
-| cgb-acid2 | ![](cgb-acid2/expected.png) | ![](cgb-acid2/result.png) | ![](cgb-acid2/diff.png) | ✅ Diff: 0 |
+**Passed 2/2 (100.0%)**
+
+| Test      | Status | Expected                    | Result                    | Diff                    | Diff pixels |
+| --------- | ------ | --------------------------- | ------------------------- | ----------------------- | ----------- |
+| dmg-acid2 | ✅     | ![](dmg-acid2/expected.png) | ![](dmg-acid2/result.png) | ![](dmg-acid2/diff.png) | 0 px        |
+| cgb-acid2 | ✅     | ![](cgb-acid2/expected.png) | ![](cgb-acid2/result.png) | ![](cgb-acid2/diff.png) | 0 px        |
 
 ## Scribbltests
 
-https://github.com/Hacktix/scribbltests
+Source: https://github.com/Hacktix/scribbltests
 
-| Name      | Expected                    | Result                    | Diff                    | Status     |
-| --------- | --------------------------- | ------------------------- | ----------------------- | ---------- |
-| scxly     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | ✅ Diff: 0 |
-| lycscx    | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | ✅ Diff: 0 |
-| lycscy    | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | ✅ Diff: 0 |
-| palettely | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | ✅ Diff: 0 |
-| statcount | ![](statcount/expected.png) | ![](statcount/result.png) | ![](statcount/diff.png) | ✅ Diff: 0 |
+**Passed 5/5 (100.0%)**
+
+| Test      | Status | Expected                    | Result                    | Diff                    | Diff pixels |
+| --------- | ------ | --------------------------- | ------------------------- | ----------------------- | ----------- |
+| scxly     | ✅     | ![](scxly/expected.png)     | ![](scxly/result.png)     | ![](scxly/diff.png)     | 0 px        |
+| lycscx    | ✅     | ![](lycscx/expected.png)    | ![](lycscx/result.png)    | ![](lycscx/diff.png)    | 0 px        |
+| lycscy    | ✅     | ![](lycscy/expected.png)    | ![](lycscy/result.png)    | ![](lycscy/diff.png)    | 0 px        |
+| palettely | ✅     | ![](palettely/expected.png) | ![](palettely/result.png) | ![](palettely/diff.png) | 0 px        |
+| statcount | ✅     | ![](statcount/expected.png) | ![](statcount/result.png) | ![](statcount/diff.png) | 0 px        |
 
 ## TurtleTests
 
-https://github.com/Powerlated/TurtleTests
+Source: https://github.com/Powerlated/TurtleTests
 
-| Name                          | Expected                                        | Result                                        | Diff                                        | Status     |
-| ----------------------------- | ----------------------------------------------- | --------------------------------------------- | ------------------------------------------- | ---------- |
-| window_y_trigger              | ![](window_y_trigger/expected.png)              | ![](window_y_trigger/result.png)              | ![](window_y_trigger/diff.png)              | ✅ Diff: 0 |
-| window_y_trigger_wx_offscreen | ![](window_y_trigger_wx_offscreen/expected.png) | ![](window_y_trigger_wx_offscreen/result.png) | ![](window_y_trigger_wx_offscreen/diff.png) | ✅ Diff: 0 |
+**Passed 2/2 (100.0%)**
+
+| Test                          | Status | Expected                                        | Result                                        | Diff                                        | Diff pixels |
+| ----------------------------- | ------ | ----------------------------------------------- | --------------------------------------------- | ------------------------------------------- | ----------- |
+| window_y_trigger              | ✅     | ![](window_y_trigger/expected.png)              | ![](window_y_trigger/result.png)              | ![](window_y_trigger/diff.png)              | 0 px        |
+| window_y_trigger_wx_offscreen | ✅     | ![](window_y_trigger_wx_offscreen/expected.png) | ![](window_y_trigger_wx_offscreen/result.png) | ![](window_y_trigger_wx_offscreen/diff.png) | 0 px        |
 
 ## MBC3-Tester
 
-https://github.com/EricKirschenmann/MBC3-Tester-gb
+Source: https://github.com/EricKirschenmann/MBC3-Tester-gb
 
-| Name        | Expected                      | Result                      | Diff                      | Status     |
-| ----------- | ----------------------------- | --------------------------- | ------------------------- | ---------- |
-| MBC3-Tester | ![](MBC3-Tester/expected.png) | ![](MBC3-Tester/result.png) | ![](MBC3-Tester/diff.png) | ✅ Diff: 0 |
+**Passed 1/1 (100.0%)**
+
+| Test        | Status | Expected                      | Result                      | Diff                      | Diff pixels |
+| ----------- | ------ | ----------------------------- | --------------------------- | ------------------------- | ----------- |
+| MBC3-Tester | ✅     | ![](MBC3-Tester/expected.png) | ![](MBC3-Tester/result.png) | ![](MBC3-Tester/diff.png) | 0 px        |
 
 ## Mealybug Tearoom Tests
 
-https://github.com/mattcurrie/mealybug-tearoom-tests
+Source: https://github.com/mattcurrie/mealybug-tearoom-tests
 
-| Name                              | Expected                                            | Result                                            | Diff                                            | Status       |
-| --------------------------------- | --------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ------------ |
-| m2_win_en_toggle                  | ![](m2_win_en_toggle/expected.png)                  | ![](m2_win_en_toggle/result.png)                  | ![](m2_win_en_toggle/diff.png)                  | ✅ Diff: 0   |
-| m3_bgp_change                     | ![](m3_bgp_change/expected.png)                     | ![](m3_bgp_change/result.png)                     | ![](m3_bgp_change/diff.png)                     | ✅ Diff: 0   |
-| m3_bgp_change_sprites             | ![](m3_bgp_change_sprites/expected.png)             | ![](m3_bgp_change_sprites/result.png)             | ![](m3_bgp_change_sprites/diff.png)             | ✅ Diff: 0   |
-| m3_lcdc_bg_en_change              | ![](m3_lcdc_bg_en_change/expected.png)              | ![](m3_lcdc_bg_en_change/result.png)              | ![](m3_lcdc_bg_en_change/diff.png)              | ❌ Diff: 286 |
-| m3_lcdc_bg_map_change             | ![](m3_lcdc_bg_map_change/expected.png)             | ![](m3_lcdc_bg_map_change/result.png)             | ![](m3_lcdc_bg_map_change/diff.png)             | ✅ Diff: 0   |
-| m3_lcdc_obj_en_change             | ![](m3_lcdc_obj_en_change/expected.png)             | ![](m3_lcdc_obj_en_change/result.png)             | ![](m3_lcdc_obj_en_change/diff.png)             | ❌ Diff: 256 |
-| m3_lcdc_obj_en_change_variant     | ![](m3_lcdc_obj_en_change_variant/expected.png)     | ![](m3_lcdc_obj_en_change_variant/result.png)     | ![](m3_lcdc_obj_en_change_variant/diff.png)     | ❌ Diff: 256 |
-| m3_lcdc_obj_size_change           | ![](m3_lcdc_obj_size_change/expected.png)           | ![](m3_lcdc_obj_size_change/result.png)           | ![](m3_lcdc_obj_size_change/diff.png)           | ❌ Diff: 309 |
-| m3_lcdc_obj_size_change_scx       | ![](m3_lcdc_obj_size_change_scx/expected.png)       | ![](m3_lcdc_obj_size_change_scx/result.png)       | ![](m3_lcdc_obj_size_change_scx/diff.png)       | ❌ Diff: 190 |
-| m3_lcdc_tile_sel_change           | ![](m3_lcdc_tile_sel_change/expected.png)           | ![](m3_lcdc_tile_sel_change/result.png)           | ![](m3_lcdc_tile_sel_change/diff.png)           | ✅ Diff: 0   |
-| m3_lcdc_tile_sel_win_change       | ![](m3_lcdc_tile_sel_win_change/expected.png)       | ![](m3_lcdc_tile_sel_win_change/result.png)       | ![](m3_lcdc_tile_sel_win_change/diff.png)       | ✅ Diff: 0   |
-| m3_lcdc_win_en_change_multiple    | ![](m3_lcdc_win_en_change_multiple/expected.png)    | ![](m3_lcdc_win_en_change_multiple/result.png)    | ![](m3_lcdc_win_en_change_multiple/diff.png)    | ✅ Diff: 0   |
-| m3_lcdc_win_en_change_multiple_wx | ![](m3_lcdc_win_en_change_multiple_wx/expected.png) | ![](m3_lcdc_win_en_change_multiple_wx/result.png) | ![](m3_lcdc_win_en_change_multiple_wx/diff.png) | ✅ Diff: 0   |
-| m3_lcdc_win_map_change            | ![](m3_lcdc_win_map_change/expected.png)            | ![](m3_lcdc_win_map_change/result.png)            | ![](m3_lcdc_win_map_change/diff.png)            | ✅ Diff: 0   |
-| m3_obp0_change                    | ![](m3_obp0_change/expected.png)                    | ![](m3_obp0_change/result.png)                    | ![](m3_obp0_change/diff.png)                    | ❌ Diff: 124 |
-| m3_scx_high_5_bits                | ![](m3_scx_high_5_bits/expected.png)                | ![](m3_scx_high_5_bits/result.png)                | ![](m3_scx_high_5_bits/diff.png)                | ✅ Diff: 0   |
-| m3_scx_low_3_bits                 | ![](m3_scx_low_3_bits/expected.png)                 | ![](m3_scx_low_3_bits/result.png)                 | ![](m3_scx_low_3_bits/diff.png)                 | ✅ Diff: 0   |
-| m3_scy_change                     | ![](m3_scy_change/expected.png)                     | ![](m3_scy_change/result.png)                     | ![](m3_scy_change/diff.png)                     | ✅ Diff: 0   |
-| m3_window_timing                  | ![](m3_window_timing/expected.png)                  | ![](m3_window_timing/result.png)                  | ![](m3_window_timing/diff.png)                  | ✅ Diff: 0   |
-| m3_window_timing_wx_0             | ![](m3_window_timing_wx_0/expected.png)             | ![](m3_window_timing_wx_0/result.png)             | ![](m3_window_timing_wx_0/diff.png)             | ✅ Diff: 0   |
-| m3_wx_4_change                    | ![](m3_wx_4_change/expected.png)                    | ![](m3_wx_4_change/result.png)                    | ![](m3_wx_4_change/diff.png)                    | ✅ Diff: 0   |
-| m3_wx_4_change_sprites            | ![](m3_wx_4_change_sprites/expected.png)            | ![](m3_wx_4_change_sprites/result.png)            | ![](m3_wx_4_change_sprites/diff.png)            | ✅ Diff: 0   |
-| m3_wx_5_change                    | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | ✅ Diff: 0   |
-| m3_wx_6_change                    | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | ✅ Diff: 0   |
+Only DMG tests with a reference image.
+
+**Passed 18/24 (75.0%)**
+
+| Test                              | Status | Expected                                            | Result                                            | Diff                                            | Diff pixels |
+| --------------------------------- | ------ | --------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ----------- |
+| m2_win_en_toggle                  | ✅     | ![](m2_win_en_toggle/expected.png)                  | ![](m2_win_en_toggle/result.png)                  | ![](m2_win_en_toggle/diff.png)                  | 0 px        |
+| m3_bgp_change                     | ✅     | ![](m3_bgp_change/expected.png)                     | ![](m3_bgp_change/result.png)                     | ![](m3_bgp_change/diff.png)                     | 0 px        |
+| m3_bgp_change_sprites             | ✅     | ![](m3_bgp_change_sprites/expected.png)             | ![](m3_bgp_change_sprites/result.png)             | ![](m3_bgp_change_sprites/diff.png)             | 0 px        |
+| m3_lcdc_bg_en_change              | ❌     | ![](m3_lcdc_bg_en_change/expected.png)              | ![](m3_lcdc_bg_en_change/result.png)              | ![](m3_lcdc_bg_en_change/diff.png)              | 286 px      |
+| m3_lcdc_bg_map_change             | ✅     | ![](m3_lcdc_bg_map_change/expected.png)             | ![](m3_lcdc_bg_map_change/result.png)             | ![](m3_lcdc_bg_map_change/diff.png)             | 0 px        |
+| m3_lcdc_obj_en_change             | ❌     | ![](m3_lcdc_obj_en_change/expected.png)             | ![](m3_lcdc_obj_en_change/result.png)             | ![](m3_lcdc_obj_en_change/diff.png)             | 256 px      |
+| m3_lcdc_obj_en_change_variant     | ❌     | ![](m3_lcdc_obj_en_change_variant/expected.png)     | ![](m3_lcdc_obj_en_change_variant/result.png)     | ![](m3_lcdc_obj_en_change_variant/diff.png)     | 256 px      |
+| m3_lcdc_obj_size_change           | ❌     | ![](m3_lcdc_obj_size_change/expected.png)           | ![](m3_lcdc_obj_size_change/result.png)           | ![](m3_lcdc_obj_size_change/diff.png)           | 309 px      |
+| m3_lcdc_obj_size_change_scx       | ❌     | ![](m3_lcdc_obj_size_change_scx/expected.png)       | ![](m3_lcdc_obj_size_change_scx/result.png)       | ![](m3_lcdc_obj_size_change_scx/diff.png)       | 190 px      |
+| m3_lcdc_tile_sel_change           | ✅     | ![](m3_lcdc_tile_sel_change/expected.png)           | ![](m3_lcdc_tile_sel_change/result.png)           | ![](m3_lcdc_tile_sel_change/diff.png)           | 0 px        |
+| m3_lcdc_tile_sel_win_change       | ✅     | ![](m3_lcdc_tile_sel_win_change/expected.png)       | ![](m3_lcdc_tile_sel_win_change/result.png)       | ![](m3_lcdc_tile_sel_win_change/diff.png)       | 0 px        |
+| m3_lcdc_win_en_change_multiple    | ✅     | ![](m3_lcdc_win_en_change_multiple/expected.png)    | ![](m3_lcdc_win_en_change_multiple/result.png)    | ![](m3_lcdc_win_en_change_multiple/diff.png)    | 0 px        |
+| m3_lcdc_win_en_change_multiple_wx | ✅     | ![](m3_lcdc_win_en_change_multiple_wx/expected.png) | ![](m3_lcdc_win_en_change_multiple_wx/result.png) | ![](m3_lcdc_win_en_change_multiple_wx/diff.png) | 0 px        |
+| m3_lcdc_win_map_change            | ✅     | ![](m3_lcdc_win_map_change/expected.png)            | ![](m3_lcdc_win_map_change/result.png)            | ![](m3_lcdc_win_map_change/diff.png)            | 0 px        |
+| m3_obp0_change                    | ❌     | ![](m3_obp0_change/expected.png)                    | ![](m3_obp0_change/result.png)                    | ![](m3_obp0_change/diff.png)                    | 124 px      |
+| m3_scx_high_5_bits                | ✅     | ![](m3_scx_high_5_bits/expected.png)                | ![](m3_scx_high_5_bits/result.png)                | ![](m3_scx_high_5_bits/diff.png)                | 0 px        |
+| m3_scx_low_3_bits                 | ✅     | ![](m3_scx_low_3_bits/expected.png)                 | ![](m3_scx_low_3_bits/result.png)                 | ![](m3_scx_low_3_bits/diff.png)                 | 0 px        |
+| m3_scy_change                     | ✅     | ![](m3_scy_change/expected.png)                     | ![](m3_scy_change/result.png)                     | ![](m3_scy_change/diff.png)                     | 0 px        |
+| m3_window_timing                  | ✅     | ![](m3_window_timing/expected.png)                  | ![](m3_window_timing/result.png)                  | ![](m3_window_timing/diff.png)                  | 0 px        |
+| m3_window_timing_wx_0             | ✅     | ![](m3_window_timing_wx_0/expected.png)             | ![](m3_window_timing_wx_0/result.png)             | ![](m3_window_timing_wx_0/diff.png)             | 0 px        |
+| m3_wx_4_change                    | ✅     | ![](m3_wx_4_change/expected.png)                    | ![](m3_wx_4_change/result.png)                    | ![](m3_wx_4_change/diff.png)                    | 0 px        |
+| m3_wx_4_change_sprites            | ✅     | ![](m3_wx_4_change_sprites/expected.png)            | ![](m3_wx_4_change_sprites/result.png)            | ![](m3_wx_4_change_sprites/diff.png)            | 0 px        |
+| m3_wx_5_change                    | ✅     | ![](m3_wx_5_change/expected.png)                    | ![](m3_wx_5_change/result.png)                    | ![](m3_wx_5_change/diff.png)                    | 0 px        |
+| m3_wx_6_change                    | ✅     | ![](m3_wx_6_change/expected.png)                    | ![](m3_wx_6_change/result.png)                    | ![](m3_wx_6_change/diff.png)                    | 0 px        |
 
 ## AGE test suite
 
-Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms
+Source: https://github.com/c-sp/age-test-roms
 
-| Test                                                                        | Result | Screenshot                                                 |
+Only DMG tests for now.
+
+**Passed 8/11 (72.7%)**
+
+| Test                                                                        | Status | Screenshot                                                 |
 | --------------------------------------------------------------------------- | ------ | ---------------------------------------------------------- |
 | roms/age-test-roms/build/halt/ei-halt-dmgC-cgbBCE.gb                        | ❌     | ![](age-tests/ei-halt-dmgC-cgbBCE.gb/result.png)           |
 | roms/age-test-roms/build/halt/halt-m0-interrupt-dmgC-cgbBCE.gb              | ❌     | ![](age-tests/halt-m0-interrupt-dmgC-cgbBCE.gb/result.png) |
@@ -305,11 +333,13 @@ Only DMG-related tests for now. From https://github.com/c-sp/age-test-roms
 
 ## gbmicrotest
 
-https://github.com/aappleby/gbmicrotest
+Source: https://github.com/aappleby/gbmicrotest
 
-Hardware verified DMG tests. Passed 406/482.
+Hardware verified DMG tests.
 
-| Test                                                  | Result | Details             |
+**Passed 406/482 (84.2%)**
+
+| Test                                                  | Status | Details             |
 | ----------------------------------------------------- | ------ | ------------------- |
 | roms/gbmicrotest/bin/div_inc_timing_a.gb              | ✅     | got 00, expected 00 |
 | roms/gbmicrotest/bin/div_inc_timing_b.gb              | ✅     | got 01, expected 01 |
@@ -794,4 +824,4 @@ Hardware verified DMG tests. Passed 406/482.
 | roms/gbmicrotest/bin/win9_a.gb                        | ✅     | got 83, expected 83 |
 | roms/gbmicrotest/bin/win9_b.gb                        | ✅     | got 80, expected 80 |
 
-Generated at: 2026-10-07 07:30:29.942591 UTC, took 4s
+Generated at: 2026-10-07 07:54:11.554864 UTC, took 3s

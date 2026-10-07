@@ -4,6 +4,7 @@ use std::{
 };
 
 use futures::future::join_all;
+use report::SuiteReport;
 use suites::{
     acid2_tests, age_tests, blarggs_sound_tests, blarggs_tests, gbmicrotest, mbc3_tester,
     mealybug_tearoom_tests, scribbl_tests, wilbertpol_tests,
@@ -13,6 +14,7 @@ use tokio::time::Instant;
 use utils::OUTPUT_DIR;
 
 mod markdown;
+mod report;
 mod suites;
 mod tests;
 mod utils;
@@ -46,70 +48,6 @@ fn run_cli(suite: &str, filter: &str) {
     println!("{}/{} passed", passed, results.len());
 }
 
-/// Counts ✅/❌ table rows of each suite report and renders an overview table.
-fn summary(reports: &[String]) -> String {
-    fn anchor(heading: &str) -> String {
-        heading
-            .to_lowercase()
-            .chars()
-            .filter(|c| c.is_alphanumeric() || *c == ' ' || *c == '-' || *c == '_')
-            .map(|c| if c == ' ' { '-' } else { c })
-            .collect()
-    }
-
-    let mut rows = Vec::new();
-    let (mut total_passed, mut total) = (0, 0);
-
-    for report in reports {
-        let Some(name) = report.lines().find_map(|l| l.strip_prefix("## ")) else {
-            continue;
-        };
-        let test_rows = report.lines().filter(|l| l.starts_with('|'));
-        let (passed, failed) = test_rows.fold((0, 0), |(p, f), l| {
-            if l.contains('✅') {
-                (p + 1, f)
-            } else if l.contains('❌') {
-                (p, f + 1)
-            } else {
-                (p, f)
-            }
-        });
-        let count = passed + failed;
-        total_passed += passed;
-        total += count;
-
-        let status = if failed == 0 { "✅" } else { "❌" };
-        rows.push(vec![
-            format!("[{}](#{})", name, anchor(name)),
-            format!("{}/{}", passed, count),
-            percent(passed, count),
-            status.to_string(),
-        ]);
-    }
-
-    rows.push(vec![
-        "**Total**".to_string(),
-        format!("**{}/{}**", total_passed, total),
-        format!("**{}**", percent(total_passed, total)),
-        String::new(),
-    ]);
-
-    format!(
-        "# Test results\n\nPassing **{} out of {}** tests ({}).\n\n{}",
-        total_passed,
-        total,
-        percent(total_passed, total),
-        markdown::table(&["Suite", "Passed", "%", "Status"], &rows)
-    )
-}
-
-fn percent(passed: usize, total: usize) -> String {
-    if total == 0 {
-        return "-".to_string();
-    }
-    format!("{:.1}%", passed as f64 * 100.0 / total as f64)
-}
-
 #[tokio::main]
 pub async fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -135,13 +73,14 @@ pub async fn main() {
         tokio::spawn(gbmicrotest::run_tests()),
     ];
 
-    let results = join_all(suites).await;
-    let mut content = results
+    let reports = join_all(suites)
+        .await
         .into_iter()
-        .filter_map(|result| result.ok())
-        .collect::<Vec<String>>();
+        .map(|result| result.expect("Test suite crashed"))
+        .collect::<Vec<SuiteReport>>();
 
-    content.insert(0, summary(&content));
+    let mut content = vec![report::summary(&reports)];
+    content.extend(reports.iter().map(SuiteReport::to_markdown));
 
     let output_file = format!("{}/results.md", OUTPUT_DIR);
     let generated_at = format!(

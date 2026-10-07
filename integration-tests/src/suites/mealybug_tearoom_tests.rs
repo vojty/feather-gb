@@ -4,6 +4,7 @@ use gb::emulator::Device;
 use glob::glob;
 
 use crate::{
+    report::SuiteReport,
     tests::{execute_tests, VisualTestCase, VisualTestCaseBuilder},
     utils::path_to_basename,
 };
@@ -43,12 +44,13 @@ fn get_tests() -> Vec<VisualTestCase> {
         .collect()
 }
 
-pub async fn run_tests() -> String {
+pub async fn run_tests() -> SuiteReport {
     let tests = get_tests();
 
     execute_tests(
         "Mealybug Tearoom Tests",
-        "https://github.com/mattcurrie/mealybug-tearoom-tests",
+        &["https://github.com/mattcurrie/mealybug-tearoom-tests"],
+        "Only DMG tests with a reference image.",
         tests,
     )
     .await
@@ -60,8 +62,9 @@ pub fn run_filtered(filter: &str) -> Vec<(String, bool, String)> {
         .into_iter()
         .filter(|t| t.get_name().contains(filter))
         .map(|t| {
-            let (name, _, _, diff_path, diff) = t.create_result();
-            (name, diff == 0, format!("diff {} ({})", diff, diff_path))
+            let result = t.create_result();
+            let details = format!("diff {} ({})", result.diff, result.diff_path);
+            (result.name.clone(), result.passed(), details)
         })
         .collect()
 }
