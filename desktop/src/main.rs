@@ -8,13 +8,18 @@ use crate::audio::Audio;
 use env_logger::Env;
 use gb::{
     cartridges::cartridge::Cartridge,
-    constants::{DISPLAY_HEIGHT, DISPLAY_WIDTH},
+    constants::{CPU_CLOCK_SPEED, DISPLAY_HEIGHT, DISPLAY_WIDTH},
     emulator::Emulator,
     joypad::JoypadKey,
 };
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, Sdl};
 
 mod audio;
+
+// Upper bound of emulated time per loop iteration, so the emulator won't fast-forward after a stall
+const MAX_CATCH_UP: Duration = Duration::from_millis(100);
+// Polling interval for events while paused
+const IDLE_SLEEP: Duration = Duration::from_millis(1);
 
 fn get_file_as_byte_vec(filename: &str) -> Vec<u8> {
     let mut f = File::open(filename).expect("no file found");
@@ -80,7 +85,9 @@ fn main() {
 
     let mut emulator = create_emulator(&sdl_context, &bytes);
 
-    let mut carry = Duration::new(0, 0);
+    // Emulated cycles which should run to catch up with real time, negative when ahead
+    let mut cycle_budget: f64 = 0.0;
+    let mut last_time = Instant::now();
 
     let mut running = false;
     let mut run_one_frame = false;
@@ -88,6 +95,9 @@ fn main() {
 
     'running: loop {
         let time = Instant::now();
+        // Includes the oversleep of the previous iteration, so the pace doesn't drift
+        let elapsed = time - last_time;
+        last_time = time;
 
         // Handle events
         for event in event_pump.poll_iter() {
@@ -119,8 +129,24 @@ fn main() {
             }
         }
 
-        if running || run_one_frame {
-            emulator.run_frame();
+        let mut frame_ran = false;
+        if running {
+            let max_budget = MAX_CATCH_UP.as_secs_f64() * CPU_CLOCK_SPEED as f64;
+            cycle_budget += elapsed.as_secs_f64() * CPU_CLOCK_SPEED as f64;
+            cycle_budget = cycle_budget.min(max_budget);
+            while cycle_budget > 0.0 {
+                cycle_budget -= emulator.run_frame() as f64;
+                frame_ran = true;
+            }
+        } else {
+            cycle_budget = 0.0;
+            if run_one_frame {
+                emulator.run_frame();
+                frame_ran = true;
+            }
+        }
+
+        if frame_ran {
             let buffer = emulator.get_screen_buffer();
 
             canvas.clear();
@@ -149,13 +175,12 @@ fn main() {
         restart = false;
         run_one_frame = false;
 
-        let elapsed = time.elapsed() + carry;
-        let sleep = Duration::new(0, 1_000_000_000 / 60);
-        if elapsed < sleep {
-            carry = Duration::new(0, 0);
-            std::thread::sleep(sleep - elapsed);
+        // Sleep until the emulator is behind real time again
+        let sleep = if running && cycle_budget < 0.0 {
+            Duration::from_secs_f64(-cycle_budget / CPU_CLOCK_SPEED as f64)
         } else {
-            carry = elapsed - sleep;
-        }
+            IDLE_SLEEP
+        };
+        std::thread::sleep(sleep);
     }
 }

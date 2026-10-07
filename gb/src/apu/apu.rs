@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
     audio::AudioDevice,
-    constants::{AUDIO_BUFFER_SIZE, AUDIO_CYCLES_PER_SAMPLE},
+    constants::{AUDIO_BUFFER_SIZE, AUDIO_SAMPLE_RATE, CPU_CLOCK_SPEED},
     traits::MemoryAccess,
     utils::invalid_address,
 };
@@ -85,7 +85,8 @@ impl Terminal {
 pub struct Apu {
     frame_sequencer: FrameSequencer,
     enabled: bool,
-    sample_cycles: usize, // audio frame cycles
+    // Fractional sample clock, a sample is emitted every CPU_CLOCK_SPEED / AUDIO_SAMPLE_RATE cycles
+    sample_counter: usize,
 
     channel1: Channel1,
     channel2: Channel2,
@@ -105,7 +106,7 @@ impl Apu {
         Self {
             frame_sequencer: FrameSequencer::new(),
             enabled: false,
-            sample_cycles: 0,
+            sample_counter: 0,
             channel1: Channel1::new(),
             channel2: Channel2::new(),
             channel3: Channel3::new(),
@@ -145,12 +146,16 @@ impl Apu {
     }
 
     pub fn tick(&mut self) {
-        if !self.enabled {
-            return;
+        if self.enabled {
+            self.tick_components();
         }
 
-        self.sample_cycles = self.sample_cycles.wrapping_add(1);
+        // The sample clock keeps running while the APU is off, so the audio device keeps receiving
+        // samples (silence) at a steady rate
+        self.tick_sample();
+    }
 
+    fn tick_components(&mut self) {
         self.channel1.tick();
         self.channel2.tick();
         self.channel3.tick();
@@ -193,22 +198,28 @@ impl Apu {
                 _ => (),
             }
         }
+    }
 
-        // Create sample
-        if self.sample_cycles == AUDIO_CYCLES_PER_SAMPLE {
-            self.sample_cycles = 0;
+    fn tick_sample(&mut self) {
+        self.sample_counter += AUDIO_SAMPLE_RATE;
+        if self.sample_counter >= CPU_CLOCK_SPEED {
+            self.sample_counter -= CPU_CLOCK_SPEED;
 
-            // Mix channels
-            let amp_channel1 = self.channel1.get_amplitude();
-            let amp_channel2 = self.channel2.get_amplitude();
-            let amp_channel3 = self.channel3.get_amplitude();
-            let amp_channel4 = self.channel4.get_amplitude();
-            let left_sample =
-                self.left
-                    .mix_outputs(amp_channel1, amp_channel2, amp_channel3, amp_channel4);
-            let right_sample =
-                self.right
-                    .mix_outputs(amp_channel1, amp_channel2, amp_channel3, amp_channel4);
+            let (left_sample, right_sample) = if self.enabled {
+                // Mix channels
+                let amp_channel1 = self.channel1.get_amplitude();
+                let amp_channel2 = self.channel2.get_amplitude();
+                let amp_channel3 = self.channel3.get_amplitude();
+                let amp_channel4 = self.channel4.get_amplitude();
+                (
+                    self.left
+                        .mix_outputs(amp_channel1, amp_channel2, amp_channel3, amp_channel4),
+                    self.right
+                        .mix_outputs(amp_channel1, amp_channel2, amp_channel3, amp_channel4),
+                )
+            } else {
+                (0.0, 0.0)
+            };
 
             self.buffer[self.buffer_position] = left_sample; // Left
             self.buffer[self.buffer_position + 1] = right_sample; // Right
