@@ -8,9 +8,9 @@ import { memory } from '../../../gb-web/pkg/gb_web_bg.wasm'
 import { InputContextProvider } from '../../context/InputContext'
 import { useInputHandler } from '../../hooks/useInputHandler'
 import { useWasmModule, type WasmModule } from '../../hooks/useWasmModule'
+import { AudioPlayer } from '../../emulator/audioPlayer'
+import { FramePacer } from '../../emulator/framePacer'
 import type { Rom, Theme } from '../../types'
-import { warmupAudio } from '../../utils/audio'
-import { range } from '../../utils/std'
 import { FullscreenLoader } from '../common/FullscreenLoader'
 import { DISPLAY_HEIGHT, DISPLAY_WIDTH, GameBoy } from '../gameboy/GameBoy'
 import { Zoom } from '../gameboy/Zoom'
@@ -31,31 +31,29 @@ type Props = {
   soundEnabled: boolean
 }
 
-const audioContext = new AudioContext({
-  sampleRate: 44100,
-})
+const audioPlayer = new AudioPlayer()
+
+const RGB_BYTES = 3
+const RGBA_BYTES = 4
 
 function renderFrame(emulator: WebEmulator, ctx: CanvasRenderingContext2D) {
-  const canvasDataPointer = emulator.get_canvas_data_pointer()
-  const imageData = ctx.createImageData(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-
-  const canvasData = new Uint8Array(
+  const pixelsCount = DISPLAY_WIDTH * DISPLAY_HEIGHT
+  const source = new Uint8Array(
     memory.buffer,
-    canvasDataPointer,
-    DISPLAY_WIDTH * DISPLAY_HEIGHT * 3,
+    emulator.get_canvas_data_pointer(),
+    pixelsCount * RGB_BYTES,
   )
+  const imageData = ctx.createImageData(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+  const target = imageData.data
 
-  range(0, DISPLAY_HEIGHT).forEach((y) => {
-    range(0, DISPLAY_WIDTH).forEach((x) => {
-      const sourceOffset = (y * DISPLAY_WIDTH + x) * 3
-      const targetOffset = (y * DISPLAY_WIDTH + x) * 4
-
-      imageData.data[targetOffset] = canvasData[sourceOffset]
-      imageData.data[targetOffset + 1] = canvasData[sourceOffset + 1]
-      imageData.data[targetOffset + 2] = canvasData[sourceOffset + 2]
-      imageData.data[targetOffset + 3] = 255 // alpha
-    })
-  })
+  for (let pixel = 0; pixel < pixelsCount; pixel += 1) {
+    const sourceOffset = pixel * RGB_BYTES
+    const targetOffset = pixel * RGBA_BYTES
+    target[targetOffset] = source[sourceOffset]
+    target[targetOffset + 1] = source[sourceOffset + 1]
+    target[targetOffset + 2] = source[sourceOffset + 2]
+    target[targetOffset + 3] = 255 // alpha
+  }
   ctx.putImageData(imageData, 0, 0)
 }
 
@@ -64,14 +62,10 @@ function initScreen(ctx: CanvasRenderingContext2D) {
   ctx.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 }
 
-const CHANNELS_COUNT = 2
-
 // Helper component so we don't have to deal with nullable values in parent components
 function DeviceHandler(props: Props) {
   const { bytes, wasmModule, running, ctx, soundEnabled } = props
   const emulator = useRef<WebEmulator>(undefined)
-  const currentAudioSeconds = useRef(0)
-  const loopId = useRef(0)
   const registerInputs = useInputHandler()
 
   // Init screen color
@@ -79,39 +73,17 @@ function DeviceHandler(props: Props) {
     initScreen(ctx)
   }, [ctx])
 
-  const onAudioBufferCallback = useCallback(
-    (bufferPtr: number) => {
-      const BUFFER_SIZE = wasmModule.get_audio_buffer_size()
-
-      const audioData = new Float32Array(memory.buffer, bufferPtr, BUFFER_SIZE)
-
-      const frameCount = audioData.length / CHANNELS_COUNT
-      const audioBuffer = audioContext.createBuffer(
-        CHANNELS_COUNT,
-        frameCount,
-        audioContext.sampleRate,
+  // Called by the emulator whenever its audio buffer is full
+  const onAudioBuffer = useCallback(
+    (bufferPointer: number) => {
+      const samples = new Float32Array(
+        memory.buffer,
+        bufferPointer,
+        wasmModule.get_audio_buffer_size(),
       )
-      for (let channel = 0; channel < CHANNELS_COUNT; channel += 1) {
-        const nowBuffering = audioBuffer.getChannelData(channel)
-        for (let i = 0; i < frameCount; i += 1) {
-          // audio data frames are interleaved
-          nowBuffering[i] = audioData[i * CHANNELS_COUNT + channel]
-        }
-      }
-      const audioSource = audioContext.createBufferSource()
-      audioSource.buffer = audioBuffer
-      audioSource.connect(audioContext.destination)
-
-      // taken from here https://github.com/Powerlated/OptimeGB/blob/master/src/core/audioplayer.ts#L91-L94
-      // TODO after some time, the game gets audio delay
-      // Reset time if close to buffer underrun
-      if (currentAudioSeconds.current <= audioContext.currentTime + 0.02) {
-        currentAudioSeconds.current = audioContext.currentTime + 0.06
-      }
-      audioSource.start(currentAudioSeconds.current)
-      currentAudioSeconds.current += BUFFER_SIZE / CHANNELS_COUNT / audioContext.sampleRate
+      audioPlayer.play(samples, wasmModule.get_audio_sample_rate())
     },
-    [wasmModule.get_audio_buffer_size],
+    [wasmModule],
   )
 
   // Create emulator on cartridge load
@@ -121,7 +93,7 @@ function DeviceHandler(props: Props) {
     }
 
     const cartridge = new wasmModule.WebCartridge(bytes)
-    currentAudioSeconds.current = 0
+    audioPlayer.reset()
     emulator.current = new wasmModule.WebEmulator(cartridge, () => {})
     initScreen(ctx)
 
@@ -129,32 +101,53 @@ function DeviceHandler(props: Props) {
   }, [ctx, bytes, wasmModule, registerInputs])
 
   useEffect(() => {
-    const e = emulator.current
-    if (!e) {
-      return
-    }
+    emulator.current?.set_audio_buffer_callback(soundEnabled ? onAudioBuffer : () => {})
+    // bytes - a new emulator is created on cartridge load
+  }, [soundEnabled, onAudioBuffer, bytes])
 
-    e.set_audio_buffer_callback(soundEnabled ? onAudioBufferCallback : () => {})
-  }, [soundEnabled, onAudioBufferCallback])
-
-  // Handle stop/start
+  // Main loop, runs on every display refresh while running
   useEffect(() => {
     const e = emulator.current
-    if (!e) {
+    if (!e || !running) {
       return
     }
 
-    if (running) {
-      const loop = () => {
-        e.run_frame()
-        renderFrame(e, ctx)
-        loopId.current = window.requestAnimationFrame(loop)
+    const pacer = new FramePacer(
+      {
+        cpuClockSpeed: wasmModule.get_cpu_clock_speed(),
+        cyclesPerFrame: wasmModule.get_cycles_per_frame(),
+      },
+      () => audioPlayer.clock,
+    )
+
+    const loop = (timestamp: number) => {
+      // 1. Find out how much emulation is owed since the previous refresh
+      pacer.advance(timestamp)
+      audioPlayer.speed = pacer.speed
+
+      // 2. Run the owed frames, the emulator passes audio to the audio player meanwhile
+      let frameExecuted = false
+      while (pacer.isFrameDue()) {
+        pacer.onFrameExecuted(e.run_frame())
+        frameExecuted = true
+
+        // 3. Audio ran dry (e.g. the page stalled) and restarted with a fresh lead, catching up
+        //    the missed time would only add latency
+        if (audioPlayer.takeUnderrun()) {
+          pacer.skipCatchUp()
+        }
       }
-      loop()
-    } else {
-      window.cancelAnimationFrame(loopId.current)
+
+      // 4. Show the latest frame
+      if (frameExecuted) {
+        renderFrame(e, ctx)
+      }
+      frameId = window.requestAnimationFrame(loop)
     }
-  }, [running, ctx])
+    let frameId = window.requestAnimationFrame(loop)
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [running, ctx, wasmModule])
 
   return null
 }
@@ -170,7 +163,7 @@ export function Play() {
   const wasmModule = useWasmModule()
 
   const onRunningToggle = () => {
-    warmupAudio(audioContext)
+    audioPlayer.warmup()
     setRunning((wasRunning) => {
       // on -> off
       if (wasRunning) {

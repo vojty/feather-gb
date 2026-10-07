@@ -8,7 +8,7 @@ use std::panic;
 use gb::{
     audio::AudioDevice,
     cartridges::cartridge::Cartridge,
-    constants::AUDIO_BUFFER_SIZE,
+    constants::{AUDIO_BUFFER_SIZE, AUDIO_SAMPLE_RATE, CPU_CLOCK_SPEED, CYCLES_PER_FRAME},
     emulator::{Device, Emulator},
     joypad::JoypadKey,
     ppu::palettes::DmgPalettes,
@@ -34,6 +34,21 @@ impl WebCartridge {
 #[wasm_bindgen()]
 pub fn get_audio_buffer_size() -> usize {
     AUDIO_BUFFER_SIZE
+}
+
+#[wasm_bindgen()]
+pub fn get_audio_sample_rate() -> usize {
+    AUDIO_SAMPLE_RATE
+}
+
+#[wasm_bindgen()]
+pub fn get_cpu_clock_speed() -> usize {
+    CPU_CLOCK_SPEED
+}
+
+#[wasm_bindgen()]
+pub fn get_cycles_per_frame() -> u32 {
+    CYCLES_PER_FRAME
 }
 
 #[wasm_bindgen]
@@ -88,7 +103,8 @@ impl WebEmulator {
         WebEmulator { e }
     }
 
-    pub fn run_frame(&mut self) {
+    // Returns the number of T-cycles executed
+    pub fn run_frame(&mut self) -> u32 {
         self.e.run_frame()
     }
 

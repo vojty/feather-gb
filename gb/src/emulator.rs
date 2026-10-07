@@ -329,7 +329,8 @@ impl Emulator {
         e
     }
 
-    pub fn run_frame(&mut self) {
+    // Runs until the next V-Blank, returns the number of T-cycles executed
+    pub fn run_frame(&mut self) -> u32 {
         loop {
             self.run_instruction();
             self.executed_instructions += 1;
@@ -339,7 +340,9 @@ impl Emulator {
             }
         }
         self.frames += 1;
+        let cycles = self.cpu.frame_cycles;
         self.cpu.frame_cycles = 0;
+        cycles
     }
 
     #[allow(dead_code)]
