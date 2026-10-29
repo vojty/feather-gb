@@ -1,3 +1,4 @@
+// vp migrate: merged .oxlintrc.json (f89714495ea22c819c9a73ff28daf460).
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -10,7 +11,7 @@ import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import { unified } from 'unified'
-import { defineConfig, UserConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite-plus'
 import Unfonts from 'unplugin-fonts/vite'
 import wasm from 'vite-plugin-wasm'
 import wasmPack from 'vite-plugin-wasm-pack'
@@ -107,6 +108,33 @@ export default defineConfig((configEnv) => {
     assetsInclude: ['**/*.gb', '**/*.gbc', '**/*.png'],
     define: {
       USE_HASH_ROUTER: process.env.USE_HASH_ROUTER,
+    },
+    fmt: {
+      ignorePatterns: ['*.inc', 'roms/**'],
+      semi: false,
+      singleQuote: true,
+    },
+    lint: {
+      plugins: ['typescript', 'unicorn', 'oxc'],
+      options: {
+        typeAware: true,
+        typeCheck: true,
+      },
+      categories: {
+        correctness: 'error',
+      },
+      rules: {
+        'vite-plus/prefer-vite-plus-imports': 'error',
+      },
+      env: {
+        builtin: true,
+      },
+      jsPlugins: [
+        {
+          name: 'vite-plus',
+          specifier: 'vite-plus/oxlint-plugin',
+        },
+      ],
     },
   }
 
