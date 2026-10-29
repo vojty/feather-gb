@@ -13,11 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-
       - name: Setup Rust
         uses: hecrj/setup-rust-action@v2
 
@@ -29,11 +24,12 @@ jobs:
         with:
           version: 'latest'
 
-      - uses: pnpm/action-setup@v6
-        name: Install pnpm + dependencies
+      - name: Setup Vite+ + install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          version: 11
-          run_install: false
+          node-version-file: .node-version
+          version-file: pnpm-workspace.yaml
+          cache: true
 
       - name: Build WASM + list of ROMs
         run: |
@@ -41,8 +37,8 @@ jobs:
           pnpm run build:debugger
           node generateRomsList.js
 
-      - name: Validate frontend
-        run: pnpm run validate
+      - name: Check frontend
+        run: vp check
 
       - name: Building App
         run: USE_HASH_ROUTER=true pnpm run build
